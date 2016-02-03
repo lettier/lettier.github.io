@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta property="og:site_name" content="Lettier">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="You need to know about the Matthews Correlation Coefficient by David Lettier">
+    <meta property="og:image" content="https://lettier.github.io/images/2016-08-05-matthews-correlation-coefficient/jumbotron_image.jpg">
+    <meta property="og:url" content="https://lettier.github.io/posts/2016-08-05-matthews-correlation-coefficient.html">
+    <meta property="og:description" content="Using a fictitious scenario, we explore the Matthews Correlation Coefficient quality measure of binary classification.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="David Lettier">
+    <meta name="description" content="Using a fictitious scenario, we explore the Matthews Correlation Coefficient quality measure of binary classification.">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/pandoc.css">
+    <link rel="stylesheet" type="text/css" href="../css/default.css">
+    <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
+    
+      
+        <title>You need to know about the Matthews Correlation Coefficient by David Lettier</title>
+      
+    
+  </head>
+  <body>
+    <div id="top"></div>
+    <div class="nav-bar-container nav-bar-background">
+      <div class="nav-bar-buttons-container">
+        <a href="../" title="Home">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-home nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="../rss.xml" title="RSS" type="application/rss+xml" target="_blank">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-rss nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="http://www.lettier.com/" title="Lettier.com">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <img src="../images/logo.svg" width="30" height="30" alt="Lettier.com" class="lettier-icon-img">
+            </div>
+          </div>
+        </a>
+        <a href="https://www.github.com/lettier" title="GitHub">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-github nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.linkedin.com/in/lettier" title="LinkedIn">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-linkedin nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.hackerrank.com/lettier" title="HackerRank">
+          <div class="nav-bar-button-container nav-button-container-second-last">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-trophy nav-bar-icon nav-bar-icon-second-last"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.behance.net/dlettier" title="Behance">
+          <div class="nav-bar-button-container nav-bar-button-container-last">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-behance nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="jumbotron">
+      <div class="absolute-top jumbotron jumbotron-background-image" style="background-image: url('/images/2016-08-05-matthews-correlation-coefficient/jumbotron_image.jpg');">
+      </div>
+    </div>
+    <div class="container jumbotron-text-position-container">
+      <div class="jumbotron-text-width-container">
+        <h1 class="jumbotron-text jumbotron-text-background">
+          
+            You need to know about the Matthews Correlation Coefficient
+          
+          <span class="title-cursor">|</span>
+        </h1>
+      </div>
+    </div>
+    <div class="container content-container">
+      <div class="post-body">
+  <!--https://pixabay.com/en/eggs-bowl-easter-holiday-1278166/-->
+<h2 id="the-scenario">The Scenario</h2>
+<p>You’ve recently acquired a job at your local egg processing plant. This plant takes in large deliveries of eggs sourced from local farms. Your job, near the end of the processing pipeline, is to pluck the rotten eggs off of the conveyor belt. Most of the eggs are fine but a certain few are rotten to the yolk.</p>
+<div class="figure">
+<img src="../images/2016-08-05-matthews-correlation-coefficient/egg-conveyor.gif" class="post-img post-img-limit" />
+
+</div>
+<!--https://pixabay.com/en/produce-food-canning-processing-448536/-->
+<p>Since you are new to the job, they have put you on a probationary period to determine how well you spot the rotten eggs. Further down the conveyor belt is a senior employee who is perfect at spotting rotten eggs. They will be able to catch any rotten eggs that you miss.</p>
+<h2 id="matthews-correlation-coefficient">Matthews Correlation Coefficient</h2>
+<p>The Matthews Correlation Coefficient (MCC) has a range of -1 to 1 where -1 indicates a completely wrong binary classifier while 1 indicates a completely correct binary classifier. Using the MCC allows one to gauge how well their classification model/function is performing. Another method for evaluating classifiers is known as the <a href="../posts/2016-03-28-reelin-and-rocin-receiver-operating-characteristic.html">ROC curve</a>.</p>
+<blockquote>
+[MCC] takes into account true and false positives and negatives and is generally regarded as a balanced measure which can be used even if the classes are of very different sizes.
+<footer>
+<a href="https://en.wikipedia.org/wiki/Matthews_correlation_coefficient">Matthews correlation coefficient, Wikipedia</a>
+</footer>
+</blockquote>
+<p>The MCC formula is:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">                <span class="op">|</span>  Said Is                 <span class="op">|</span> Said Is Not                 <span class="op">||</span>
+                <span class="op">|==========================|=============================||=================================|</span>
+    Actually Is <span class="op">|</span> True <span class="at">Positive</span>  (TP)      <span class="op">|</span> False <span class="at">Negative</span>    (FN)      <span class="op">||</span> Total Actually <span class="at">Is</span>     (TP <span class="op">+</span> FN) <span class="op">|</span>
+                <span class="op">|--------------------------|-----------------------------||---------------------------------|</span>
+Actually Is Not <span class="op">|</span> False <span class="at">Positive</span> (FP)      <span class="op">|</span> True <span class="at">Negative</span>     (TN)      <span class="op">||</span> Total Actually Is <span class="at">Not</span> (FP <span class="op">+</span> TN) <span class="op">|</span>
+                <span class="op">|==========================|=============================||=================================|</span>
+                <span class="op">|</span> Total Said <span class="at">is</span>  (TP <span class="op">+</span> FP) <span class="op">|</span> Total Said Is <span class="at">Not</span> (FN <span class="op">+</span> TN) <span class="op">||</span>
+
+      TP <span class="op">*</span> TN <span class="op">-</span> FP <span class="op">*</span> FN
+MCC <span class="op">=</span> <span class="op">-----------------------------------------------------</span>
+      [(TP <span class="op">+</span> FP) <span class="op">*</span> (FN <span class="op">+</span> TN) <span class="op">*</span> (FP <span class="op">+</span> TN) <span class="op">*</span> (TP <span class="op">+</span> FN)]<span class="op">^</span>(<span class="dv">1</span>/<span class="dv">2</span>)</code></pre></div>
+<p>You should notice that the numerator consists of just the four inner cells (crisscross style) while the denominator consists of the four outer cells (the totals) of the confusion matrix (table).</p>
+<div class="figure">
+<img src="../images/2016-08-05-matthews-correlation-coefficient/eggs.svg" alt="Prediction versus reality." class="post-img post-img-limit" />
+<p class="caption">Prediction versus reality.</p>
+</div>
+<h2 id="evaluation">Evaluation</h2>
+<p>Upper management has decided on using the MCC to rate your rotten egg spotting abilities since the two classes (rotten, not rotten) are not evenly balance given any sample of the conveyor belt.</p>
+<h3 id="all-negative">All Negative</h3>
+<p>You are feeling lazy so you decide to say that any egg that passes by is fine (not rotten).</p>
+<div class="figure">
+<img src="../images/2016-08-05-matthews-correlation-coefficient/eggs_all_negative.svg" alt="An all negative prediction." class="post-img post-img-limit" />
+<p class="caption">An all negative prediction.</p>
+</div>
+<p>Once they looked at all of the eggs, there were a total of 327 actual not rotten eggs and a total of 24 actual rotten eggs for a total of <code>327 + 24 = 351</code> eggs decided on. In other words, there were 24 positive ones (rotten) and 327 negative ones (not rotten).</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">                    <span class="op">|</span> Said Rotten <span class="op">|</span> Said Not Rotten <span class="op">||</span>
+                    <span class="op">|================================================|</span>
+    Actually Rotten <span class="op">|</span> <span class="dv">0</span> (TP)      <span class="op">|</span>  <span class="dv">24</span> (FN)        <span class="op">||</span>  <span class="dv">24</span> (TP <span class="op">+</span> FN) <span class="op">|</span>
+                    <span class="op">|-------------------------------||---------------|</span>
+Actually Not Rotten <span class="op">|</span> <span class="dv">0</span> (FP)      <span class="op">|</span> <span class="dv">327</span> (TN)        <span class="op">||</span> <span class="dv">327</span> (FP <span class="op">+</span> TN) <span class="op">|</span>
+                    <span class="op">|================================================|</span>
+                    <span class="op">|</span> <span class="dv">0</span> (TP <span class="op">+</span> FP) <span class="op">|</span> <span class="dv">351</span> (FN <span class="op">+</span> TN)   <span class="op">||</span> <span class="dv">351</span>
+
+            <span class="dv">0</span> <span class="op">*</span> <span class="dv">327</span> <span class="op">-</span> <span class="dv">0</span> <span class="op">*</span> <span class="dv">24</span>
+MCC <span class="op">=</span> <span class="fl">0.0</span> <span class="op">=</span> <span class="op">--------------------------</span>
+            (<span class="dv">0</span> <span class="op">*</span> <span class="dv">351</span> <span class="op">*</span> <span class="dv">327</span> <span class="op">*</span> <span class="dv">24</span>)<span class="op">^</span>(<span class="dv">1</span>/<span class="dv">2</span>)</code></pre></div>
+<p>Your score is actually undefined since the denominator is zero but since the numerator is zero we will call it zero. Since your score was zero they decide to give you another shot.</p>
+<p>Too bad they didn’t look at say accuracy.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">accuracy <span class="op">=</span> (TP <span class="op">+</span> TN) / Total <span class="op">=</span> (<span class="dv">0</span> <span class="op">+</span> <span class="dv">327</span>) / <span class="dv">351</span> <span class="op">=</span> .<span class="dv">932</span></code></pre></div>
+<p>A great score for not even trying!</p>
+<h3 id="all-positive">All Positive</h3>
+<p>Today is Friday and you cannot be bothered so you decide to say that any egg that passes by is rotten.</p>
+<div class="figure">
+<img src="../images/2016-08-05-matthews-correlation-coefficient/eggs_all_positive.svg" alt="An all positive prediction." class="post-img post-img-limit" />
+<p class="caption">An all positive prediction.</p>
+</div>
+<p>Again, there were 24 positive ones (rotten) and 327 negative ones (not rotten).</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">                    <span class="op">|</span> Said Rotten   <span class="op">|</span> Said Not Rotten <span class="op">||</span>
+                    <span class="op">|==================================================|</span>
+    Actually Rotten <span class="op">|</span>  <span class="dv">24</span> (TP)      <span class="op">|</span> <span class="dv">0</span> (FN)          <span class="op">||</span>  <span class="dv">24</span> (TP <span class="op">+</span> FN) <span class="op">|</span>
+                    <span class="op">|---------------------------------||---------------|</span>
+Actually Not Rotten <span class="op">|</span> <span class="dv">327</span> (FP)      <span class="op">|</span> <span class="dv">0</span> (TN)          <span class="op">||</span> <span class="dv">327</span> (FP <span class="op">+</span> TN) <span class="op">|</span>
+                    <span class="op">|==================================================|</span>
+                    <span class="op">|</span> <span class="dv">351</span> (TP <span class="op">+</span> FP) <span class="op">|</span> <span class="dv">0</span> (FN <span class="op">+</span> TN)     <span class="op">||</span> <span class="dv">351</span>
+
+            <span class="dv">24</span> <span class="op">*</span> <span class="dv">0</span> <span class="op">-</span> <span class="dv">327</span> <span class="op">*</span> <span class="dv">0</span>
+MCC <span class="op">=</span> <span class="fl">0.0</span> <span class="op">=</span> <span class="op">--------------------------</span>
+            (<span class="dv">351</span> <span class="op">*</span> <span class="dv">0</span> <span class="op">*</span> <span class="dv">327</span> <span class="op">*</span> <span class="dv">24</span>)<span class="op">^</span>(<span class="dv">1</span>/<span class="dv">2</span>)</code></pre></div>
+<p>Your score is still zero and even though they would have lost all of those 351 eggs (you <em>did</em> say they were all rotten), they give you yet another chance.</p>
+<p>If only they had looked at recall instead–you might have been promoted.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">recall <span class="op">=</span> TP / (TP <span class="op">+</span> FN) <span class="op">=</span> <span class="dv">24</span> / (<span class="dv">24</span> <span class="op">+</span> <span class="dv">0</span>) <span class="op">=</span> <span class="fl">1.0</span></code></pre></div>
+<p>Perfect recall even though you wasted 327 perfectly good eggs.</p>
+<h3 id="all-correct">All Correct</h3>
+<p>Something is in the air and after work you plan on playing the lottery but today you feel extremely precise. Despite all the odds, you managed to correctly classify/label/say what each egg actually was.</p>
+<div class="figure">
+<img src="../images/2016-08-05-matthews-correlation-coefficient/eggs_all_correct.svg" alt="An all correct prediction." class="post-img post-img-limit" />
+<p class="caption">An all correct prediction.</p>
+</div>
+<p>Staying consistent, there were 24 positive ones (rotten) and 327 negative ones (not rotten).</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">                    <span class="op">|</span> Said Rotten   <span class="op">|</span> Said Not Rotten <span class="op">||</span>
+                    <span class="op">|==================================================|</span>
+    Actually Rotten <span class="op">|</span>  <span class="dv">24</span> (TP)      <span class="op">|</span>   <span class="dv">0</span> (FN)        <span class="op">||</span>  <span class="dv">24</span> (TP <span class="op">+</span> FN) <span class="op">|</span>
+                    <span class="op">|---------------------------------||---------------|</span>
+Actually Not Rotten <span class="op">|</span>   <span class="dv">0</span> (FP)      <span class="op">|</span> <span class="dv">327</span> (TN)        <span class="op">||</span> <span class="dv">327</span> (FP <span class="op">+</span> TN) <span class="op">|</span>
+                    <span class="op">|==================================================|</span>
+                    <span class="op">|</span>  <span class="dv">24</span> (TP <span class="op">+</span> FP) <span class="op">|</span> <span class="dv">327</span> (FN <span class="op">+</span> TN)   <span class="op">||</span> <span class="dv">351</span>
+
+            <span class="dv">24</span> <span class="op">*</span> <span class="dv">327</span> <span class="op">-</span> <span class="dv">0</span> <span class="op">*</span> <span class="dv">0</span>
+MCC <span class="op">=</span> <span class="fl">1.0</span> <span class="op">=</span> <span class="op">---------------------------</span>
+            (<span class="dv">24</span> <span class="op">*</span> <span class="dv">327</span> <span class="op">*</span> <span class="dv">327</span> <span class="op">*</span> <span class="dv">24</span>)<span class="op">^</span>(<span class="dv">1</span>/<span class="dv">2</span>)</code></pre></div>
+<p>It seems that giving you the two previous passes has paid off since your score is 1. However, management deems it a fluke and would like to evaluate you one more time.</p>
+<h3 id="all-wrong">All Wrong</h3>
+<p>All of your lotto tickets didn’t pay off and today is just not your day. On top of spilling your coffee all over the factory floor you managed to get every classification backwards. If the egg was rotten you said not rotten and if the egg was not rotten you said it was rotten.</p>
+<div class="figure">
+<img src="../images/2016-08-05-matthews-correlation-coefficient/eggs_all_incorrect.svg" alt="An all incorrect prediction." class="post-img post-img-limit" />
+<p class="caption">An all incorrect prediction.</p>
+</div>
+<p>Staying true to the scenarios, there were 24 positive ones (rotten) and 327 negative ones (not rotten).</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">                    <span class="op">|</span> Said Rotten   <span class="op">|</span> Said Not Rotten <span class="op">||</span>
+                    <span class="op">|===================================================|</span>
+    Actually Rotten <span class="op">|</span>   <span class="dv">0</span> (TP)      <span class="op">|</span> <span class="dv">24</span> (FN)         <span class="op">||</span>  <span class="dv">24</span> (TP <span class="op">+</span> FN)  <span class="op">|</span>
+                    <span class="op">|---------------------------------||----------------|</span>
+Actually Not Rotten <span class="op">|</span> <span class="dv">327</span> (FP)      <span class="op">|</span>  <span class="dv">0</span> (TN)         <span class="op">||</span> <span class="dv">327</span> (FP <span class="op">+</span> TN)  <span class="op">|</span>
+                    <span class="op">|===================================================|</span>
+                    <span class="op">|</span> <span class="dv">327</span> (TP <span class="op">+</span> FP) <span class="op">|</span> <span class="dv">24</span> (FN <span class="op">+</span> TN)    <span class="op">||</span> <span class="dv">351</span>
+
+             <span class="dv">0</span> <span class="op">*</span> <span class="dv">0</span> <span class="op">-</span> <span class="dv">327</span> <span class="op">*</span> <span class="dv">24</span>
+MCC <span class="op">=</span> <span class="op">-</span><span class="fl">1.0</span> <span class="op">=</span> <span class="op">---------------------------</span>
+             (<span class="dv">327</span> <span class="op">*</span> <span class="dv">24</span> <span class="op">*</span> <span class="dv">327</span> <span class="op">*</span> <span class="dv">24</span>)<span class="op">^</span>(<span class="dv">1</span>/<span class="dv">2</span>)</code></pre></div>
+<p>One of the managers yells out, “I knew it. Fired!” It seems that your previous score of 1 was indeed a fluke. Your new score is the absolute worst at -1.</p>
+<p>As they walk you out the door, you try explaining that they could just flip whatever you say and they’d get a perfect worker but they had already finished the paperwork.</p>
+<h2 id="recap">Recap</h2>
+<p>Using a fictitious story about egg classification, we explored the edge cases of the Matthews Correlation Coefficient. For the cases where we labeled every egg rotten or every egg not rotten (regardless of their actual class), we compared the MCC score to other well known evaluation metrics (accuracy and recall). In these particular cases, the other metrics indicated a much more positive result than the MCC score showed.</p>
+</div>
+<div class="post-footer">
+  <div class="display-left">
+    <h2 class="post-footer-cta">
+      Hi there!
+      <a href="../" title="Home">Browse</a>
+      and subscribe to the
+      <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
+      for more content.
+    </h2>
+  </div>
+  <div class="display-right text-align-right post-footer-copyright">
+    <h4>
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2017</span> David Lettier
+    </h4>
+  </div>
+</div>
+
+    </div>
+    <div class="share-toolbox addthis_sharing_toolbox"></div>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4fc2bc7a00a9352b"></script>
+    <script>
+      (function(i,s,o,g,r,a,m){
+        i.GoogleAnalyticsObject = r;
+        i[r] = i[r] || function () { (i[r].q = i[r].q || []).push(arguments); };
+        i[r].l=1*new Date();
+        a=s.createElement(o);
+        m=s.getElementsByTagName(o)[0];
+        a.async=1;
+        a.src=g;
+        m.parentNode.insertBefore(a,m);
+      })(
+        window,
+        document,
+        'script',
+        '//www.google-analytics.com/analytics.js',
+        'ga'
+      );
+      ga('create', 'UA-34323684-2', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </body>
+</html>

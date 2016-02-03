@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta property="og:site_name" content="Lettier">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="k-Nearest Neighbors from Scratch by David Lettier">
+    <meta property="og:image" content="https://lettier.github.io/images/2016-06-10-k-nearest-neighbors-from-scratch/jumbotron_image.png">
+    <meta property="og:url" content="https://lettier.github.io/posts/2016-06-10-k-nearest-neighbors-from-scratch.html">
+    <meta property="og:description" content="Using JavaScript, we implement the k-Nearest Neighbors algorithm from the bottom up.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="David Lettier">
+    <meta name="description" content="Using JavaScript, we implement the k-Nearest Neighbors algorithm from the bottom up.">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/pandoc.css">
+    <link rel="stylesheet" type="text/css" href="../css/default.css">
+    <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
+    
+      
+        <title>k-Nearest Neighbors from Scratch by David Lettier</title>
+      
+    
+  </head>
+  <body>
+    <div id="top"></div>
+    <div class="nav-bar-container nav-bar-background">
+      <div class="nav-bar-buttons-container">
+        <a href="../" title="Home">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-home nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="../rss.xml" title="RSS" type="application/rss+xml" target="_blank">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-rss nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="http://www.lettier.com/" title="Lettier.com">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <img src="../images/logo.svg" width="30" height="30" alt="Lettier.com" class="lettier-icon-img">
+            </div>
+          </div>
+        </a>
+        <a href="https://www.github.com/lettier" title="GitHub">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-github nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.linkedin.com/in/lettier" title="LinkedIn">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-linkedin nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.hackerrank.com/lettier" title="HackerRank">
+          <div class="nav-bar-button-container nav-button-container-second-last">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-trophy nav-bar-icon nav-bar-icon-second-last"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.behance.net/dlettier" title="Behance">
+          <div class="nav-bar-button-container nav-bar-button-container-last">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-behance nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="jumbotron">
+      <div class="absolute-top jumbotron jumbotron-background-image" style="background-image: url('/images/2016-06-10-k-nearest-neighbors-from-scratch/jumbotron_image.png');">
+      </div>
+    </div>
+    <div class="container jumbotron-text-position-container">
+      <div class="jumbotron-text-width-container">
+        <h1 class="jumbotron-text jumbotron-text-background">
+          
+            k-Nearest Neighbors from Scratch
+          
+          <span class="title-cursor">|</span>
+        </h1>
+      </div>
+    </div>
+    <div class="container content-container">
+      <div class="post-body">
+  <!--https://pixabay.com/en/tulips-flowers-yellow-beautiful-15155/-->
+<h1 id="demo-and-codebase">Demo and Codebase</h1>
+<p>If you would like to play with the k-Nearest Neighbors algorithm in your browser, try out the visually interactive <a href="http://www.lettier.com/knearestneighbors">demo</a>. All of the code for the demo is hosted on <a href="https://github.com/lettier/interactiveknn">GitHub</a>. Stars are always appreciated.</p>
+<h1 id="the-scenario">The Scenario</h1>
+<p>Say you have a garden that is host to many different kinds of plants. Each plant’s location in the garden is based on two of its features. The west to east direction of the garden corresponds to the diameter of the plant’s flower while the south to north direction relates to the length of the plant’s leaf. Each plant in the garden has been carefully labeled with a small tag stuck in the dirt located near its base.</p>
+<div class="figure">
+<img src="../images/2016-06-10-k-nearest-neighbors-from-scratch/garden.jpg" alt="Your garden." class="post-img post-img-fill" />
+<p class="caption">Your garden.</p>
+</div>
+<p>Recently you ordered a large truck load of plants in order to fill out your garden. However, after having received all of these new plants, you find none are labeled. You quickly measure each plant’s flower diameter and leaf length. With these two numbers per plant, you place them in your garden at their appropriate coordinates.</p>
+<p>The only problem is, none of these new plants have labels and they look similar to two or more nearby existing plants. You cannot just leave them unlabeled and so you resort to using the k-Nearest Neighbors classification algorithm.</p>
+<h1 id="n-by-u-distances">N by U Distances</h1>
+<p>The first thing you do is figure out how far away each unlabeled plant is to each labeled plant. After drawing out a large table on your notepad–where the columns are the unknown plants and the rows are the known plants–you fill in each cell with the euclidean distance. For example, the distance between <code>U1</code> (unknown) and <code>N1</code> (known).</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">     <span class="op">|====|====|====|====|====</span>
+     <span class="op">|</span> U1 <span class="op">|</span> U2 <span class="op">|</span> U3 <span class="op">|</span> U4 <span class="op">|</span> ...
+<span class="op">|====|----|----|----|----|----</span>
+<span class="op">|</span> N1 <span class="op">|</span>  <span class="dv">3</span> <span class="op">|</span>  <span class="dv">1</span> <span class="op">|</span>  <span class="dv">3</span> <span class="op">|</span>  <span class="dv">6</span> <span class="op">|</span> ...
+<span class="op">|----|----|----|----|----|----</span>
+<span class="op">|</span> N2 <span class="op">|</span>
+<span class="op">|----|</span>
+<span class="op">|</span> N3 <span class="op">|</span>       ...
+<span class="op">|----|</span>
+<span class="op">|</span> .  <span class="op">|</span>
+  .
+  .</code></pre></div>
+<p>In the interactive demo, the code looks like this:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">KNN</span>.<span class="va">prototype</span>.<span class="at">_distances</span> <span class="op">=</span> <span class="kw">function</span> () <span class="op">{</span>
+  <span class="kw">this</span>.<span class="va">currentDot</span>.<span class="at">distances</span> <span class="op">=</span> <span class="va">fjs</span>.<span class="at">map</span>(
+    <span class="kw">function</span> (knownDot) <span class="op">{</span>
+      <span class="cf">return</span> [
+        <span class="kw">this</span>.<span class="va">distanceCalculator</span>.<span class="at">distance</span>(
+          knownDot<span class="op">,</span>
+          <span class="kw">this</span>.<span class="at">currentDot</span>
+        )<span class="op">,</span>
+        knownDot
+      ]<span class="op">;</span>
+    <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)<span class="op">,</span>
+    <span class="kw">this</span>.<span class="at">knownDots</span>
+  )<span class="op">;</span>
+<span class="op">};</span></code></pre></div>
+<p>We map over all of the known dots with a function that takes a known dot and returns the distance between it and the unknown current dot. What we end up with is an array–the same size as the known dots array–where each element is a distance.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">KNN</span>.<span class="va">prototype</span>.<span class="at">_setUpCycle</span> <span class="op">=</span> <span class="kw">function</span> () <span class="op">{</span>
+  <span class="kw">this</span>.<span class="at">currentDot</span> <span class="op">=</span> <span class="va">fjs</span>.<span class="at">first</span>(
+    <span class="st">&quot;x =&gt; true&quot;</span><span class="op">,</span>
+    <span class="kw">this</span>.<span class="at">unknownDots</span>
+  )<span class="op">;</span>
+
+  <span class="cf">if</span> (<span class="op">!</span><span class="kw">this</span>.<span class="at">currentDot</span>) <span class="op">{</span><span class="cf">return</span> <span class="kw">false</span><span class="op">;}</span>
+
+  <span class="kw">this</span>.<span class="at">unknownDots</span> <span class="op">=</span> <span class="va">fjs</span>.<span class="at">select</span>(
+    <span class="st">&quot;x =&gt; x.id !== &quot;</span> <span class="op">+</span> <span class="kw">this</span>.<span class="va">currentDot</span>.<span class="at">id</span><span class="op">,</span>
+    <span class="kw">this</span>.<span class="at">unknownDots</span>
+  )<span class="op">;</span>
+
+  <span class="cf">return</span> <span class="kw">true</span><span class="op">;</span>
+<span class="op">};</span></code></pre></div>
+<p>We do this for each unknown dot until we know the distances between each unknown dot and known dots. It is here that we are setting up the next “column” where we get the next unknown dot and set it as the current dot.</p>
+<h1 id="choosing-k">Choosing K</h1>
+<p>At this point you run into a bit of a problem–you are not sure what to choose for k.</p>
+<blockquote>
+The best choice of k depends upon the data; generally, larger values of k reduce the effect of noise on the classification, but make boundaries between classes less distinct. A good k can be selected by various heuristic techniques (see hyperparameter optimization). The special case where the class is predicted to be the class of the closest training sample (i.e. when k = 1) is called the nearest neighbor algorithm.
+<footer>
+<a href="https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm">k-Nearest Neighbors, Wikipedia</a>
+</footer>
+</blockquote>
+<p>If you choose k to be the number of all known plants, then each unknown plant will just be labeled with the most frequent (the mode) label in your garden. And obviously, if you set k to zero, then no unknown plant gets labeled. Since the sun is going down soon you decide to go with three and move on.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">GUI</span>.<span class="va">prototype</span>.<span class="at">init</span> <span class="op">=</span> <span class="kw">function</span> (params) <span class="op">{</span>
+  <span class="kw">var</span> application <span class="op">=</span> <span class="va">params</span>.<span class="at">application</span><span class="op">;</span>
+
+  <span class="kw">this</span>.<span class="at">datGUI</span> <span class="op">=</span> <span class="kw">new</span> <span class="va">dat</span>.<span class="at">GUI</span>()<span class="op">;</span>
+  <span class="kw">this</span>.<span class="va">datGUI</span>.<span class="at">add</span>(<span class="va">application</span>.<span class="at">kNN</span><span class="op">,</span> <span class="st">'k'</span>).<span class="at">min</span>(<span class="dv">1</span>).<span class="at">max</span>(<span class="dv">20</span>).<span class="at">step</span>(<span class="dv">1</span>).<span class="at">listen</span>()<span class="op">;</span>
+  <span class="co">// ...</span>
+<span class="op">};</span></code></pre></div>
+<p>In the demo we do not have this problem as we let the user select <code>k</code> between one and 20.</p>
+<h1 id="sorting-the-distances">Sorting the Distances</h1>
+<p>Now that you know how far each unknown to known plant is, you tediously make a copy of each U column. Before you copy down each U column, you sort its rows from smallest to largest.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">     <span class="op">|====|</span>      <span class="op">|====|</span>      <span class="op">|====|</span>          <span class="op">|====|</span>
+     <span class="op">|</span> U1 <span class="op">|</span>      <span class="op">|</span> U2 <span class="op">|</span>      <span class="op">|</span> U3 <span class="op">|</span>          <span class="op">|</span> U<span class="op">*</span> <span class="op">|</span>
+<span class="op">|====|====|</span> <span class="op">|====|====|</span> <span class="op">|====|====|</span>     <span class="op">|====|====|</span>
+<span class="op">|</span> N1 <span class="op">|</span>  <span class="dv">3</span> <span class="op">|</span> <span class="op">|</span> N7 <span class="op">|</span>  <span class="dv">1</span> <span class="op">|</span> <span class="op">|</span> N8 <span class="op">|</span>  <span class="dv">3</span> <span class="op">|</span>     <span class="op">|</span> N<span class="op">*</span> <span class="op">|</span>  <span class="op">*</span> <span class="op">|</span>
+<span class="op">|----|----|</span> <span class="op">|----|----|</span> <span class="op">|----|----|</span>     <span class="op">|----|----|</span>
+<span class="op">|</span> N2 <span class="op">|</span>  <span class="dv">6</span> <span class="op">|</span> <span class="op">|</span> N1 <span class="op">|</span>  <span class="dv">5</span> <span class="op">|</span> <span class="op">|</span> N9 <span class="op">|</span>  <span class="dv">9</span> <span class="op">|</span> ... <span class="op">|</span> N<span class="op">*</span> <span class="op">|</span>  <span class="op">*</span> <span class="op">|</span>
+<span class="op">|----|----|</span> <span class="op">|----|----|</span> <span class="op">|----|----|</span>     <span class="op">|----|----|</span>
+   . <span class="op">|</span>  . <span class="op">|</span> <span class="op">|</span>  . <span class="op">|</span>  . <span class="op">|</span> <span class="op">|</span>  . <span class="op">|</span>  . <span class="op">|</span>     <span class="op">|</span>  . <span class="op">|</span>  . <span class="op">|</span>
+   . <span class="op">|</span>  . <span class="op">|</span> <span class="op">|</span>  . <span class="op">|</span>  . <span class="op">|</span> <span class="op">|</span>  . <span class="op">|</span>  . <span class="op">|</span>     <span class="op">|</span>  . <span class="op">|</span>  . <span class="op">|</span>
+   . <span class="op">|</span>  . <span class="op">|</span> <span class="op">|</span>  . <span class="op">|</span>  . <span class="op">|</span> <span class="op">|</span>  . <span class="op">|</span>  . <span class="op">|</span>     <span class="op">|</span>  . <span class="op">|</span>  . <span class="op">|</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">KNN</span>.<span class="va">prototype</span>.<span class="at">_sortDistances</span> <span class="op">=</span> <span class="kw">function</span> () <span class="op">{</span>
+  <span class="kw">this</span>.<span class="va">currentDot</span>.<span class="va">distances</span>.<span class="at">sort</span>(<span class="kw">function</span> (a<span class="op">,</span> b) <span class="op">{</span>
+    <span class="cf">return</span> a[<span class="dv">0</span>] <span class="op">-</span> b[<span class="dv">0</span>]<span class="op">;</span>
+  <span class="op">}</span>)<span class="op">;</span>
+<span class="op">};</span></code></pre></div>
+<p>For each current unknown dot, we sort the distances in ascending order.</p>
+<h1 id="the-nearest-neighbors">The Nearest Neighbors</h1>
+<p>The distances have been calculated and, for each unknown plant, you sorted the distances from smallest to largest. Looking at each individual unknown plant’s list of distances, you now take the first k distances (remember you decided on k being three). These k distances are the k-Nearest Neighbors for any given U unknown plant.</p>
+<div class="figure">
+<img src="../images/2016-06-10-k-nearest-neighbors-from-scratch/knn_flower_pots.svg" alt="Selecting the three k-Nearest Neighbors." class="post-img post-img-fill" />
+<p class="caption">Selecting the three k-Nearest Neighbors.</p>
+</div>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">KNN</span>.<span class="va">prototype</span>.<span class="at">_kNearestNeighbors</span> <span class="op">=</span> <span class="kw">function</span> () <span class="op">{</span>
+  <span class="kw">this</span>.<span class="va">currentDot</span>.<span class="at">kNearestNeighbors</span> <span class="op">=</span> <span class="kw">this</span>.<span class="va">currentDot</span>.<span class="va">distances</span>.<span class="at">slice</span>(
+    <span class="dv">0</span><span class="op">,</span>
+    <span class="kw">this</span>.<span class="at">k</span>
+  )<span class="op">;</span>
+<span class="op">};</span></code></pre></div>
+<p>After we have sorted the distances, we merely slice out the <code>k</code> smallest. These become the <code>currentDot</code>’s k-Nearest Neighbors.</p>
+<h1 id="adding-up-the-votes">Adding up the Votes</h1>
+<p>Each unknown plant now has its k-Nearest Neighbors but you still have to determine the plant type. To do this you count up how many k-Nearest Neighbors or known plants fall into each unique plant type. In other words, among U unknown plant’s k-Nearest Neighbors, you are looking for the <a href="https://www.mathsisfun.com/mode.html">mode</a>.</p>
+<p>For example, take your <code>U1</code> list:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="op">|============|</span>    <span class="op">|====|</span>
+<span class="op">|</span> Type       <span class="op">|</span>    <span class="op">|</span> U1 <span class="op">|</span>
+<span class="op">|============|====|====|</span> <span class="op">--</span>
+<span class="op">|</span> Raspberry  <span class="op">|</span> N1 <span class="op">|</span>  <span class="dv">3</span> <span class="op">|</span>  <span class="op">|</span>
+<span class="op">|------------|----|----|</span>  <span class="op">|</span>
+<span class="op">|</span> Raspberry  <span class="op">|</span> N2 <span class="op">|</span>  <span class="dv">6</span> <span class="op">|</span>  <span class="op">|</span> k<span class="op">-</span>Nearest Neighbors
+<span class="op">|------------|----|----|</span>  <span class="op">|</span>
+<span class="op">|</span> Blackberry <span class="op">|</span> N4 <span class="op">|</span>  <span class="dv">7</span> <span class="op">|</span>  <span class="op">|</span>
+<span class="op">|------------|----|----|</span> <span class="op">--</span>
+<span class="op">|</span> Strawberry <span class="op">|</span> N7 <span class="op">|</span>  <span class="dv">8</span> <span class="op">|</span>
+<span class="op">|------------|----|----|</span>
+<span class="op">|</span> Blackberry <span class="op">|</span> N9 <span class="op">|</span>  <span class="dv">9</span> <span class="op">|</span>
+<span class="op">|------------|----|----|</span>
+     .         .    .
+     .         .    .
+     .         .    .</code></pre></div>
+<p>Looking at the first three distances we have: <code>Raspberry: 2</code> and <code>Blackberry: 1</code>. Here the keys are <code>Raspberry</code> and <code>Blackberry</code> and the values are <code>2</code> and <code>1</code> respectively.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">KNN</span>.<span class="va">prototype</span>.<span class="at">_classsByVote</span> <span class="op">=</span> <span class="kw">function</span> () <span class="op">{</span>
+  <span class="kw">var</span> dot <span class="op">=</span> <span class="kw">null</span><span class="op">;</span>
+  <span class="kw">var</span> classs <span class="op">=</span> <span class="kw">null</span><span class="op">;</span>
+  <span class="kw">var</span> classsCount <span class="op">=</span> <span class="op">{};</span>
+
+  <span class="va">fjs</span>.<span class="at">each</span>(<span class="kw">function</span> (kNearestNeighbor) <span class="op">{</span>
+    <span class="kw">var</span> classs <span class="op">=</span> kNearestNeighbor[<span class="dv">1</span>].<span class="at">classs</span><span class="op">;</span>
+
+    classsCount[classs] <span class="op">=</span> classsCount[classs] <span class="op">||</span> <span class="dv">0</span><span class="op">;</span>
+    classsCount[classs] <span class="op">+=</span> <span class="dv">1</span><span class="op">;</span>
+  <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)<span class="op">,</span> <span class="kw">this</span>.<span class="va">currentDot</span>.<span class="at">kNearestNeighbors</span>)<span class="op">;</span>
+
+  <span class="co">// ...</span></code></pre></div>
+<p>Going through each <code>kNearestNeighbors</code> of the <code>currentDot</code>, we count how many times we see a unique <code>classs</code> (the unique colors of the dots in the left sidebar).</p>
+<h1 id="the-most-votes-win">The Most Votes Win</h1>
+<p>Taking these type counts, you sort them from largest to smallest. To determine the type of the unknown plant, you take the most counted type. For the case of <code>U1</code>, you conclude that it is a <code>Raspberry</code> plant. After doing this for each unknown plant, you can finally label each.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">  <span class="co">// ...</span>
+
+  classs <span class="op">=</span> <span class="va">fjs</span>.<span class="at">first</span>(
+    <span class="st">&quot;x =&gt; true&quot;</span><span class="op">,</span>
+    <span class="va">fjs</span>.<span class="at">best</span>(<span class="kw">function</span> (a<span class="op">,</span> b) <span class="op">{</span>
+      <span class="cf">return</span> a[<span class="dv">1</span>] <span class="op">&gt;</span> b[<span class="dv">1</span>]<span class="op">;</span>
+    <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)<span class="op">,</span> <span class="va">fjs</span>.<span class="at">toArray</span>(classsCount))
+  )<span class="op">;</span>
+
+  dot <span class="op">=</span> <span class="kw">this</span>.<span class="at">currentDot</span><span class="op">;</span>
+
+  <span class="va">PubSub</span>.<span class="at">publish</span>(
+    <span class="st">&quot;classified&quot;</span><span class="op">,</span>
+    <span class="op">{</span>
+      <span class="dt">dot</span><span class="op">:</span> dot<span class="op">,</span>
+      <span class="dt">classs</span><span class="op">:</span> classs
+    <span class="op">}</span>
+  )<span class="op">;</span>
+}<span class="op">;</span></code></pre></div>
+<p>Taking the <code>classsCount</code> object (<code>{yellow: 3, blue: 2, ...}</code>), we turn it into an array of arrays (<code>[[&quot;yellow&quot;, 3],</code> <code>[&quot;blue&quot;, 2], ...]</code>). To determine the <code>classs</code> (color type) of the current dot, we find the <code>best</code>/max or largest count in the array of arrays. The <code>best</code> function will return say <code>[&quot;yellow&quot;, 3]</code> and the <code>first</code> function will return just <code>&quot;yellow&quot;</code>. With the current dot classified, we publish a <code>classified</code> message that will be consumed elsewhere in the demo.</p>
+<h1 id="putting-it-all-together">Putting it all Together</h1>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">KNN</span>.<span class="va">prototype</span>.<span class="at">_cycle</span> <span class="op">=</span> <span class="kw">function</span> () <span class="op">{</span>
+  <span class="kw">this</span>.<span class="at">_distances</span>()<span class="op">;</span>
+  <span class="kw">this</span>.<span class="at">_sortDistances</span>()<span class="op">;</span>
+  <span class="kw">this</span>.<span class="at">_kNearestNeighbors</span>()<span class="op">;</span>
+  <span class="kw">this</span>.<span class="at">_classsByVote</span>()<span class="op">;</span>
+
+  <span class="cf">if</span> (<span class="kw">this</span>.<span class="va">unknownDots</span>.<span class="at">length</span> <span class="op">&gt;</span> <span class="dv">0</span>) <span class="op">{</span>
+    <span class="cf">if</span> (<span class="kw">this</span>.<span class="at">_setUpCycle</span>()) <span class="op">{</span>
+      <span class="va">window</span>.<span class="at">requestAnimationFrame</span>(<span class="kw">this</span>.<span class="va">_cycle</span>.<span class="at">bind</span>(<span class="kw">this</span>))<span class="op">;</span>
+    <span class="op">}</span>
+  <span class="op">}</span>
+<span class="op">};</span></code></pre></div>
+<p>The first step is to compute all of the needed distances between classified and unclassified data points. Next, for each unclassified data point, you sort its distances in ascending order. These sorted distances from 0 up to but not including k become the unclassified data point’s k-Nearest Neighbors. Looking at only a data point’s k-Nearest Neighbors, you count how many times you see each known class type. Once counted, you sort the class types by their counts and take the class type with the biggest count. This most-seen-class type becomes the class type for your unclassified data point.</p>
+<h1 id="recap">Recap</h1>
+<p>We discussed the details of the k-Nearest Neighbors algorithm using a fictitious story about classifying unknown plants. Along the way, we looked at how each step is implemented in the <a href="http://www.lettier.com/knearestneighbors/">interactive demo</a>.</p>
+<p>Now that you have seen how a supervised classification algorithm works, take a look at <a href="../posts/2016-04-24-k-means-from-scratch.html">K-Means from Scratch</a>–an unsupervised clustering method for unlabeled data.</p>
+</div>
+<div class="post-footer">
+  <div class="display-left">
+    <h2 class="post-footer-cta">
+      Hi there!
+      <a href="../" title="Home">Browse</a>
+      and subscribe to the
+      <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
+      for more content.
+    </h2>
+  </div>
+  <div class="display-right text-align-right post-footer-copyright">
+    <h4>
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2017</span> David Lettier
+    </h4>
+  </div>
+</div>
+
+    </div>
+    <div class="share-toolbox addthis_sharing_toolbox"></div>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4fc2bc7a00a9352b"></script>
+    <script>
+      (function(i,s,o,g,r,a,m){
+        i.GoogleAnalyticsObject = r;
+        i[r] = i[r] || function () { (i[r].q = i[r].q || []).push(arguments); };
+        i[r].l=1*new Date();
+        a=s.createElement(o);
+        m=s.getElementsByTagName(o)[0];
+        a.async=1;
+        a.src=g;
+        m.parentNode.insertBefore(a,m);
+      })(
+        window,
+        document,
+        'script',
+        '//www.google-analytics.com/analytics.js',
+        'ga'
+      );
+      ga('create', 'UA-34323684-2', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </body>
+</html>

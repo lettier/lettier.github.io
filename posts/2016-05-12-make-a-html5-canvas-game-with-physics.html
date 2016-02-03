@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta property="og:site_name" content="Lettier">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Make a HTML5 Canvas Game with Physics by David Lettier">
+    <meta property="og:image" content="https://lettier.github.io/images/2016-05-12-make-a-html5-canvas-game-with-physics/jumbotron_image.jpg">
+    <meta property="og:url" content="https://lettier.github.io/posts/2016-05-12-make-a-html5-canvas-game-with-physics.html">
+    <meta property="og:description" content="Using FuntionalJS, PhysicsJS, PubSubJS, and EaselJS, we develop a HTML5 canvas game called Dubul Rubul.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="David Lettier">
+    <meta name="description" content="Using FuntionalJS, PhysicsJS, PubSubJS, and EaselJS, we develop a HTML5 canvas game called Dubul Rubul.">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/pandoc.css">
+    <link rel="stylesheet" type="text/css" href="../css/default.css">
+    <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
+    
+      
+        <title>Make a HTML5 Canvas Game with Physics by David Lettier</title>
+      
+    
+  </head>
+  <body>
+    <div id="top"></div>
+    <div class="nav-bar-container nav-bar-background">
+      <div class="nav-bar-buttons-container">
+        <a href="../" title="Home">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-home nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="../rss.xml" title="RSS" type="application/rss+xml" target="_blank">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-rss nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="http://www.lettier.com/" title="Lettier.com">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <img src="../images/logo.svg" width="30" height="30" alt="Lettier.com" class="lettier-icon-img">
+            </div>
+          </div>
+        </a>
+        <a href="https://www.github.com/lettier" title="GitHub">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-github nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.linkedin.com/in/lettier" title="LinkedIn">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-linkedin nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.hackerrank.com/lettier" title="HackerRank">
+          <div class="nav-bar-button-container nav-button-container-second-last">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-trophy nav-bar-icon nav-bar-icon-second-last"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.behance.net/dlettier" title="Behance">
+          <div class="nav-bar-button-container nav-bar-button-container-last">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-behance nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="jumbotron">
+      <div class="absolute-top jumbotron jumbotron-background-image" style="background-image: url('/images/2016-05-12-make-a-html5-canvas-game-with-physics/jumbotron_image.jpg');">
+      </div>
+    </div>
+    <div class="container jumbotron-text-position-container">
+      <div class="jumbotron-text-width-container">
+        <h1 class="jumbotron-text jumbotron-text-background">
+          
+            Make a HTML5 Canvas Game with Physics
+          
+          <span class="title-cursor">|</span>
+        </h1>
+      </div>
+    </div>
+    <div class="container content-container">
+      <div class="post-body">
+  <h1 id="dubul-rubul">Dubul Rubul</h1>
+<div class="figure">
+<img src="../images/2016-05-12-make-a-html5-canvas-game-with-physics/dubulrubul.gif" class="post-img post-img-small post-img-limit" />
+
+</div>
+<p>The game we will be building is inspired by <a href="https://en.wikipedia.org/wiki/Breakout_%28video_game%29">Breakout</a>. There are major differences. The blocks move realistically and the player competes opposite side of the computer to smash the most blocks. Certain blocks give more points then others and hitting the walls or the other player’s ball gives a point the other side.</p>
+<p>The entire project can be found on <a href="https://www.github.com/lettier/dubulrubul">GitHub</a> and a playable version is hosted on <a href="http://www.lettier.com/projects/dubulrubul">Lettier.com</a>. If for any reason the hosted version is down, you can clone the repository, <code>cd</code> into <code>dist</code>, and open <code>index.html</code> in your browser.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="fu">git</span> clone git@github.com:lettier/dubulrubul.git
+<span class="bu">cd</span> dubulrubul/dist
+<span class="fu">xdg-open</span> index.html <span class="co"># Or open on Mac OS X.</span></code></pre></div>
+<p>If you find the game enjoyable, feel free to <i class="fa fa-star" aria-hidden="true"></i> the project on <a href="https://github.com/lettier/dubulrubul/stargazers">GitHub</a>.</p>
+<h2 id="dependencies">Dependencies</h2>
+<p>To get started, will we need to acquire our needed dependencies:</p>
+<ul>
+<li><a href="http://wellcaffeinated.net/PhysicsJS/">PhysicsJS</a> - Models the world gravity and all of the objects’ mass, velocity, surface friction, and collisions inside the game universe</li>
+<li><a href="http://functionaljs.com/">FunctionalJS</a> - Useful for mapping, reducing, and filtering objects as well as currying, composing, and creating anonymous functions</li>
+<li><a href="http://www.createjs.com/easeljs">EaselJS</a> - Renders all of the onscreen elements to our canvas</li>
+<li><a href="https://github.com/mroderick/PubSubJS">PubSubJS</a> - Provides asynchronous message passing between the components</li>
+</ul>
+<p>We will also need <a href="https://github.com/creationix/nvm">NVM</a>. Make sure to install a version of Node <code>&gt;= v4.0.0</code>.</p>
+<h2 id="components">Components</h2>
+<p>Dubul Rubul consists of multiple components that handle the various functionalities of the game.</p>
+<ul>
+<li><code>application.js</code> - All of the initialization, update, and reset logic</li>
+<li><code>ball.js</code> - The ball model keeping track of the physics, dimensions, and the color</li>
+<li><code>block.js</code> - Similar to the ball model but for the blocks onscreen</li>
+<li><code>canvas.js</code> - All of the draw and physics logic governing over the <code>CanvasElement</code>s onscreen</li>
+<li><code>canvasElement.js</code> - The parent model which <code>Ball</code>, <code>Block</code>, and <code>Paddle</code> inherit from</li>
+<li><code>computerPaddleControls.js</code> - The logic controlling the computer’s paddle seen to the left</li>
+<li><code>init.js</code> - Creates a new <code>Application</code> and hides the title screen</li>
+<li><code>paddle.js</code> - The paddle model keeping track of the paddle’s physics, shape, and color</li>
+<li><code>paddleControls.js</code> - The parent object to <code>ComputerPaddleControls</code> and <code>PlayerPaddleControls</code></li>
+<li><code>playerPaddleControls.js</code> - The logic monitoring the player’s input and updating their onscreen paddle</li>
+<li><code>referee.js</code> - Handles the business logic of what actions receive what points</li>
+<li><code>scoreBoard.js</code> - Updates and resets the onscreen scores displayed at the top of the screen</li>
+<li><code>update.js</code> - The main game loop</li>
+<li><code>util.js</code> - Various helper methods DRY-ing up the code base</li>
+</ul>
+<h2 id="game-arena">Game Arena</h2>
+<div class="figure">
+<img src="../images/2016-05-12-make-a-html5-canvas-game-with-physics/canvas.jpg" alt="The game arena with scoreboard." class="post-img post-img-fill" />
+<p class="caption">The game arena with scoreboard.</p>
+</div>
+<p>We will place <a href="https://github.com/lettier/dubulrubul/blob/master/src/index.html#L45">two document divisions</a> at the top of the screen to display the computer’s and player’s scores. The other parts of the arena are the two canvases. The <a href="https://github.com/lettier/dubulrubul/blob/master/src/index.html#L41">first canvas</a> is used to render/draw/view the physics calculations. This is useful for debugging but is not normally shown. The <a href="https://github.com/lettier/dubulrubul/blob/master/src/index.html#L43">second canvas</a> displays all of the <code>canvasElement</code>s or the game’s entities. Upon initialization, the canvases are re-sized to fit the entire screen. If the window is ever re-sized, the game arena’s size is <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/application.js#L69">updated</a> to match.</p>
+<div class="figure">
+<img src="../images/2016-05-12-make-a-html5-canvas-game-with-physics/physics_canvas.jpg" alt="The physics canvas." class="post-img post-img-fill" />
+<p class="caption">The physics canvas.</p>
+</div>
+<h2 id="canvas-elements">Canvas Elements</h2>
+<p>The game consists of three models: the <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/ball.js">ball</a>, the <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/block.js">block</a>, and the <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/paddle.js">paddle</a>. To avoid duplication of common properties, they all inherit from the <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/canvasElement.js">CanvasElement</a> object.</p>
+<h3 id="ball">Ball</h3>
+<p>The ball has two constants: <code>HEIGHT</code> and <code>WIDTH</code>. It has a <code>x</code> and <code>y</code> <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/canvasElement.js#L12">2D position</a> in pixels and a <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/canvasElement.js#L15">rotation</a> in radians. Since the ball is uniform in shape and color, the rotation cannot be seen unless the physics are drawn.</p>
+<h3 id="block">Block</h3>
+<p>The block is similar to the ball but defines logic around <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/application.js#L157">prizes</a>. Prizes are blocks that are colored corresponding to either the left or right side. If one side smashes a prize block with its color, it gets extra points. If another side smashes a prize block for the opposite side, the opposite gets the extra points. The goal for the player is to avoid the computer’s prize blocks, hit its own prize blocks, and hit as many neutral gray blocks as they can.</p>
+<h3 id="paddle">Paddle</h3>
+<p>The paddles are used to hit the ball back and forth across the arena. They can spin, helping to aim or deflect the ball where the player or computer would like them to go. To spin them, the player moves their mouse over the screen from left to right.</p>
+<div class="figure">
+<img src="../images/2016-05-12-make-a-html5-canvas-game-with-physics/paddle_action.gif" class="post-img post-img-small post-img-limit" />
+
+</div>
+<h2 id="initialization">Initialization</h2>
+<p>Everything starts with the <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/init.js#L6">init</a> function which is called once the player presses the start button. This creates a new application and calls its <code>init</code> function. Once the application initializes, it hides the title <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/init.js#L17">overlay</a>.</p>
+<p>The application initialization setups all of the game components. It creates the canvas, paddles, balls, and blocks. For each object created, it calls the object’s <code>init</code> function.</p>
+<div class="figure">
+<img src="../images/2016-05-12-make-a-html5-canvas-game-with-physics/block_grid.jpg" alt="The dynamic block grid." class="post-img post-img-fill" />
+<p class="caption">The dynamic block grid.</p>
+</div>
+<p>The blocks are <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/application.js#L145">dynamically created</a>. They stretch from the top to bottom of the screen and take up about 15% of the center screen real estate. Once they are hit by the balls, the blocks topple over.</p>
+<p>With all of the objects setup, the application wires up all of the asynchronous events and <code>PubSubJS</code> messages. When another object publishes the <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/application.js#L60">game over</a> message, it calls the <code>reset</code> function. The major events it listens for are <code>resize</code> and <code>keyup</code>.</p>
+<h2 id="the-game-loop">The Game Loop</h2>
+<div class="figure">
+<img src="../images/2016-05-12-make-a-html5-canvas-game-with-physics/game_loop.png" alt="The game loop." class="post-img post-img-fill" />
+<p class="caption">The game loop.</p>
+</div>
+<p>The <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/application.js#L185">game loop</a> is repeatedly called until a round is over. It is responsible for getting the graphics and physics to update with each new requested animation frame.</p>
+<p>We would like the game animation to play at roughly the same speed no matter what hardware the game is running on. We’ll use <a href="https://www.viget.com/articles/time-based-animation">Time-based Animation</a> to keep the animation fairly consistent across different machines. To do this, we calculate <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/application.js#L205">how long</a> it took to get back to updating the game loop. By passing this <code>delta</code> scalar into <code>canvas.update</code>, any position or rotation update can be scaled by how long it took since <code>delta</code> was last calculated.</p>
+<p>If it is taking no time at all to get back to the <code>update</code> function, the changes in position or rotation will be small. However, if it is taking forever to call <code>update</code> again and again, each change will be scaled up immensely. Another way to think about it is a <a href="https://en.wikipedia.org/wiki/Flip_book">flip book</a>. Picture two flip books where each is an animation of a person running from the left to the right. For the fast flippers, you would give them the flip book with more pages where for each page, the person is updated ever so slightly. For the slow flippers, you would give them the flip book with less pages where each page updates the person at a greater clip. The fast flippers have more pages to get through while the slow flippers have less. If both start at the same time, the animated person running between the two flip books will match.</p>
+<div class="figure">
+<img src="../images/2016-05-12-make-a-html5-canvas-game-with-physics/flip_book.png" alt="The two flip books." class="post-img post-img-fill" />
+<p class="caption">The two flip books.</p>
+</div>
+<h2 id="the-canvas">The Canvas</h2>
+<p>The <code>Canvas</code> object has two main concerns. The first is abstracting the adding, updating, and removal of the game objects for both <code>EaselJS</code> and <code>PhysicsJS</code>. The second major concern is keeping the <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/canvas.js#L32">Stage</a> and <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/canvas.js#L67">world</a> objects in <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/canvas.js#L493">sync</a>.</p>
+<p>For every iteration of <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/canvas.js#L126">update</a>, the <code>Canvas</code> performs three steps. Some <code>canvasElement</code>s are not fully controlled by the physics simulation. For these objects, their x-y coordinates and/or rotation are <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/canvas.js#L473">updated</a> via their <code>world</code> <code>body</code> object. After updating the physics simulation, the <code>world</code> is allowed to advanced one <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/canvas.js#L138">step</a>. This updates all of the physical <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/canvas.js#L525">bodies</a> allowing us to <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/canvas.js#L508">update</a> all of the <code>Stage</code> objects ultimately resulting in the animation you see in the game. With everything updated, we can <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/canvas.js#L148">begin</a> the render process that draws the shapes on the screen.</p>
+<p>The other <code>Canvas</code> concerns are <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/canvas.js#L44">listening</a> for and <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/canvas.js#L570">publishing</a> certain events. These events are consumed or broadcast using <code>PubSubJS</code>. The events listened for are to update the paddles or blocks and to <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/canvas.js#L607">shake</a> the canvas. When received, the HTML canvas is moved up and down every so slightly to give the illusion of the game arena being rattled. The broadcast messages are for the various types of <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/canvas.js#L541">collisions</a>. These will be consumed by the <code>Referee</code> which in turn will determine the computer’s or player’s score update.</p>
+<h2 id="paddle-controls">Paddle Controls</h2>
+<p>The paddle controls allow the player and computer to move their paddle up or down and to rotate it in place.</p>
+<h3 id="computer">Computer</h3>
+<p>This is where we define the AI for the computer paddle. For now the logic is extremely basic–it merely follows the player’s ball. In a later post, we will revisit with a machine learning approach.</p>
+<h3 id="player">Player</h3>
+<p>The player can <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/playerPaddleControls.js#L24">rotate</a> their paddle by moving their mouse from side to side. Moving the mouse <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/playerPaddleControls.js#L15">up or down</a> will also move their paddle up or down.</p>
+<h2 id="scoring">Scoring</h2>
+<p>Most games have some scoring mechanism and Dubul Rubul is no different.</p>
+<h3 id="scoreboard">Scoreboard</h3>
+<p>The <code>Scoreboard</code> object maintains both the green and blue <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/scoreboard.js#L14">div</a> bars at the top of the screen as well as the player’s and computer’s onscreen <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/scoreboard.js#L85">score counts</a>. Typically the <code>Referee</code> will publish a <code>updateScore</code> message which will be <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/scoreboard.js#L22">consumed</a> by the <code>Scoreboard</code> object. Once it receives this message, it <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/scoreboard.js#L56">updates</a> either the computer’s or player’s current score.</p>
+<h3 id="referee">Referee</h3>
+<p>The <code>Referee</code> object handles most of the <a href="https://en.wikipedia.org/wiki/Business_logic">Business Logic</a> or gameplay mechanics. It listens for the <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/referee.js#L32">noMoreBlocks</a> message. Once received, it will publish the <code>gameOver</code> message. This <code>gameOver</code> message will be picked up by the <code>Application</code> object, <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/application.js#L224">resetting</a> the game.</p>
+<p>The <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/referee.js#L44">blockBallHit</a> collision, published by the <code>Canvas</code> object, translates into a point scheme. When the player loses points to the computer, the <code>Referee</code> publishes the <code>shakeCanvas</code> <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/referee.js#L61">message</a>. This provides a visual cue to the player that they are missing out on points.</p>
+<p>The computer or player can lose points to the opposite side if they <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/referee.js#L78">touch</a> the other side’s ball with their own paddle. If the ball <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/referee.js#L96">touches</a> the bounding box, the opposite side earns a point.</p>
+<h1 id="recap">Recap</h1>
+<p>Using <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/canvas.js#L544">functional programming</a>, a HTML5 canvas, a physics simulation, and a publish subscribe message model, we built Dubul Rubul–a video game playable in any modern browser. In future posts we will revisit the computer paddle’s AI and look at adding sound effects for added immersion.</p>
+</div>
+<div class="post-footer">
+  <div class="display-left">
+    <h2 class="post-footer-cta">
+      Hi there!
+      <a href="../" title="Home">Browse</a>
+      and subscribe to the
+      <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
+      for more content.
+    </h2>
+  </div>
+  <div class="display-right text-align-right post-footer-copyright">
+    <h4>
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2017</span> David Lettier
+    </h4>
+  </div>
+</div>
+
+    </div>
+    <div class="share-toolbox addthis_sharing_toolbox"></div>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4fc2bc7a00a9352b"></script>
+    <script>
+      (function(i,s,o,g,r,a,m){
+        i.GoogleAnalyticsObject = r;
+        i[r] = i[r] || function () { (i[r].q = i[r].q || []).push(arguments); };
+        i[r].l=1*new Date();
+        a=s.createElement(o);
+        m=s.getElementsByTagName(o)[0];
+        a.async=1;
+        a.src=g;
+        m.parentNode.insertBefore(a,m);
+      })(
+        window,
+        document,
+        'script',
+        '//www.google-analytics.com/analytics.js',
+        'ga'
+      );
+      ga('create', 'UA-34323684-2', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </body>
+</html>

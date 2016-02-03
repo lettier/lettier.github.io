@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta property="og:site_name" content="Lettier">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Making Movie Monad by David Lettier">
+    <meta property="og:image" content="https://lettier.github.io/images/2016-08-15-making-movie-monad/jumbotron_image.jpg">
+    <meta property="og:url" content="https://lettier.github.io/posts/2016-08-15-making-movie-monad.html">
+    <meta property="og:description" content="Using Haskell's Blaze, Fay, and Clay, we build an Electron desktop video player application.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="David Lettier">
+    <meta name="description" content="Using Haskell's Blaze, Fay, and Clay, we build an Electron desktop video player application.">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/pandoc.css">
+    <link rel="stylesheet" type="text/css" href="../css/default.css">
+    <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
+    
+      
+        <title>Making Movie Monad by David Lettier</title>
+      
+    
+  </head>
+  <body>
+    <div id="top"></div>
+    <div class="nav-bar-container nav-bar-background">
+      <div class="nav-bar-buttons-container">
+        <a href="../" title="Home">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-home nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="../rss.xml" title="RSS" type="application/rss+xml" target="_blank">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-rss nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="http://www.lettier.com/" title="Lettier.com">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <img src="../images/logo.svg" width="30" height="30" alt="Lettier.com" class="lettier-icon-img">
+            </div>
+          </div>
+        </a>
+        <a href="https://www.github.com/lettier" title="GitHub">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-github nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.linkedin.com/in/lettier" title="LinkedIn">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-linkedin nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.hackerrank.com/lettier" title="HackerRank">
+          <div class="nav-bar-button-container nav-button-container-second-last">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-trophy nav-bar-icon nav-bar-icon-second-last"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.behance.net/dlettier" title="Behance">
+          <div class="nav-bar-button-container nav-bar-button-container-last">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-behance nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="jumbotron">
+      <div class="absolute-top jumbotron jumbotron-background-image" style="background-image: url('/images/2016-08-15-making-movie-monad/jumbotron_image.jpg');">
+      </div>
+    </div>
+    <div class="container jumbotron-text-position-container">
+      <div class="jumbotron-text-width-container">
+        <h1 class="jumbotron-text jumbotron-text-background">
+          
+            Making Movie Monad
+          
+          <span class="title-cursor">|</span>
+        </h1>
+      </div>
+    </div>
+    <div class="container content-container">
+      <div class="post-body">
+  <!--https://pixabay.com/en/popcorn-snack-food-cinema-movie-389911/-->
+<h1 id="preview">Preview</h1>
+<p>Below you see the desktop video player we will build called, “Movie Monad.”</p>
+<div class="figure">
+<img src="../images/2016-08-15-making-movie-monad/preview.png" alt="Caminandes and Big Buck Bunny from Blender Cloud." class="post-img post-img-limit post-img-small" />
+<p class="caption">“Caminandes” and “Big Buck Bunny” from <a href="https://cloud.blender.org/open-projects">Blender Cloud</a>.</p>
+</div>
+<p>Under the hood, the application uses the <a href="http://electron.atom.io/">Electron</a> framework which in turn uses <a href="https://www.chromium.org/Home">Chromium</a> and <a href="https://nodejs.org/en/">Node.js</a>. Using only HTML, CSS, and JavaScript, you can use Electron to develop a desktop application. The nice part about Movie Monad, however, is that we will create the HTML, CSS, and JavaScript using Haskell.</p>
+<h1 id="setup">Setup</h1>
+<p>In order to establish our build pipeline, we will need to setup our environment with a few tools, directories, and project files.</p>
+<h2 id="stack">Stack</h2>
+<p><a href="https://github.com/commercialhaskell/stack">Stack</a> will handle all of our Haskell environment needs from installing the compiler to managing our Haskell dependencies. The instructions contain all of the <a href="http://docs.haskellstack.org/en/stable/install_and_upgrade/#installupgrade">installation</a> information you will need.</p>
+<p>For a general Linux installation you could do:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> Downloads
+<span class="fu">wget</span> https://www.stackage.org/stack/linux-x86_64
+<span class="fu">tar</span> xvzf stack-1.1.2-linux-x86_64.tar.gz
+<span class="bu">cd</span> ~
+<span class="bu">echo</span> <span class="st">'export PATH=&quot;$HOME/Downloads/stack-1.1.2-linux-x86_64/:$PATH&quot;'</span> <span class="op">&gt;&gt;</span> .bashrc
+<span class="bu">source</span> .bashrc
+<span class="co"># Or if you use ZSH.</span>
+<span class="bu">echo</span> <span class="st">'export PATH=&quot;$HOME/Downloads/stack-1.1.2-linux-x86_64/:$PATH&quot;'</span> <span class="op">&gt;&gt;</span> .zshrc
+<span class="bu">source</span> .zshrc
+<span class="ex">stack</span></code></pre></div>
+<h3 id="project-directory">Project Directory</h3>
+<p>With Stack installed, we will need to create our project directory.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~
+<span class="fu">mkdir</span> -p movieMonad</code></pre></div>
+<p>We will also need to define some additional directories for our project.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/movieMonad
+<span class="fu">mkdir</span> -p src/html src/css src/js src/electronBoot branding conf dist bin</code></pre></div>
+<p>With the directories in place, create the empty project files.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/movieMonad
+<span class="fu">touch</span> src/html/Main.hs src/css/Main.hs src/js/Main.hs src/electronBoot/Main.hs conf/package.js branding/icon.png makefile</code></pre></div>
+<h3 id="yaml">YAML</h3>
+<p>To use Stack, you will need to define a <code>stack.yaml</code> file in the root of the directory.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/movieMonad
+<span class="fu">touch</span> stack.yaml</code></pre></div>
+<p>Go ahead and open this file with your favorite text editor and copy this information into the <code>stack.yaml</code> file.</p>
+<div class="sourceCode"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="fu">resolver:</span><span class="at"> lts-6.11</span>
+<span class="fu">packages:</span>
+<span class="kw">-</span> <span class="st">'.'</span>
+<span class="fu">extra-deps:</span><span class="at"> </span><span class="kw">[]</span>
+<span class="fu">flags:</span><span class="at"> </span><span class="kw">{}</span>
+<span class="fu">extra-package-dbs:</span><span class="at"> </span><span class="kw">[]</span></code></pre></div>
+<h2 id="cabal">Cabal</h2>
+<p>We will also need an <code>movieMonad.cabal</code> file which Stack will use to build our project. Make sure this file is located in the root of the project.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/movieMonad
+<span class="fu">touch</span> movieMonad.cabal</code></pre></div>
+<p>Go ahead and open this file with your favorite text editor and copy this information into the <code>movieMonad.cabal</code> file.</p>
+<div class="sourceCode"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="fu">name:</span><span class="at">                movieMonad</span>
+<span class="fu">version:</span><span class="at">             0.1.0.0</span>
+<span class="fu">synopsis:</span><span class="at">            Desktop video player.</span>
+<span class="fu">description:</span><span class="at">         Please see README.md</span>
+<span class="fu">homepage:</span><span class="at">            https://github.com/lettier/moviemonad</span>
+<span class="fu">license:</span><span class="at">             Apache</span>
+<span class="fu">license-file:</span><span class="at">        LICENSE</span>
+<span class="fu">author:</span><span class="at">              David Lettier</span>
+<span class="fu">copyright:</span><span class="at">           2016 David Lettier</span>
+<span class="fu">category:</span><span class="at">            Desktop</span>
+<span class="fu">build-type:</span><span class="at">          Simple</span>
+<span class="fu">cabal-version:</span><span class="at">       &gt;=1.10</span>
+
+executable movieMonadCss
+  <span class="fu">hs-source-dirs:</span><span class="at">       src/css</span>
+  <span class="fu">main-is:</span><span class="at">              Main.hs</span>
+  <span class="fu">default-language:</span><span class="at">     Haskell2010</span>
+  <span class="fu">build-depends:</span><span class="at">        base &gt;= 4.7 &amp;&amp; &lt; 5</span>
+                      , clay
+
+executable movieMonadHtml
+  <span class="fu">hs-source-dirs:</span><span class="at">       src/html</span>
+  <span class="fu">main-is:</span><span class="at">              Main.hs</span>
+  <span class="fu">default-language:</span><span class="at">     Haskell2010</span>
+  <span class="fu">build-depends:</span><span class="at">        base &gt;= 4.7 &amp;&amp; &lt; 5</span>
+                      , blaze-html
+
+executable movieMonadJs
+  <span class="fu">hs-source-dirs:</span><span class="at">       src/js</span>
+  <span class="fu">main-is:</span><span class="at">              Main.hs</span>
+  <span class="fu">default-language:</span><span class="at">     Haskell2010</span>
+  <span class="fu">build-depends:</span><span class="at">        base &gt;= 4.7 &amp;&amp; &lt; 5</span>
+                      , cpphs
+                      , fay
+                      , fay-base
+                      , fay-builder
+                      , fay-dom
+                      , fay-jquery
+                      , fay-text
+                      , fay-uri
+                      , hlint
+
+executable movieMonadElectronBoot
+  <span class="fu">hs-source-dirs:</span><span class="at">       src/electronBoot</span>
+  <span class="fu">main-is:</span><span class="at">              Main.hs</span>
+  <span class="fu">default-language:</span><span class="at">     Haskell2010</span>
+  <span class="fu">build-depends:</span><span class="at">        base &gt;= 4.7 &amp;&amp; &lt; 5</span>
+                      , cpphs
+                      , fay
+                      , fay-base
+                      , fay-builder
+                      , fay-dom
+                      , fay-jquery
+                      , fay-text
+                      , fay-uri</code></pre></div>
+<h2 id="nvm">NVM</h2>
+<p>To install Electron we will need <a href="https://nodejs.org/en/">Node.js</a> which we will get via <a href="https://github.com/creationix/nvm">NVM</a>.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/Downloads
+<span class="fu">wget</span> -qO- https://raw.githubusercontent.com/creationix/nvm/v0.31.2/install.sh <span class="kw">|</span> <span class="fu">bash</span>
+<span class="bu">cd</span> ~/movieMonad
+<span class="bu">echo</span> <span class="st">'v4.0.0'</span> <span class="op">&gt;</span> .nvmrc
+<span class="ex">nvm</span> use</code></pre></div>
+<h2 id="electron-and-electron-packager">Electron and Electron Packager</h2>
+<p>We will need Electron and Electron Packager to run and box up Movie Monad for distribution.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/movieMonad
+<span class="ex">nvm</span> use
+<span class="ex">npm</span> install -g electron electron-packager</code></pre></div>
+<h2 id="package.json">Package.json</h2>
+<p>Electron needs a <code>package.json</code> file to run. Copy the following into <code>~/movieMonad/conf/package.json</code>.</p>
+<div class="sourceCode"><pre class="sourceCode json"><code class="sourceCode json"><span class="fu">{</span>
+  <span class="dt">&quot;name&quot;</span>    <span class="fu">:</span> <span class="st">&quot;movieMonad&quot;</span><span class="fu">,</span>
+  <span class="dt">&quot;productName&quot;</span> <span class="fu">:</span> <span class="st">&quot;movieMonad&quot;</span><span class="fu">,</span>
+  <span class="dt">&quot;author&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+    <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;David Lettier&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;http://www.lettier.com/&quot;</span>
+  <span class="fu">},</span>
+  <span class="dt">&quot;version&quot;</span> <span class="fu">:</span> <span class="st">&quot;0.0.0.1&quot;</span><span class="fu">,</span>
+  <span class="dt">&quot;main&quot;</span>    <span class="fu">:</span> <span class="st">&quot;boot.js&quot;</span>
+<span class="fu">}</span></code></pre></div>
+<h2 id="gnu-make">GNU Make</h2>
+<p>To automate our build process, we will use <code>make</code>. If you have ever used NPM scripts, you will be able to use <code>make</code>. Install <code>make</code> for your platform and then put the following in <code>~/movieMonad/makefile</code></p>
+<div class="sourceCode"><pre class="sourceCode makefile"><code class="sourceCode makefile"><span class="co"># David Lettier (C) 2016</span>
+<span class="co"># http://www.lettier.com/</span>
+
+.RECIPEPREFIX <span class="dt">!</span><span class="ch">=</span><span class="st"> ps</span>
+<span class="dt">PROJECT_NAME </span><span class="ch">=</span><span class="st"> movieMonad</span>
+<span class="dt">HASKELL_PACKAGE_SANDBOX </span><span class="ch">=</span><span class="st"> ~/.stack/snapshots/x86_64-linux/lts-6.11/7.10.3/pkgdb/</span>
+<span class="dt">FAY_PACKAGES </span><span class="ch">=</span><span class="st"> fay-jquery,fay-text</span>
+<span class="dt">FAY_CC </span><span class="ch">=</span><span class="st"> HASKELL_PACKAGE_SANDBOX=</span><span class="ch">$(</span><span class="dt">HASKELL_PACKAGE_SANDBOX</span><span class="ch">)</span><span class="st"> fay --package </span><span class="ch">$(</span><span class="dt">FAY_PACKAGES</span><span class="ch">)</span><span class="st"> -p --Wall</span>
+
+<span class="dv">all:</span><span class="dt"> build runElectron</span>
+
+<span class="dv">build:</span><span class="dt"> clean gatherDependencies buildHaskell copyConf copyIcon buildElectronDists</span>
+
+<span class="dv">clean:</span><span class="dt"> cleanDist cleanBin</span>
+
+<span class="dv">cleanDist:</span>
+  mkdir -p dist &amp;&amp; mkdir -p dist_old &amp;&amp; rm -rf dist_old &amp;&amp; mv -f dist dist_old &amp;&amp; mkdir -p dist
+
+<span class="dv">cleanBin:</span>
+  mkdir -p bin &amp;&amp; mkdir -p bin_old &amp;&amp; rm -rf bin_old &amp;&amp; mv -f bin bin_old &amp;&amp; mkdir -p bin
+
+<span class="dv">gatherDependencies:</span><span class="dt"> installStackDependencies downloadJquery</span>
+
+<span class="dv">installStackDependencies:</span>
+  stack install --dependencies-only
+
+<span class="dv">downloadJquery:</span>
+  wget http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js -O dist/jquery.js
+
+<span class="dv">buildHaskell:</span><span class="dt"> buildHtml buildCss buildJs</span>
+
+<span class="dv">buildHtml:</span>
+  stack ghc -- src/html/Main.hs -o bin/<span class="ch">$(</span><span class="dt">PROJECT_NAME</span><span class="ch">)</span>Html &amp;&amp; bin/<span class="ch">$(</span><span class="dt">PROJECT_NAME</span><span class="ch">)</span>Html &gt; dist/index.html
+
+<span class="dv">buildCss:</span>
+  stack ghc -- src/css/Main.hs -o bin/<span class="ch">$(</span><span class="dt">PROJECT_NAME</span><span class="ch">)</span>Css &amp;&amp; bin/<span class="ch">$(</span><span class="dt">PROJECT_NAME</span><span class="ch">)</span>Css &gt; dist/all.css
+
+<span class="dv">buildJs:</span>
+  <span class="ch">$(</span><span class="dt">FAY_CC</span><span class="ch">)</span> -o dist/all.js src/js/Main.hs &amp;&amp; <span class="ch">\</span>
+  <span class="ch">$(</span><span class="dt">FAY_CC</span><span class="ch">)</span> -o dist/boot.js src/electronBoot/Main.hs
+
+<span class="dv">copyIcon:</span>
+  cp branding/icon.png dist/
+
+<span class="dv">copyConf:</span>
+  cp -R conf/. dist/
+
+<span class="dv">buildElectronDists:</span>
+  mkdir -p dist/electronDists/ &amp;&amp; electron-packager dist/ --all --version 0.37.2 --out dist/electronDists
+
+<span class="dv">runElectron:</span>
+  electron dist/</code></pre></div>
+<h2 id="project-directory-structure">Project Directory Structure</h2>
+<p>With our build environment setup, our project directory should look like the following.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">~/movieMonad</span>
+  <span class="ex">src/</span>
+    <span class="ex">html/</span>
+      <span class="ex">Main.hs</span>
+    <span class="ex">css/</span>
+      <span class="ex">Main.hs</span>
+    <span class="ex">js/</span>
+      <span class="ex">Main.hs</span>
+    <span class="ex">electronBoot/</span>
+      <span class="ex">Main.hs</span>
+  <span class="ex">conf/</span>
+    <span class="ex">package.json</span>
+  <span class="ex">branding/</span>
+    <span class="ex">icon.png</span>
+  <span class="ex">bin/</span>
+  <span class="ex">dist/</span>
+  <span class="ex">stack.yaml</span>
+  <span class="ex">movieMonad.cabal</span>
+  <span class="ex">makefile</span></code></pre></div>
+<h1 id="code">Code</h1>
+<p>The source code to Movie Monad consists of four major files.</p>
+<h2 id="html">HTML</h2>
+<p>Let us start with defining the HTML of Movie Monad. Since the application is fairly simple, we only need to define a little bit of structure.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE OverloadedStrings #-}</span></code></pre></div>
+<p>This language extension allows us to take a string literal such as <code>&quot;Some text.&quot;</code> and use it for arguments that require type <code>ByteString</code>, <code>Text</code>, or <code>String/[Char]</code> (a <code>['l','i','s','t']</code> or array of characters).</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Text.Blaze.Html.Renderer.Pretty</span>
+<span class="kw">import </span><span class="dt">Text.Blaze.Html5</span> <span class="kw">as</span> <span class="dt">H</span> <span class="kw">hiding</span> (main)
+<span class="kw">import </span><span class="dt">Text.Blaze.Html5.Attributes</span> <span class="kw">as</span> <span class="dt">A</span></code></pre></div>
+<p>Here we import the needed Blaze modules. We will hide <code>main</code> as we will be defining it ourselves. When you see <code>A</code>–think <code>Text.Blaze.Html5.Attributes</code>.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">main ::</span> <span class="dt">IO</span> ()
+main <span class="fu">=</span> putStrLn <span class="fu">$</span> renderHtml <span class="fu">$</span> docTypeHtml <span class="fu">$</span> <span class="kw">do</span></code></pre></div>
+<p>We start off with setting the document type, rendering the HTML to a string, and printing that string out.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  H.head <span class="fu">$</span> <span class="kw">do</span>
+    H.title    <span class="st">&quot;Movie Monad - Lettier.com&quot;</span>
+    styleSheet <span class="st">&quot;https://fonts.googleapis.com/css?family=Oswald&quot;</span>
+    styleSheet <span class="st">&quot;https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.min.css&quot;</span>
+    styleSheet <span class="st">&quot;all.css&quot;</span>
+    scriptSrc  <span class="st">&quot;jquery.js&quot;</span>
+    H.script <span class="fu">$</span> toHtml' <span class="st">&quot;if ('require' in window) { window.$ = window.jQuery = require('./jquery.js'); }&quot;</span>
+    scriptSrc  <span class="st">&quot;all.js&quot;</span></code></pre></div>
+<p>This is where we describe the <code>&lt;head&gt;&lt;!-...-&gt;&lt;/head&gt;</code> section of our HTML document. We will be using a custom font from Google and icons from Foundation. The <code>all.css</code> and <code>all.js</code> files are our own custom CSS and JavaScript which we will define later. The <code>jquery.js</code> is a local copy of the <a href="https://jquery.com/">jQuery</a> JavaScript library. The JavaScript string requires the jQuery library and sets the jQuery object as a property of the window. If we run Movie Monad with Electron and without this line, an exception will be raised that <code>jQuery</code> is undefined. This little bit of JavaScript will be ignored if Movie Monad is loaded inside the browser–as a normal web page–instead of running it with Electron.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  H.body <span class="fu">$</span>
+    H.div <span class="fu">!</span> A.id <span class="st">&quot;pageContainer&quot;</span> <span class="fu">$</span> <span class="kw">do</span>
+      H.input <span class="fu">!</span> A.id <span class="st">&quot;fileInput&quot;</span> <span class="fu">!</span> A.name <span class="st">&quot;fileInput&quot;</span> <span class="fu">!</span> A.type_ <span class="st">&quot;file&quot;</span>
+      H.label <span class="fu">!</span> A.for <span class="st">&quot;fileInput&quot;</span> <span class="fu">$</span> H.i <span class="fu">!</span> A.class_ <span class="st">&quot;fi-upload&quot;</span> <span class="fu">!</span> A.title <span class="st">&quot;Upload a Video File&quot;</span> <span class="fu">$</span> empty
+      H.div   <span class="fu">!</span> A.id <span class="st">&quot;videoContainer&quot;</span> <span class="fu">$</span> empty
+      H.div   <span class="fu">!</span> A.id <span class="st">&quot;statusMessage&quot;</span> <span class="fu">$</span> empty</code></pre></div>
+<p>The body of the document consists of a page container that holds a file input, label, video container, and a status message container which allows us to relay any feedback we have for the user.</p>
+<p>This will translate into the following.</p>
+<div class="sourceCode"><pre class="sourceCode html"><code class="sourceCode html">  <span class="kw">&lt;body&gt;</span>
+    <span class="kw">&lt;div</span><span class="ot"> id=</span><span class="st">&quot;pageContainer&quot;</span><span class="kw">&gt;</span>
+      <span class="kw">&lt;input</span><span class="ot"> id=</span><span class="st">&quot;fileInput&quot;</span><span class="ot"> name=</span><span class="st">&quot;fileInput&quot;</span><span class="ot"> type=</span><span class="st">&quot;file&quot;</span> <span class="kw">/&gt;</span>
+      <span class="kw">&lt;label</span><span class="ot"> for=</span><span class="st">&quot;fileInput&quot;</span><span class="kw">&gt;</span>
+        <span class="kw">&lt;i</span><span class="ot"> class=</span><span class="st">&quot;fi-upload&quot;</span><span class="kw">&gt;&lt;/i&gt;</span>
+      <span class="kw">&lt;/label&gt;</span>
+      <span class="kw">&lt;div</span><span class="ot"> id=</span><span class="st">&quot;videoContainer&quot;</span><span class="kw">&gt;&lt;/div&gt;</span>
+      <span class="kw">&lt;div</span><span class="ot"> id=</span><span class="st">&quot;statusMessage&quot;</span><span class="kw">&gt;&lt;/div&gt;</span>
+    <span class="kw">&lt;/div&gt;</span>
+  <span class="kw">&lt;/body&gt;</span></code></pre></div>
+<p>Notice how <code>$ empty</code> defines the inner HTML as blank for any defined tag.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">toHtml' ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">Html</span>
+toHtml' <span class="fu">=</span> toHtml
+
+<span class="ot">empty ::</span> <span class="dt">Html</span>
+empty <span class="fu">=</span> toHtml' <span class="st">&quot;&quot;</span>
+
+<span class="ot">styleSheet ::</span> <span class="dt">AttributeValue</span> <span class="ot">-&gt;</span> <span class="dt">Html</span>
+styleSheet s <span class="fu">=</span> H.link <span class="fu">!</span> A.href s <span class="fu">!</span> A.rel <span class="st">&quot;stylesheet&quot;</span> <span class="fu">!</span> A.type_ <span class="st">&quot;text/css&quot;</span>
+
+<span class="ot">scriptSrc ::</span> <span class="dt">AttributeValue</span> <span class="ot">-&gt;</span> <span class="dt">Html</span>
+scriptSrc s <span class="fu">=</span> H.script <span class="fu">!</span> A.src s <span class="fu">!</span> A.type_ <span class="st">&quot;text/javascript&quot;</span> <span class="fu">$</span> empty</code></pre></div>
+<p>These are helper functions to DRY up some of the code. Each one returns data with type <code>Html</code>. <code>stylesheet &quot;link&quot;</code> translates to <code>&lt;link href=&quot;link&quot;</code> <code>rel=&quot;stylesheet&quot;</code> <code>type=&quot;text/css&quot; /&gt;</code>.</p>
+<p>Below is the entire <code>~/movieMonad/src/html/Main.hs</code> file–be sure to copy it over.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">{-</span>
+<span class="co">  David Lettier (C) 2016</span>
+<span class="co">  http://www.lettier.com/</span>
+<span class="co">-}</span>
+
+<span class="ot">{-# LANGUAGE OverloadedStrings #-}</span>
+
+<span class="kw">import </span><span class="dt">Text.Blaze.Html.Renderer.Pretty</span>
+<span class="kw">import </span><span class="dt">Text.Blaze.Html5</span> <span class="kw">as</span> <span class="dt">H</span> <span class="kw">hiding</span> (main)
+<span class="kw">import </span><span class="dt">Text.Blaze.Html5.Attributes</span> <span class="kw">as</span> <span class="dt">A</span>
+
+<span class="ot">main ::</span> <span class="dt">IO</span> ()
+main <span class="fu">=</span> putStrLn <span class="fu">$</span> renderHtml <span class="fu">$</span> docTypeHtml <span class="fu">$</span> <span class="kw">do</span>
+  H.head <span class="fu">$</span> <span class="kw">do</span>
+    H.title    <span class="st">&quot;Movie Monad - Lettier.com&quot;</span>
+    styleSheet <span class="st">&quot;https://fonts.googleapis.com/css?family=Oswald&quot;</span>
+    styleSheet <span class="st">&quot;https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.min.css&quot;</span>
+    styleSheet <span class="st">&quot;all.css&quot;</span>
+    scriptSrc  <span class="st">&quot;jquery.js&quot;</span>
+    H.script <span class="fu">$</span> toHtml' <span class="st">&quot;if ('require' in window) { window.$ = window.jQuery = require('./jquery.js'); }&quot;</span>
+    scriptSrc  <span class="st">&quot;all.js&quot;</span>
+  H.body <span class="fu">$</span>
+    H.div <span class="fu">!</span> A.id <span class="st">&quot;pageContainer&quot;</span> <span class="fu">$</span> <span class="kw">do</span>
+      H.input <span class="fu">!</span> A.id <span class="st">&quot;fileInput&quot;</span> <span class="fu">!</span> A.name <span class="st">&quot;fileInput&quot;</span> <span class="fu">!</span> A.type_ <span class="st">&quot;file&quot;</span>
+      H.label <span class="fu">!</span> A.for <span class="st">&quot;fileInput&quot;</span> <span class="fu">$</span> H.i <span class="fu">!</span> A.class_ <span class="st">&quot;fi-upload&quot;</span> <span class="fu">!</span> A.title <span class="st">&quot;Upload a Video File&quot;</span> <span class="fu">$</span> empty
+      H.div   <span class="fu">!</span> A.id <span class="st">&quot;videoContainer&quot;</span> <span class="fu">$</span> empty
+      H.div   <span class="fu">!</span> A.id <span class="st">&quot;statusMessage&quot;</span> <span class="fu">$</span> empty
+
+<span class="ot">toHtml' ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">Html</span>
+toHtml' <span class="fu">=</span> toHtml
+
+<span class="ot">empty ::</span> <span class="dt">Html</span>
+empty <span class="fu">=</span> toHtml' <span class="st">&quot;&quot;</span>
+
+<span class="ot">styleSheet ::</span> <span class="dt">AttributeValue</span> <span class="ot">-&gt;</span> <span class="dt">Html</span>
+styleSheet s <span class="fu">=</span> H.link <span class="fu">!</span> A.href s <span class="fu">!</span> A.rel <span class="st">&quot;stylesheet&quot;</span> <span class="fu">!</span> A.type_ <span class="st">&quot;text/css&quot;</span>
+
+<span class="ot">scriptSrc ::</span> <span class="dt">AttributeValue</span> <span class="ot">-&gt;</span> <span class="dt">Html</span>
+scriptSrc s <span class="fu">=</span> H.script <span class="fu">!</span> A.src s <span class="fu">!</span> A.type_ <span class="st">&quot;text/javascript&quot;</span> <span class="fu">$</span> empty</code></pre></div>
+<h2 id="css">CSS</h2>
+<p>The CSS is fairly straightforward and nearly reads like a normal CSS file. Clay is a preprocessor like Sass or Less but you have the full expressiveness of Haskell at your disposal.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE OverloadedStrings #-}</span>
+
+<span class="kw">import </span><span class="dt">Clay</span>
+<span class="kw">import </span><span class="dt">Clay.Box</span>
+<span class="kw">import </span><span class="dt">Clay.Transform</span></code></pre></div>
+<p>Like before, we list our language extensions and necessary module imports.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">main ::</span> <span class="dt">IO</span> ()
+main <span class="fu">=</span> putCss <span class="fu">$</span> <span class="kw">do</span>
+  body <span class="fu">?</span> <span class="kw">do</span>
+    backgroundColor <span class="st">&quot;#323A45&quot;</span>
+    color           <span class="st">&quot;#eee&quot;</span>
+    fontFamily      [<span class="st">&quot;Oswald&quot;</span>] [sansSerif]
+    overflow        hidden
+    height          <span class="fu">$</span> pct <span class="dv">100</span>
+    width           <span class="fu">$</span> pct <span class="dv">100</span>
+    marginAll       <span class="fu">$</span> px <span class="dv">0</span></code></pre></div>
+<p><code>putCss</code> will print out the generated CSS to standard out. You can see how we are defining the style for the main body of the document. Oswald is the custom font provided by Google. <code>pct</code> translates to <code>%</code>.</p>
+<p>This block will translate roughly to the following.</p>
+<div class="sourceCode"><pre class="sourceCode css"><code class="sourceCode css">body <span class="kw">{</span>
+  <span class="kw">background-color:</span> <span class="st">&quot;#323A45&quot;</span><span class="kw">;</span>
+  <span class="co">/* ... */</span>
+<span class="kw">}</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  label <span class="fu">?</span> <span class="kw">do</span>
+    borderBottomStyle   solid
+    borderBottomColor   <span class="fu">$</span> rgba' <span class="dv">26</span> <span class="dv">105</span>  <span class="dv">94</span> <span class="fl">0.7969</span>
+    backgroundColor     <span class="fu">$</span> rgba' <span class="dv">31</span> <span class="dv">187</span> <span class="dv">166</span> <span class="fl">0.8</span>
+    boxShadow           (px <span class="dv">0</span>) (px <span class="dv">10</span>) (px <span class="dv">5</span>) (rgba' <span class="dv">27</span> <span class="dv">39</span> <span class="dv">35</span> <span class="fl">0.39</span>)
+    fontSize            <span class="fu">$</span> px <span class="dv">60</span>
+    paddingAll          <span class="fu">$</span> px <span class="dv">20</span>
+    borderBottomWidth   <span class="fu">$</span> px <span class="dv">10</span>
+    display             inlineBlock
+    cursor              pointer</code></pre></div>
+<p>This is the label for the file input box. It is here that we make it more like a button.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  video <span class="fu">?</span> <span class="kw">do</span>
+    height <span class="fu">$</span> pct <span class="dv">100</span>
+    width  <span class="fu">$</span> pct <span class="dv">100</span></code></pre></div>
+<p>The video dimensions should always fill the window to make it responsive. The user can adjust the window size and the video will scale to match while at the same time keeping its aspect ratio.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  <span class="st">&quot;#pageContainer&quot;</span> <span class="fu">?</span>
+    textAlign (alignSide sideLeft)
+  <span class="st">&quot;#fileInput&quot;</span> <span class="fu">?</span> <span class="kw">do</span>
+    width        <span class="fu">$</span> px <span class="dv">0</span>
+    outlineWidth <span class="fu">$</span> px <span class="dv">0</span>
+    display      none
+  <span class="st">&quot;#videoContainer&quot;</span> <span class="fu">?</span> <span class="kw">do</span>
+    position absolute
+    zIndex   (<span class="fu">-</span><span class="dv">1</span>)
+    top      <span class="fu">$</span> px <span class="dv">0</span>
+    left     <span class="fu">$</span> px <span class="dv">0</span>
+    height   <span class="fu">$</span> pct <span class="dv">100</span>
+    width    <span class="fu">$</span> pct <span class="dv">100</span>
+  <span class="st">&quot;#statusMessage&quot;</span> <span class="fu">?</span> <span class="kw">do</span>
+    position   absolute
+    minHeight  <span class="fu">$</span> pct <span class="dv">100</span>
+    minWidth   <span class="fu">$</span> pct <span class="dv">100</span>
+    paddingTop <span class="fu">$</span> pct <span class="dv">25</span>
+    zIndex     (<span class="fu">-</span><span class="dv">2</span>)
+    top        <span class="fu">$</span> px <span class="dv">0</span>
+    left       <span class="fu">$</span> px <span class="dv">0</span>
+    width      <span class="fu">$</span> pct <span class="dv">100</span>
+    height     <span class="fu">$</span> pct <span class="dv">100</span>
+    fontSize   <span class="fu">$</span> px <span class="dv">60</span>
+    textAlign  <span class="fu">$</span> alignSide sideCenter</code></pre></div>
+<p>Here we use ID selectors to style the various containers, the file input, and the status message. The status message will always stay under the video.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">paddingAll ::</span> <span class="dt">Size</span> z <span class="ot">-&gt;</span> <span class="dt">Css</span>
+paddingAll s <span class="fu">=</span> padding s s s s
+
+<span class="ot">marginAll ::</span> <span class="dt">Size</span> z <span class="ot">-&gt;</span> <span class="dt">Css</span>
+marginAll s <span class="fu">=</span> margin s s s s
+
+<span class="ot">rgba' ::</span> <span class="dt">Integer</span> <span class="ot">-&gt;</span> <span class="dt">Integer</span> <span class="ot">-&gt;</span> <span class="dt">Integer</span> <span class="ot">-&gt;</span> <span class="dt">Double</span> <span class="ot">-&gt;</span> <span class="dt">Color</span>
+rgba' r g b a <span class="fu">=</span> rgba r g b <span class="fu">$</span> floor <span class="fu">$</span> a <span class="fu">*</span> <span class="dv">255</span></code></pre></div>
+<p>These functions provide more convenience over the functions provided by Clay. The padding and margin functions allow us to have uniform sizes without having to specify the same size for all four sides. Typically the alpha channel (in <code>rgba</code>) is expressed in decimal with a range of zero to one instead of an integer with a range of zero to 255.</p>
+<p>Below is the entire <code>~/movieMonad/src/css/Main.hs</code> file–be sure to copy it over.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">{-</span>
+<span class="co">  David Lettier (C) 2016</span>
+<span class="co">  http://www.lettier.com/</span>
+<span class="co">-}</span>
+
+<span class="ot">{-# LANGUAGE OverloadedStrings #-}</span>
+
+<span class="kw">import </span><span class="dt">Clay</span>
+<span class="kw">import </span><span class="dt">Clay.Box</span>
+<span class="kw">import </span><span class="dt">Clay.Transform</span>
+
+<span class="co">-- Color scheme: http://flatcolors.net/palette/757-carbon-flat-colorful</span>
+
+<span class="ot">main ::</span> <span class="dt">IO</span> ()
+main <span class="fu">=</span> putCss <span class="fu">$</span> <span class="kw">do</span>
+  body <span class="fu">?</span> <span class="kw">do</span>
+    backgroundColor <span class="st">&quot;#323A45&quot;</span>
+    color           <span class="st">&quot;#eee&quot;</span>
+    fontFamily      [<span class="st">&quot;Oswald&quot;</span>] [sansSerif]
+    overflow        hidden
+    height          <span class="fu">$</span> pct <span class="dv">100</span>
+    width           <span class="fu">$</span> pct <span class="dv">100</span>
+    marginAll       <span class="fu">$</span> px <span class="dv">0</span>
+  label <span class="fu">?</span> <span class="kw">do</span>
+    borderBottomStyle   solid
+    borderBottomColor   <span class="fu">$</span> rgba' <span class="dv">26</span> <span class="dv">105</span>  <span class="dv">94</span> <span class="fl">0.7969</span>
+    backgroundColor     <span class="fu">$</span> rgba' <span class="dv">31</span> <span class="dv">187</span> <span class="dv">166</span> <span class="fl">0.8</span>
+    boxShadow           (px <span class="dv">0</span>) (px <span class="dv">10</span>) (px <span class="dv">5</span>) (rgba' <span class="dv">27</span> <span class="dv">39</span> <span class="dv">35</span> <span class="fl">0.39</span>)
+    fontSize            <span class="fu">$</span> px <span class="dv">60</span>
+    paddingAll          <span class="fu">$</span> px <span class="dv">20</span>
+    borderBottomWidth   <span class="fu">$</span> px <span class="dv">10</span>
+    display             inlineBlock
+    cursor              pointer
+  video <span class="fu">?</span> <span class="kw">do</span>
+    height <span class="fu">$</span> pct <span class="dv">100</span>
+    width  <span class="fu">$</span> pct <span class="dv">100</span>
+  <span class="st">&quot;#pageContainer&quot;</span> <span class="fu">?</span>
+    textAlign (alignSide sideLeft)
+  <span class="st">&quot;#fileInput&quot;</span> <span class="fu">?</span> <span class="kw">do</span>
+    width        <span class="fu">$</span> px <span class="dv">0</span>
+    outlineWidth <span class="fu">$</span> px <span class="dv">0</span>
+    display      none
+  <span class="st">&quot;#videoContainer&quot;</span> <span class="fu">?</span> <span class="kw">do</span>
+    position absolute
+    zIndex   (<span class="fu">-</span><span class="dv">1</span>)
+    top      <span class="fu">$</span> px <span class="dv">0</span>
+    left     <span class="fu">$</span> px <span class="dv">0</span>
+    height   <span class="fu">$</span> pct <span class="dv">100</span>
+    width    <span class="fu">$</span> pct <span class="dv">100</span>
+  <span class="st">&quot;#statusMessage&quot;</span> <span class="fu">?</span> <span class="kw">do</span>
+    position   absolute
+    minHeight  <span class="fu">$</span> pct <span class="dv">100</span>
+    minWidth   <span class="fu">$</span> pct <span class="dv">100</span>
+    paddingTop <span class="fu">$</span> pct <span class="dv">25</span>
+    zIndex     (<span class="fu">-</span><span class="dv">2</span>)
+    top        <span class="fu">$</span> px <span class="dv">0</span>
+    left       <span class="fu">$</span> px <span class="dv">0</span>
+    width      <span class="fu">$</span> pct <span class="dv">100</span>
+    height     <span class="fu">$</span> pct <span class="dv">100</span>
+    fontSize   <span class="fu">$</span> px <span class="dv">60</span>
+    textAlign  <span class="fu">$</span> alignSide sideCenter
+
+<span class="ot">paddingAll ::</span> <span class="dt">Size</span> z <span class="ot">-&gt;</span> <span class="dt">Css</span>
+paddingAll s <span class="fu">=</span> padding s s s s
+
+<span class="ot">marginAll ::</span> <span class="dt">Size</span> z <span class="ot">-&gt;</span> <span class="dt">Css</span>
+marginAll s <span class="fu">=</span> margin s s s s
+
+<span class="ot">rgba' ::</span> <span class="dt">Integer</span> <span class="ot">-&gt;</span> <span class="dt">Integer</span> <span class="ot">-&gt;</span> <span class="dt">Integer</span> <span class="ot">-&gt;</span> <span class="dt">Double</span> <span class="ot">-&gt;</span> <span class="dt">Color</span>
+rgba' r g b a <span class="fu">=</span> rgba r g b <span class="fu">$</span> floor <span class="fu">$</span> a <span class="fu">*</span> <span class="dv">255</span></code></pre></div>
+<h2 id="javascript">JavaScript</h2>
+<p>Now we get to the more exciting part where we can produce JavaScript by writing Haskell. The library that provides this functionality is <a href="https://github.com/faylang/fay">Fay</a>.</p>
+<h3 id="application-logic">Application Logic</h3>
+<p>The logic to Movie Monad is straightforward.</p>
+<ul>
+<li>The application waits for the user to click the label</li>
+<li>Once the user clicks the label, a file selection dialog opens up</li>
+<li>The user selects a file or cancels</li>
+<li>If the file is within the appropriate size range
+<ul>
+<li>Read in the file data</li>
+<li>Take the file data and encode it into a data URL</li>
+<li>If the encoded data URL has the video MIME type
+<ul>
+<li>Create a video element</li>
+<li>Set the source of the video element to the data URL</li>
+</ul></li>
+<li>Else
+<ul>
+<li>Tell the user that the file is not a video</li>
+</ul></li>
+</ul></li>
+<li>Else
+<ul>
+<li>Tell the user that the file is either too small or too large</li>
+<li>Clear out the video container</li>
+</ul></li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE RebindableSyntax, OverloadedStrings, EmptyDataDecls #-}</span>
+
+<span class="kw">import </span><span class="dt">Prelude</span>
+<span class="kw">import </span><span class="dt">FFI</span>
+<span class="kw">import </span><span class="dt">JQuery</span>
+<span class="kw">import </span><span class="dt">Fay.Text</span></code></pre></div>
+<p>We’ve seen <code>OverloadedStrings</code> strings before but not <code>RebindableSyntax</code> nor <code>EmptyDataDecls</code>. <code>RebindableSyntax</code> allows us to redefine (rebind) operators defined in the <code>Prelude</code>. Note that Fay has its own <a href="https://github.com/faylang/fay/blob/master/fay-base/src/Prelude.hs">Prelude</a>. <code>EmptyDataDecls</code> allows us to declare data types without specifying what they are equivalent to (no constructors). We will use this to define some custom data types for objects returned from the JavaScript world.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">File</span>
+<span class="kw">data</span> <span class="dt">FileReader</span></code></pre></div>
+<p>These are our empty data type declarations. Notice that they do not have have constructors. <code>File</code> is a file object in the files property of the file input object. <code>FileReader</code> is the object we use to read in the video file selected by the user.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">main ::</span> <span class="dt">Fay</span> ()
+main <span class="fu">=</span> startApp
+
+<span class="ot">startApp ::</span> <span class="dt">Fay</span> ()
+startApp <span class="fu">=</span> ready <span class="fu">$</span> <span class="kw">do</span>
+  fileInput' <span class="ot">&lt;-</span> fileInput
+  void <span class="fu">$</span> change (const <span class="fu">$</span> onFileInputChange fileInput') fileInput'</code></pre></div>
+<p>Instead of the <code>IO</code> monad, we operate in the <code>Fay</code> monad returning the unit type. In other words, we perform some side effects and return nothing of interest (think void).</p>
+<p>The start app function gets the file input object and setups a change event. When the file input changes, it will call the <code>onFileInputChange</code> callback.</p>
+<p>The <code>const</code> function take two parameters but if you call it with only one, it returns a function that takes any parameter and returns the result of the first parameter you originally called <code>const</code> with. This is useful because <code>change</code> expects a function that takes an event and returns the unit type. However, <code>onFileInputChange</code> does not take an event. <code>change</code> will call what <code>const</code> returns (passing it an event), the event passed will be ignored, and <code>onFileInputChange</code> will be called.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="dt">Prelude</span><span class="fu">&gt;</span> static <span class="fu">=</span> const <span class="dv">1</span>
+<span class="dt">Prelude</span><span class="fu">&gt;</span> <span class="fu">:</span>t static
+<span class="ot">static ::</span> <span class="dt">Num</span> a <span class="ot">=&gt;</span> b <span class="ot">-&gt;</span> a
+<span class="dt">Prelude</span><span class="fu">&gt;</span> static <span class="st">&quot;2&quot;</span>
+<span class="dv">1</span>
+<span class="dt">Prelude</span><span class="fu">&gt;</span> static <span class="fl">1255.5</span>
+<span class="dv">1</span>
+<span class="dt">Prelude</span><span class="fu">&gt;</span> static []
+<span class="dv">1</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">fileInput ::</span> <span class="dt">Fay</span> <span class="dt">JQuery</span>
+fileInput <span class="fu">=</span> select <span class="st">&quot;#fileInput&quot;</span></code></pre></div>
+<p>Using Fay-jQuery, we select the element with the <code>#fileInput</code> ID.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">newFileReader ::</span> <span class="dt">Fay</span> <span class="dt">FileReader</span>
+newFileReader <span class="fu">=</span> ffi <span class="st">&quot;new FileReader()&quot;</span></code></pre></div>
+<p><code>ffi</code> is short for foreign function interface. <code>ffi</code> allows us to call JavaScript from within our Haskell code. Notice how we return the <code>FileReader</code> data type (wrapped) within the Fay monad.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">fileInputFiles ::</span> <span class="dt">JQuery</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> (<span class="dt">Nullable</span> [<span class="dt">File</span>])
+fileInputFiles <span class="fu">=</span> ffi <span class="st">&quot;%1['prop']('files')&quot;</span></code></pre></div>
+<p>The syntax here is a little cryptic but it translates to <code>$('#fileInput').prop('files');</code> in JavaScript. The <code>%1</code> syntax is the first argument <code>JQuery</code> in the type signature where <code>JQuery</code> is some object returned by the <code>select</code> function. Our return type is <code>Nullable [File]</code> which means that we may either get back <code>Null</code> or a list of files <code>[File]</code>. The <code>Null</code> type translates to <code>null</code> in JavaScript.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">fileSize ::</span> <span class="dt">File</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> <span class="dt">Int</span>
+fileSize <span class="fu">=</span> ffi <span class="st">&quot;%1['size']&quot;</span></code></pre></div>
+<p>This takes a file object and calls size on it which returns an integer.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">nullableFileSize ::</span> <span class="dt">Nullable</span> <span class="dt">File</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> <span class="dt">Int</span>
+nullableFileSize nullableFile <span class="fu">=</span> <span class="kw">case</span> nullableFile <span class="kw">of</span>
+                                  <span class="dt">Nullable</span> file <span class="ot">-&gt;</span> fileSize file
+                                  <span class="dt">Null</span> <span class="ot">-&gt;</span> return <span class="dv">0</span></code></pre></div>
+<p>This function helps with getting the size of a file that may actually be null. If the file is null, just return zero.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">fileSizeLimit ::</span> <span class="dt">Int</span>
+fileSizeLimit <span class="fu">=</span> <span class="dv">51000000</span></code></pre></div>
+<p>Because Movie Monad has to load the entire video file into memory, we have to limit the file size. If we do not limit the file size, the application could crash or freeze up for large video files. Ideally we would like to stream the video (play buffered chunks) from disk but the file reader API doesn’t allow for this. The file size limit number is in number of bytes–so the limit is roughly 48 megabytes.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">fileInputFile ::</span> <span class="dt">JQuery</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> (<span class="dt">Nullable</span> <span class="dt">File</span>)
+fileInputFile fileInput index <span class="fu">=</span> <span class="kw">do</span>
+  nullableFiles <span class="ot">&lt;-</span> fileInputFiles fileInput
+  <span class="kw">let</span> files <span class="fu">=</span> <span class="kw">case</span> nullableFiles <span class="kw">of</span>
+                <span class="dt">Nullable</span> files <span class="ot">-&gt;</span> files
+                <span class="dt">Null</span> <span class="ot">-&gt;</span> []
+  <span class="kw">if</span> Prelude.null files <span class="fu">||</span> (Prelude.length files <span class="fu">&lt;=</span> index)
+    <span class="kw">then</span> return <span class="dt">Null</span>
+    <span class="kw">else</span> return (<span class="dt">Nullable</span> <span class="fu">$</span> files<span class="fu">!!</span>index)</code></pre></div>
+<p>Taking the file input object, we gather up all of its input files. If there are no files, return null, otherwise return the requested file at the requested index.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">fileReaderResult ::</span> <span class="dt">FileReader</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> <span class="dt">Text</span>
+fileReaderResult <span class="fu">=</span> ffi <span class="st">&quot;%1['result']&quot;</span></code></pre></div>
+<p>Once the file reader has brought the file into memory, we can access it via its result property.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">addFileReaderEventListener ::</span> <span class="dt">FileReader</span> <span class="ot">-&gt;</span> <span class="dt">Text</span> <span class="ot">-&gt;</span> (<span class="dt">Event</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> ()) <span class="ot">-&gt;</span> <span class="dt">Fay</span> ()
+addFileReaderEventListener <span class="fu">=</span> ffi <span class="st">&quot;%1['addEventListener'](%2, %3)&quot;</span></code></pre></div>
+<p>Taking a file reader object, specify a callback function to be called once the specified event type occurs.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="co">// For example:</span>
+
+<span class="va">fileReader</span>.<span class="at">addEventListener</span>(<span class="st">'load'</span><span class="op">,</span> <span class="kw">function</span>(event) <span class="op">{}</span>)<span class="op">;</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">setUpNewFileRead ::</span> <span class="dt">Nullable</span> <span class="dt">File</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> ()
+setUpNewFileRead <span class="dt">Null</span> <span class="fu">=</span> return ()
+setUpNewFileRead (<span class="dt">Nullable</span> file) <span class="fu">=</span> <span class="kw">do</span>
+  fr <span class="ot">&lt;-</span> newFileReader
+  <span class="kw">let</span> onLoadCallback <span class="fu">=</span> const <span class="fu">$</span> handleVideoFile fr
+  addFileReaderEventListener fr <span class="st">&quot;load&quot;</span> onLoadCallback
+  readAsDataURL fr file</code></pre></div>
+<p>If given a null file, do nothing. However, if we are given an actual file object, setup the callback and begin reading the file as a data URL.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">onFileInputChange ::</span> <span class="dt">JQuery</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> ()
+onFileInputChange fileInput <span class="fu">=</span> <span class="kw">do</span>
+  emptyVideoContainer
+  nullableFile <span class="ot">&lt;-</span> fileInputFile fileInput <span class="dv">0</span>
+  nfs <span class="ot">&lt;-</span> nullableFileSize nullableFile
+  <span class="kw">if</span> (<span class="fu">&amp;&amp;</span>) (nfs <span class="fu">&gt;</span> <span class="dv">0</span>) (nfs <span class="fu">&lt;=</span> fileSizeLimit)
+    <span class="kw">then</span> setUpNewFileRead nullableFile
+    <span class="kw">else</span> void <span class="fu">$</span> setStatusMessage <span class="st">&quot;File too small or large.&quot;</span></code></pre></div>
+<p>This is the callback we used in <code>startApp</code>. The video container may contain a previously loaded video. We clear it out making way for the new video or a possible status message. If the file size is within the valid range, read the file, otherwise let the user know that the file size is not valid.</p>
+<div class="figure">
+<img src="../images/2016-08-15-making-movie-monad/preview1.png" alt="File is too small or large." class="post-img post-img-limit post-img-small" />
+<p class="caption">File is too small or large.</p>
+</div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">setStatusMessage ::</span> <span class="dt">Text</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> <span class="dt">JQuery</span>
+setStatusMessage text <span class="fu">=</span> select <span class="st">&quot;#statusMessage&quot;</span> <span class="fu">&gt;&gt;=</span> setHtml text</code></pre></div>
+<p>Select the status message element and set its inner HTML to the text passed.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">videoContainer ::</span> <span class="dt">Fay</span> <span class="dt">JQuery</span>
+videoContainer <span class="fu">=</span> select <span class="st">&quot;#videoContainer&quot;</span></code></pre></div>
+<p>Return the video container element.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">addVideoElement ::</span> <span class="dt">Fay</span> <span class="dt">JQuery</span>
+addVideoElement <span class="fu">=</span> select <span class="st">&quot;&lt;video id='video' src='' controls/&gt;&quot;</span> <span class="fu">&gt;&gt;=</span> addToVideoContainer</code></pre></div>
+<p>Much like jQuery, we can create a new document element by selecting it. Once created, we add it as a child element to the video container.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">addToVideoContainer ::</span> <span class="dt">JQuery</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> <span class="dt">JQuery</span>
+addToVideoContainer el <span class="fu">=</span> videoContainer <span class="fu">&gt;&gt;=</span> flip appendTo el</code></pre></div>
+<p>Given an element (<code>el</code>), grab the video container and append the element to it. <code>appendTo</code> takes two parameters where the first one is the parent and the second one is the child. <code>flip</code> turns this around making a new function where the first parameter is the child and the second one is the parent.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="dt">Prelude</span><span class="fu">&gt;</span> x a b <span class="fu">=</span> a <span class="fu">-</span> b
+<span class="dt">Prelude</span><span class="fu">&gt;</span> y <span class="fu">=</span> flip x
+<span class="dt">Prelude</span><span class="fu">&gt;</span> x <span class="dv">1</span> <span class="dv">2</span>
+<span class="fu">-</span><span class="dv">1</span>
+<span class="dt">Prelude</span><span class="fu">&gt;</span> y <span class="dv">1</span> <span class="dv">2</span>
+<span class="dv">1</span></code></pre></div>
+<p>This allows us to keep the syntax clean using a one-liner. Implicitly, <code>flip appendTo el</code> is being passed the video container like this:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">addToVideoContainer el <span class="fu">=</span> videoContainer <span class="fu">&gt;&gt;=</span> (\ videoContainer' <span class="ot">-&gt;</span> flip appendTo el videoContainer')
+
+<span class="co">-- (&gt;&gt;=) :: Fay JQueryA        -&gt; (JQueryA        -&gt; Fay JQueryB) -&gt; Fay JQueryB</span>
+<span class="co">-- (&gt;&gt;=) :: Fay videoContainer -&gt; (videoContainer -&gt; Fay el     ) -&gt; Fay el</span></code></pre></div>
+<p>We could have written this function like the following.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">addToVideoContainer ::</span> <span class="dt">JQuery</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> <span class="dt">JQuery</span>
+addToVideoContainer el <span class="fu">=</span> <span class="kw">do</span>
+  videoContainer' <span class="ot">&lt;-</span> videoContainer
+  appendTo videoContainer' el
+
+<span class="co">-- Or like this:</span>
+
+<span class="ot">addToVideoContainer ::</span> <span class="dt">JQuery</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> <span class="dt">JQuery</span>
+addToVideoContainer el <span class="fu">=</span> videoContainer <span class="fu">&gt;&gt;=</span> (\ videoContainer' <span class="ot">-&gt;</span> appendTo videoContainer' el)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">emptyVideoContainer ::</span> <span class="dt">Fay</span> <span class="dt">JQuery</span>
+emptyVideoContainer <span class="fu">=</span> videoContainer <span class="fu">&gt;&gt;=</span> JQuery.empty</code></pre></div>
+<p>This clears out the video container document element.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">handleVideoFile ::</span> <span class="dt">FileReader</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> ()
+handleVideoFile fr <span class="fu">=</span> <span class="kw">do</span>
+  url <span class="ot">&lt;-</span> fileReaderResult fr
+  <span class="kw">if</span> <span class="st">&quot;data:video&quot;</span> <span class="ot">`isPrefixOf`</span> url
+    <span class="kw">then</span> void <span class="fu">$</span> addVideoElement <span class="fu">&gt;&gt;=</span> setAttr <span class="st">&quot;src&quot;</span> url <span class="fu">&gt;&gt;</span> setStatusMessage <span class="st">&quot;&quot;</span>
+    <span class="kw">else</span> void <span class="fu">$</span> setStatusMessage <span class="st">&quot;Not a video file.&quot;</span></code></pre></div>
+<p>Here is where we check that the data URL has the video type. If it does not, we tell the user that the file is not a video file. However, if we are dealing with a video file, set the video element <code>src</code> to the data URL.</p>
+<div class="figure">
+<img src="../images/2016-08-15-making-movie-monad/preview2.png" alt="Not a video file." class="post-img post-img-limit post-img-small" />
+<p class="caption">Not a video file.</p>
+</div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">readAsDataURL ::</span> <span class="dt">FileReader</span> <span class="ot">-&gt;</span> <span class="dt">File</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> ()
+readAsDataURL <span class="fu">=</span> ffi <span class="st">&quot;%1['readAsDataURL'](%2)&quot;</span></code></pre></div>
+<p>At long last we reach the end of the application logic where we read the file in as a data URL such that we can set this URL as the video source.</p>
+<p>Below is the entire <code>~/movieMonad/src/js/Main.hs</code> file–be sure to copy it over.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">{-</span>
+<span class="co">  David Lettier (C) 2016</span>
+<span class="co">  http://www.lettier.com/</span>
+<span class="co">-}</span>
+
+<span class="ot">{-# LANGUAGE RebindableSyntax, OverloadedStrings, EmptyDataDecls #-}</span>
+
+<span class="kw">import </span><span class="dt">Prelude</span>
+<span class="kw">import </span><span class="dt">FFI</span>
+<span class="kw">import </span><span class="dt">JQuery</span>
+<span class="kw">import </span><span class="dt">Fay.Text</span>
+
+<span class="kw">data</span> <span class="dt">File</span>
+<span class="kw">data</span> <span class="dt">FileReader</span>
+
+<span class="ot">main ::</span> <span class="dt">Fay</span> ()
+main <span class="fu">=</span> startApp
+
+<span class="ot">startApp ::</span> <span class="dt">Fay</span> ()
+startApp <span class="fu">=</span> ready <span class="fu">$</span> <span class="kw">do</span>
+  fileInput' <span class="ot">&lt;-</span> fileInput
+  void <span class="fu">$</span> change (const <span class="fu">$</span> onFileInputChange fileInput') fileInput'
+
+<span class="ot">fileInput ::</span> <span class="dt">Fay</span> <span class="dt">JQuery</span>
+fileInput <span class="fu">=</span> select <span class="st">&quot;#fileInput&quot;</span>
+
+<span class="ot">newFileReader ::</span> <span class="dt">Fay</span> <span class="dt">FileReader</span>
+newFileReader <span class="fu">=</span> ffi <span class="st">&quot;new FileReader()&quot;</span>
+
+<span class="ot">fileInputFiles ::</span> <span class="dt">JQuery</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> (<span class="dt">Nullable</span> [<span class="dt">File</span>])
+fileInputFiles <span class="fu">=</span> ffi <span class="st">&quot;%1['prop']('files')&quot;</span>
+
+<span class="ot">fileSize ::</span> <span class="dt">File</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> <span class="dt">Int</span>
+fileSize <span class="fu">=</span> ffi <span class="st">&quot;%1['size']&quot;</span>
+
+<span class="ot">nullableFileSize ::</span> <span class="dt">Nullable</span> <span class="dt">File</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> <span class="dt">Int</span>
+nullableFileSize nullableFile <span class="fu">=</span> <span class="kw">case</span> nullableFile <span class="kw">of</span>
+                                  <span class="dt">Nullable</span> file <span class="ot">-&gt;</span> fileSize file
+                                  <span class="dt">Null</span> <span class="ot">-&gt;</span> return <span class="dv">0</span>
+
+<span class="ot">fileSizeLimit ::</span> <span class="dt">Int</span>
+fileSizeLimit <span class="fu">=</span> <span class="dv">51000000</span>
+
+<span class="ot">fileInputFile ::</span> <span class="dt">JQuery</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> (<span class="dt">Nullable</span> <span class="dt">File</span>)
+fileInputFile fileInput index <span class="fu">=</span> <span class="kw">do</span>
+  nullableFiles <span class="ot">&lt;-</span> fileInputFiles fileInput
+  <span class="kw">let</span> files <span class="fu">=</span> <span class="kw">case</span> nullableFiles <span class="kw">of</span>
+                <span class="dt">Nullable</span> files <span class="ot">-&gt;</span> files
+                <span class="dt">Null</span> <span class="ot">-&gt;</span> []
+  <span class="kw">if</span> Prelude.null files <span class="fu">||</span> (Prelude.length files <span class="fu">&lt;=</span> index)
+    <span class="kw">then</span> return <span class="dt">Null</span>
+    <span class="kw">else</span> return (<span class="dt">Nullable</span> <span class="fu">$</span> files<span class="fu">!!</span>index)
+
+<span class="ot">fileReaderResult ::</span> <span class="dt">FileReader</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> <span class="dt">Text</span>
+fileReaderResult <span class="fu">=</span> ffi <span class="st">&quot;%1['result']&quot;</span>
+
+<span class="ot">addFileReaderEventListener ::</span> <span class="dt">FileReader</span> <span class="ot">-&gt;</span> <span class="dt">Text</span> <span class="ot">-&gt;</span> (<span class="dt">Event</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> ()) <span class="ot">-&gt;</span> <span class="dt">Fay</span> ()
+addFileReaderEventListener <span class="fu">=</span> ffi <span class="st">&quot;%1['addEventListener'](%2, %3)&quot;</span>
+
+<span class="ot">setUpNewFileRead ::</span> <span class="dt">Nullable</span> <span class="dt">File</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> ()
+setUpNewFileRead <span class="dt">Null</span> <span class="fu">=</span> return ()
+setUpNewFileRead (<span class="dt">Nullable</span> file) <span class="fu">=</span> <span class="kw">do</span>
+  fr <span class="ot">&lt;-</span> newFileReader
+  <span class="kw">let</span> onLoadCallback <span class="fu">=</span> const <span class="fu">$</span> handleVideoFile fr
+  addFileReaderEventListener fr <span class="st">&quot;load&quot;</span> onLoadCallback
+  readAsDataURL fr file
+
+<span class="ot">onFileInputChange ::</span> <span class="dt">JQuery</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> ()
+onFileInputChange fileInput <span class="fu">=</span> <span class="kw">do</span>
+  emptyVideoContainer
+  nullableFile <span class="ot">&lt;-</span> fileInputFile fileInput <span class="dv">0</span>
+  nfs <span class="ot">&lt;-</span> nullableFileSize nullableFile
+  <span class="kw">if</span> (<span class="fu">&amp;&amp;</span>) (nfs <span class="fu">&gt;</span> <span class="dv">0</span>) (nfs <span class="fu">&lt;=</span> fileSizeLimit)
+    <span class="kw">then</span> setUpNewFileRead nullableFile
+    <span class="kw">else</span> void <span class="fu">$</span> setStatusMessage <span class="st">&quot;File too small or large.&quot;</span>
+
+<span class="ot">setStatusMessage ::</span> <span class="dt">Text</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> <span class="dt">JQuery</span>
+setStatusMessage text <span class="fu">=</span> select <span class="st">&quot;#statusMessage&quot;</span> <span class="fu">&gt;&gt;=</span> setHtml text
+
+<span class="ot">videoContainer ::</span> <span class="dt">Fay</span> <span class="dt">JQuery</span>
+videoContainer <span class="fu">=</span> select <span class="st">&quot;#videoContainer&quot;</span>
+
+<span class="ot">addVideoElement ::</span> <span class="dt">Fay</span> <span class="dt">JQuery</span>
+addVideoElement <span class="fu">=</span> select <span class="st">&quot;&lt;video id='video' src='' controls/&gt;&quot;</span> <span class="fu">&gt;&gt;=</span> addToVideoContainer
+
+<span class="ot">addToVideoContainer ::</span> <span class="dt">JQuery</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> <span class="dt">JQuery</span>
+addToVideoContainer el <span class="fu">=</span> videoContainer <span class="fu">&gt;&gt;=</span> flip appendTo el
+
+<span class="ot">emptyVideoContainer ::</span> <span class="dt">Fay</span> <span class="dt">JQuery</span>
+emptyVideoContainer <span class="fu">=</span> videoContainer <span class="fu">&gt;&gt;=</span> JQuery.empty
+
+<span class="ot">handleVideoFile ::</span> <span class="dt">FileReader</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> ()
+handleVideoFile fr <span class="fu">=</span> <span class="kw">do</span>
+  url <span class="ot">&lt;-</span> fileReaderResult fr
+  <span class="kw">if</span> <span class="st">&quot;data:video&quot;</span> <span class="ot">`isPrefixOf`</span> url
+    <span class="kw">then</span> void <span class="fu">$</span> addVideoElement <span class="fu">&gt;&gt;=</span> setAttr <span class="st">&quot;src&quot;</span> url <span class="fu">&gt;&gt;</span> setStatusMessage <span class="st">&quot;&quot;</span>
+    <span class="kw">else</span> void <span class="fu">$</span> setStatusMessage <span class="st">&quot;Not a video file.&quot;</span>
+
+<span class="ot">readAsDataURL ::</span> <span class="dt">FileReader</span> <span class="ot">-&gt;</span> <span class="dt">File</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> ()
+readAsDataURL <span class="fu">=</span> ffi <span class="st">&quot;%1['readAsDataURL'](%2)&quot;</span></code></pre></div>
+<h3 id="electron-boilerplate">Electron Boilerplate</h3>
+<p>Electron needs/runs a JavaScript file that creates the application window (or windows), defines the window properties, and setups the application callbacks like <code>ready</code> or <code>window-all-close</code>.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE RebindableSyntax, OverloadedStrings, EmptyDataDecls #-}</span>
+
+<span class="kw">import </span><span class="dt">Prelude</span>
+<span class="kw">import </span><span class="dt">FFI</span>
+<span class="kw">import </span><span class="dt">Fay.Text</span></code></pre></div>
+<p>The same language extensions and imports as before.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Electron</span>
+<span class="kw">data</span> <span class="dt">App</span>
+<span class="kw">data</span> <span class="dt">BrowserWindow</span>
+<span class="kw">data</span> <span class="dt">MainWindow</span></code></pre></div>
+<p>New data types representing the electron, app, browser window, and main window JavaScript objects.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">class</span> <span class="dt">OnCaller</span> a
+
+<span class="kw">instance</span> <span class="dt">OnCaller</span> <span class="dt">App</span>
+<span class="kw">instance</span> <span class="dt">OnCaller</span> <span class="dt">MainWindow</span></code></pre></div>
+<p>Here we create a new type class and declare the data types <code>App</code> and <code>MainWindow</code> members of this type class. On caller means they can call <code>on</code> in the JavaScript world. Now we do not have to write an <code>onEvent</code> function just for <code>App</code> and another one just for <code>MainWindow</code>. The <code>onEvent</code> definition is listed below.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">DirName</span> <span class="fu">=</span> <span class="dt">Text</span></code></pre></div>
+<p>Here we create a type alias that says <code>DirName</code> is just an alias for the Fay <code>Text</code> type. This provides some clarity in a function type signature. Yes it expects the <code>Text</code> type, but more specifically, it is looking for the result returned by calling <code>__dirname</code> in JavaScript. The <code>DirName</code> is the directory path in which this (eventual) JavaScript file resides.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">main ::</span> <span class="dt">Fay</span> ()
+main <span class="fu">=</span> bootApp
+
+<span class="ot">bootApp ::</span> <span class="dt">Fay</span> ()
+bootApp <span class="fu">=</span> <span class="kw">do</span>
+  electron' <span class="ot">&lt;-</span> electron
+  app' <span class="ot">&lt;-</span> app electron'
+  onEvent app' <span class="st">&quot;ready&quot;</span> setupMainWindow
+  onEvent app' <span class="st">&quot;window-all-closed&quot;</span> <span class="fu">$</span> <span class="kw">do</span>
+    processPlatform' <span class="ot">&lt;-</span> processPlatform
+    when (processPlatform' <span class="fu">/=</span> <span class="st">&quot;darwin&quot;</span>) <span class="fu">$</span> callAppProp app' <span class="st">&quot;quit&quot;</span>
+  onEvent app' <span class="st">&quot;activate&quot;</span> <span class="fu">$</span> void <span class="fu">$</span> <span class="kw">do</span>
+    nullableMainWindow <span class="ot">&lt;-</span> getMainWindow
+    <span class="kw">case</span> nullableMainWindow <span class="kw">of</span>
+      <span class="dt">Nullable</span> _ <span class="ot">-&gt;</span> return ()
+      <span class="dt">Null</span> <span class="ot">-&gt;</span> setupMainWindow</code></pre></div>
+<p>Here we gather the <code>electron</code> object and then the <code>app</code> object using the <code>electron</code> object. Two <code>app</code> event listeners are setup where we listen for the window closing and the application activating. If the application window is closed, we call <code>app.quit()</code> in JavaScript. When the <code>activate</code> event fires, we setup the main window if it does not already exist.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">electron ::</span> <span class="dt">Fay</span> <span class="dt">Electron</span>
+electron <span class="fu">=</span> ffi <span class="st">&quot;require('electron')&quot;</span></code></pre></div>
+<p><code>require</code> loads the <code>electron</code> module and returns the module object.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">processPlatform ::</span> <span class="dt">Fay</span> <span class="dt">Text</span>
+processPlatform <span class="fu">=</span> ffi <span class="st">&quot;process.platform&quot;</span></code></pre></div>
+<p>This gives us the platform that Movie Monad is being run on.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">app ::</span> <span class="dt">Electron</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> <span class="dt">App</span>
+app <span class="fu">=</span> ffi <span class="st">&quot;%1['app']&quot;</span></code></pre></div>
+<p>Get the <code>app</code> object from the <code>electron</code> object.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">callAppProp ::</span> <span class="dt">App</span> <span class="ot">-&gt;</span> <span class="dt">Text</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> ()
+callAppProp <span class="fu">=</span> ffi <span class="st">&quot;%1[%2]()&quot;</span></code></pre></div>
+<p>This translates to <code>app.someProp();</code>.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">browserWindow ::</span> <span class="dt">Electron</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> <span class="dt">BrowserWindow</span>
+browserWindow <span class="fu">=</span> ffi <span class="st">&quot;%1['BrowserWindow']&quot;</span></code></pre></div>
+<p>Retrieve the <code>BrowserWindow</code> constructor.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">dirName ::</span> <span class="dt">Fay</span> <span class="dt">DirName</span>
+dirName <span class="fu">=</span> ffi <span class="st">&quot;(function () { return __dirname; })()&quot;</span></code></pre></div>
+<p>Create an IIFE which returns the directory path where this JavaScript file resides. Notice that it returns the <code>DirName</code> type which is aliased to <code>Text</code>.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">windowWidth ::</span> <span class="dt">Int</span>
+windowWidth <span class="fu">=</span> <span class="dv">800</span>
+
+<span class="ot">windowHeight ::</span> <span class="dt">Int</span>
+windowHeight <span class="fu">=</span> <span class="dv">600</span></code></pre></div>
+<p>The initial window width and height.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">windowIcon ::</span> <span class="dt">DirName</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> <span class="dt">Text</span>
+windowIcon <span class="fu">=</span> ffi <span class="st">&quot;(function (d) { return d + '/icon.png'; })(%1)&quot;</span></code></pre></div>
+<p>This returns the location of the icon file which will eventually show up in the taskbar.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">newMainWindow ::</span> <span class="dt">BrowserWindow</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Text</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> <span class="dt">MainWindow</span>
+newMainWindow <span class="fu">=</span> ffi <span class="st">&quot;(function (b) { return global['mainWindow'] = new b({ width: %2, height: %3, icon: %4 }); })(%1)&quot;</span></code></pre></div>
+<p>This is the largest foreign function interface definition we create. As you can see, it creates a new <code>BrowserWindow</code> instance and saves that instance in the global object under the <code>mainWindow</code> property.</p>
+<blockquote>
+Keep a global reference of the window object, if you don’t, the window will be closed automatically when the JavaScript object is garbage collected.
+<footer>
+<a href="http://electron.atom.io/docs/tutorial/quick-start/">Electron Quick Start</a>
+</footer>
+</blockquote>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">getMainWindow ::</span> <span class="dt">Fay</span> (<span class="dt">Nullable</span> <span class="dt">MainWindow</span>)
+getMainWindow <span class="fu">=</span> ffi <span class="st">&quot;(function () { var m = global['mainWindow']; return m ? m : null; })()&quot;</span></code></pre></div>
+<p>Look up the main window in the global object. If the object is available, return it, otherwise return <code>null</code>. Because it is possible to return <code>null</code>, we set the return type as <code>Nullable MainWindow</code>.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">onEvent ::</span> <span class="dt">OnCaller</span> a <span class="ot">=&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">Text</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> () <span class="ot">-&gt;</span> <span class="dt">Fay</span> ()
+onEvent <span class="fu">=</span> ffi <span class="st">&quot;%1['on'](%2, %3)&quot;</span></code></pre></div>
+<p>This can be used with any member of the <code>OnCaller</code> type class. Roughly translated: <code>obj.on('eventType',</code> <code>callbackFunction);</code>.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">loadUrl ::</span> <span class="dt">MainWindow</span> <span class="ot">-&gt;</span> <span class="dt">DirName</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> ()
+loadUrl <span class="fu">=</span> ffi <span class="st">&quot;%1['loadURL']('file://' + %2 + '/index.html')&quot;</span></code></pre></div>
+<p>The start of the Movie Monad application begins with the HTML file we created earlier. This will load the user interface into the main application window.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">setMainWindowNull ::</span> <span class="dt">Fay</span> ()
+setMainWindowNull <span class="fu">=</span> ffi <span class="st">&quot;(function () { global['mainWindow'] = null; })()&quot;</span></code></pre></div>
+<p>Sets the main window global property to null.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">hideMainWindowMenu ::</span> <span class="dt">MainWindow</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> ()
+hideMainWindowMenu <span class="fu">=</span> ffi <span class="st">&quot;%1['setMenu'](null)&quot;</span></code></pre></div>
+<p>To simplify the interface, we hide the main menu bar. During development, it is best to leave this visible.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">setupMainWindow ::</span> <span class="dt">Fay</span> ()
+setupMainWindow <span class="fu">=</span> <span class="kw">do</span>
+  nullableMainWindow <span class="ot">&lt;-</span> getMainWindow
+  mainWindow <span class="ot">&lt;-</span> <span class="kw">case</span> nullableMainWindow <span class="kw">of</span>
+                  <span class="dt">Nullable</span> mainWindow <span class="ot">-&gt;</span> return mainWindow
+                  <span class="dt">Null</span> <span class="ot">-&gt;</span> <span class="kw">do</span>
+                    electron' <span class="ot">&lt;-</span> electron
+                    browserWindow' <span class="ot">&lt;-</span> browserWindow electron'
+                    iconFile <span class="ot">&lt;-</span> dirName <span class="fu">&gt;&gt;=</span> windowIcon
+                    newMainWindow browserWindow' windowWidth windowHeight iconFile
+  dirName <span class="fu">&gt;&gt;=</span> loadUrl mainWindow
+  hideMainWindowMenu mainWindow
+  onEvent mainWindow <span class="st">&quot;close&quot;</span> setMainWindowNull</code></pre></div>
+<p>Creates the main window if it does not already exist, hides the menu bar, and sets the main window to <code>null</code> when we receive a <code>close</code> event.</p>
+<p>Below is the entire <code>~/movieMonad/src/</code> <code>electronBoot/Main.hs</code> file–be sure to copy it over.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">{-</span>
+<span class="co">  David Lettier (C) 2016</span>
+<span class="co">  http://www.lettier.com/</span>
+<span class="co">-}</span>
+
+<span class="ot">{-# LANGUAGE RebindableSyntax, OverloadedStrings, EmptyDataDecls #-}</span>
+
+<span class="kw">import </span><span class="dt">Prelude</span>
+<span class="kw">import </span><span class="dt">FFI</span>
+<span class="kw">import </span><span class="dt">Fay.Text</span>
+
+<span class="kw">data</span> <span class="dt">Electron</span>
+<span class="kw">data</span> <span class="dt">App</span>
+<span class="kw">data</span> <span class="dt">BrowserWindow</span>
+<span class="kw">data</span> <span class="dt">MainWindow</span>
+
+<span class="kw">class</span> <span class="dt">OnCaller</span> a
+
+<span class="kw">instance</span> <span class="dt">OnCaller</span> <span class="dt">App</span>
+<span class="kw">instance</span> <span class="dt">OnCaller</span> <span class="dt">MainWindow</span>
+
+<span class="kw">type</span> <span class="dt">DirName</span> <span class="fu">=</span> <span class="dt">Text</span>
+
+<span class="ot">main ::</span> <span class="dt">Fay</span> ()
+main <span class="fu">=</span> bootApp
+
+<span class="ot">bootApp ::</span> <span class="dt">Fay</span> ()
+bootApp <span class="fu">=</span> <span class="kw">do</span>
+  electron' <span class="ot">&lt;-</span> electron
+  app' <span class="ot">&lt;-</span> app electron'
+  onEvent app' <span class="st">&quot;ready&quot;</span> setupMainWindow
+  onEvent app' <span class="st">&quot;window-all-closed&quot;</span> <span class="fu">$</span> <span class="kw">do</span>
+    processPlatform' <span class="ot">&lt;-</span> processPlatform
+    when (processPlatform' <span class="fu">/=</span> <span class="st">&quot;darwin&quot;</span>) <span class="fu">$</span> callAppProp app' <span class="st">&quot;quit&quot;</span>
+  onEvent app' <span class="st">&quot;activate&quot;</span> <span class="fu">$</span> void <span class="fu">$</span> <span class="kw">do</span>
+    nullableMainWindow <span class="ot">&lt;-</span> getMainWindow
+    <span class="kw">case</span> nullableMainWindow <span class="kw">of</span>
+      <span class="dt">Nullable</span> _ <span class="ot">-&gt;</span> return ()
+      <span class="dt">Null</span> <span class="ot">-&gt;</span> setupMainWindow
+
+<span class="ot">electron ::</span> <span class="dt">Fay</span> <span class="dt">Electron</span>
+electron <span class="fu">=</span> ffi <span class="st">&quot;require('electron')&quot;</span>
+
+<span class="ot">processPlatform ::</span> <span class="dt">Fay</span> <span class="dt">Text</span>
+processPlatform <span class="fu">=</span> ffi <span class="st">&quot;process.platform&quot;</span>
+
+<span class="ot">app ::</span> <span class="dt">Electron</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> <span class="dt">App</span>
+app <span class="fu">=</span> ffi <span class="st">&quot;%1['app']&quot;</span>
+
+<span class="ot">callAppProp ::</span> <span class="dt">App</span> <span class="ot">-&gt;</span> <span class="dt">Text</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> ()
+callAppProp <span class="fu">=</span> ffi <span class="st">&quot;%1[%2]()&quot;</span>
+
+<span class="ot">browserWindow ::</span> <span class="dt">Electron</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> <span class="dt">BrowserWindow</span>
+browserWindow <span class="fu">=</span> ffi <span class="st">&quot;%1['BrowserWindow']&quot;</span>
+
+<span class="ot">dirName ::</span> <span class="dt">Fay</span> <span class="dt">DirName</span>
+dirName <span class="fu">=</span> ffi <span class="st">&quot;(function () { return __dirname; })()&quot;</span>
+
+<span class="ot">windowWidth ::</span> <span class="dt">Int</span>
+windowWidth <span class="fu">=</span> <span class="dv">800</span>
+
+<span class="ot">windowHeight ::</span> <span class="dt">Int</span>
+windowHeight <span class="fu">=</span> <span class="dv">600</span>
+
+<span class="ot">windowIcon ::</span> <span class="dt">DirName</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> <span class="dt">Text</span>
+windowIcon <span class="fu">=</span> ffi <span class="st">&quot;(function (d) { return d + '/icon.png'; })(%1)&quot;</span>
+
+<span class="ot">newMainWindow ::</span> <span class="dt">BrowserWindow</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Text</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> <span class="dt">MainWindow</span>
+newMainWindow <span class="fu">=</span> ffi <span class="st">&quot;(function (b) { return global['mainWindow'] = new b({ width: %2, height: %3, icon: %4 }); })(%1)&quot;</span>
+
+<span class="ot">getMainWindow ::</span> <span class="dt">Fay</span> (<span class="dt">Nullable</span> <span class="dt">MainWindow</span>)
+getMainWindow <span class="fu">=</span> ffi <span class="st">&quot;(function () { var m = global['mainWindow']; return m ? m : null; })()&quot;</span>
+
+<span class="ot">onEvent ::</span> <span class="dt">OnCaller</span> a <span class="ot">=&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">Text</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> () <span class="ot">-&gt;</span> <span class="dt">Fay</span> ()
+onEvent <span class="fu">=</span> ffi <span class="st">&quot;%1['on'](%2, %3)&quot;</span>
+
+<span class="ot">loadUrl ::</span> <span class="dt">MainWindow</span> <span class="ot">-&gt;</span> <span class="dt">DirName</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> ()
+loadUrl <span class="fu">=</span> ffi <span class="st">&quot;%1['loadURL']('file://' + %2 + '/index.html')&quot;</span>
+
+<span class="ot">setMainWindowNull ::</span> <span class="dt">Fay</span> ()
+setMainWindowNull <span class="fu">=</span> ffi <span class="st">&quot;(function () { global['mainWindow'] = null; })()&quot;</span>
+
+<span class="ot">hideMainWindowMenu ::</span> <span class="dt">MainWindow</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> ()
+hideMainWindowMenu <span class="fu">=</span> ffi <span class="st">&quot;%1['setMenu'](null)&quot;</span>
+
+<span class="ot">setupMainWindow ::</span> <span class="dt">Fay</span> ()
+setupMainWindow <span class="fu">=</span> <span class="kw">do</span>
+  nullableMainWindow <span class="ot">&lt;-</span> getMainWindow
+  mainWindow <span class="ot">&lt;-</span> <span class="kw">case</span> nullableMainWindow <span class="kw">of</span>
+                  <span class="dt">Nullable</span> mainWindow <span class="ot">-&gt;</span> return mainWindow
+                  <span class="dt">Null</span> <span class="ot">-&gt;</span> <span class="kw">do</span>
+                    electron' <span class="ot">&lt;-</span> electron
+                    browserWindow' <span class="ot">&lt;-</span> browserWindow electron'
+                    iconFile <span class="ot">&lt;-</span> dirName <span class="fu">&gt;&gt;=</span> windowIcon
+                    newMainWindow browserWindow' windowWidth windowHeight iconFile
+  dirName <span class="fu">&gt;&gt;=</span> loadUrl mainWindow
+  hideMainWindowMenu mainWindow
+  onEvent mainWindow <span class="st">&quot;close&quot;</span> setMainWindowNull</code></pre></div>
+<h1 id="build">Build</h1>
+<p>So far we setup our build environment and we wrote out the source code. We are now ready to build the entire project.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/movieMonad
+<span class="ex">nvm</span> use
+<span class="fu">make</span></code></pre></div>
+<p>If all went well, you should see the Movie Monad window open and ready to play videos. Located in <code>~/movieMonad/dist/electronDists</code> are the packaged Linux, Windows, and Mac versions.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">~/movieMonad</span>
+  <span class="ex">dist/</span>
+    <span class="ex">electronDists/</span>
+      <span class="ex">movieMonad-darwin-x64/</span>
+      <span class="ex">movieMonad-linux-ia32/</span>
+      <span class="ex">movieMonad-linux-x64/</span>
+      <span class="ex">movieMonad-mas-x64/</span>
+      <span class="ex">movieMonad-win32-ia32/</span>
+      <span class="ex">movieMonad-win32-x64/</span></code></pre></div>
+<p>If later on you only want to do some portion of the build process, you can pass <code>make</code> the target name.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/movieMonad
+<span class="ex">nvm</span> use
+<span class="fu">make</span> buildHaskell</code></pre></div>
+<p>Each target or build step is listed in the <code>makefile</code> you created earlier.</p>
+<h1 id="recap">Recap</h1>
+<p>Using the Haskell libraries Blaze, Fay, and Clay, we generated the HTML, CSS, and JavaScript files necessary to build Movie Monad. These files, along with Electron and Electron Packager, allowed us to make a video playing desktop application and package it up for distribution to all major platforms. In <a href="../posts/2017-08-30-haskell-gtk-video-player.html">Let’s make a GTK Video Player with Haskell</a>, we take a different approach and build Movie Monad using GTK+ and GStreamer.</p>
+<p>If you enjoy web programming in Haskell, be sure to read <a href="../posts/2016-07-15-building-a-haskell-web-api.html">Building a Haskell Web API</a> and <a href="../posts/2016-07-04-haskell-to-javascript.html">Haskell to JavaScript</a>.</p>
+</div>
+<div class="post-footer">
+  <div class="display-left">
+    <h2 class="post-footer-cta">
+      Hi there!
+      <a href="../" title="Home">Browse</a>
+      and subscribe to the
+      <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
+      for more content.
+    </h2>
+  </div>
+  <div class="display-right text-align-right post-footer-copyright">
+    <h4>
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2017</span> David Lettier
+    </h4>
+  </div>
+</div>
+
+    </div>
+    <div class="share-toolbox addthis_sharing_toolbox"></div>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4fc2bc7a00a9352b"></script>
+    <script>
+      (function(i,s,o,g,r,a,m){
+        i.GoogleAnalyticsObject = r;
+        i[r] = i[r] || function () { (i[r].q = i[r].q || []).push(arguments); };
+        i[r].l=1*new Date();
+        a=s.createElement(o);
+        m=s.getElementsByTagName(o)[0];
+        a.async=1;
+        a.src=g;
+        m.parentNode.insertBefore(a,m);
+      })(
+        window,
+        document,
+        'script',
+        '//www.google-analytics.com/analytics.js',
+        'ga'
+      );
+      ga('create', 'UA-34323684-2', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </body>
+</html>

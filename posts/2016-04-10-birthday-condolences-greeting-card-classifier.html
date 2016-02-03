@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta property="og:site_name" content="Lettier">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Birthday Condolences, Greeting Card Classifier by David Lettier">
+    <meta property="og:image" content="https://lettier.github.io/images/2016-04-10-birthday-condolences-greeting-card-classifier/jumbotron_image.jpg">
+    <meta property="og:url" content="https://lettier.github.io/posts/2016-04-10-birthday-condolences-greeting-card-classifier.html">
+    <meta property="og:description" content="Using scikit-learn, we build a binary classifier model capable of classifying greeting cards as either birthday or condolences.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="David Lettier">
+    <meta name="description" content="Using scikit-learn, we build a binary classifier model capable of classifying greeting cards as either birthday or condolences.">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/pandoc.css">
+    <link rel="stylesheet" type="text/css" href="../css/default.css">
+    <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
+    
+      
+        <title>Birthday Condolences, Greeting Card Classifier by David Lettier</title>
+      
+    
+  </head>
+  <body>
+    <div id="top"></div>
+    <div class="nav-bar-container nav-bar-background">
+      <div class="nav-bar-buttons-container">
+        <a href="../" title="Home">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-home nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="../rss.xml" title="RSS" type="application/rss+xml" target="_blank">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-rss nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="http://www.lettier.com/" title="Lettier.com">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <img src="../images/logo.svg" width="30" height="30" alt="Lettier.com" class="lettier-icon-img">
+            </div>
+          </div>
+        </a>
+        <a href="https://www.github.com/lettier" title="GitHub">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-github nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.linkedin.com/in/lettier" title="LinkedIn">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-linkedin nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.hackerrank.com/lettier" title="HackerRank">
+          <div class="nav-bar-button-container nav-button-container-second-last">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-trophy nav-bar-icon nav-bar-icon-second-last"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.behance.net/dlettier" title="Behance">
+          <div class="nav-bar-button-container nav-bar-button-container-last">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-behance nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="jumbotron">
+      <div class="absolute-top jumbotron jumbotron-background-image" style="background-image: url('/images/2016-04-10-birthday-condolences-greeting-card-classifier/jumbotron_image.jpg');">
+      </div>
+    </div>
+    <div class="container jumbotron-text-position-container">
+      <div class="jumbotron-text-width-container">
+        <h1 class="jumbotron-text jumbotron-text-background">
+          
+            Birthday Condolences, Greeting Card Classifier
+          
+          <span class="title-cursor">|</span>
+        </h1>
+      </div>
+    </div>
+    <div class="container content-container">
+      <div class="post-body">
+  <!--https://commons.wikimedia.org/wiki/File:GreetingCards3.jpg-->
+<p>It is late and your cart of greeting cards just fell over mixing birthday and sympathy cards all over the floor. Unfortunately, you cannot go home until you restock the card shelves. Luckily you have OCR on your phone and a knack for machine learning. Let’s build a classifier using <a href="http://scikit-learn.org/stable/">scikit-learn’s</a> implementation of <a href="https://en.wikipedia.org/wiki/Logistic_regression">logistic regression</a>.</p>
+<h2 id="sample-data">Sample Data</h2>
+<p>Our sample data consists of four files:</p>
+<ul>
+<li><code>positive.train.dat</code></li>
+<li><code>negative.train.dat</code></li>
+<li><code>positive.test.dat</code></li>
+<li><code>negative.test.dat</code>.</li>
+</ul>
+<p>Below is the specific makeup:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">Training</span>:
+
+  <span class="ex">Positive</span>:  84
+  <span class="ex">Negative</span>: 100
+  <span class="ex">-------------</span>
+     <span class="ex">Total</span>: 184
+
+<span class="ex">Test</span>:
+
+  <span class="ex">Positive</span>: 100
+  <span class="ex">Negative</span>:  50
+  <span class="ex">-------------</span>
+     <span class="ex">Total</span>: 150</code></pre></div>
+<p>The training examples we will use for parameter optimization and cross validation. Once we have built our predictive model, we’ll check its performance using our test set of examples the model never saw during training and validation.</p>
+<p>The positive examples are birthday card greetings found on various websites around the web. Here is a small sample:</p>
+<ul>
+<li>They say that with age comes wisdom. You must be one of the wisest.</li>
+<li>To the nation’s best kept secret; Your true age.</li>
+<li>What goes up but never comes down? Your age.</li>
+<li>It’s your birthday. Now you have more grown up. Every year you’re becoming more perfect.</li>
+<li>Wishing happy birthday to the best person I have ever met in this world.</li>
+<li>Thank you for all the memories we have. Without you the world would have been colorless to me.</li>
+</ul>
+<p>For the negative samples, we’ll use condolences which you would find in sympathy cards. Here is a small sample:</p>
+<ul>
+<li>You and your family are in my heart and mind. My condolences on the passing of your father.</li>
+<li>It’s terrible to hear about your loss and I express my sincere sympathy to you and your family</li>
+<li>I am deeply saddened by the loss that you and your family have encountered. My condolences.</li>
+<li>My deepest sympathies go out to you and your family. May God give you the peace that you seek.</li>
+<li>May my condolences bring you comfort and may my prayers ease the pain of this loss.</li>
+<li>I offer you my thoughts, prayers and well-wishes during this dark time in your life.</li>
+</ul>
+<p>Our classes will be <code>1</code> for positive <code>birthday greeting</code> and <code>0</code> for negative <code>not birthday greeting (sympathy)</code>.</p>
+<h2 id="dependencies">Dependencies</h2>
+<p>We will need matplotlib for charting and sklearn for corpus processing, hyperparamter search, model building, and metrics calculations.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="im">import</span> operator
+<span class="im">import</span> matplotlib.pyplot <span class="im">as</span> pyplot
+<span class="im">from</span> numpy.random <span class="im">import</span> uniform
+<span class="im">from</span> sklearn.pipeline <span class="im">import</span> Pipeline
+<span class="im">from</span> sklearn.feature_extraction.text <span class="im">import</span> CountVectorizer
+<span class="im">from</span> sklearn.feature_extraction.text <span class="im">import</span> TfidfVectorizer
+<span class="im">from</span> sklearn.grid_search <span class="im">import</span> RandomizedSearchCV
+<span class="im">from</span> sklearn.linear_model <span class="im">import</span> LogisticRegression
+<span class="im">from</span> sklearn.cross_validation <span class="im">import</span> cross_val_score
+<span class="im">from</span> sklearn.metrics <span class="im">import</span> log_loss
+<span class="im">from</span> sklearn.metrics <span class="im">import</span> roc_auc_score
+<span class="im">from</span> sklearn.metrics <span class="im">import</span> roc_curve</code></pre></div>
+<h2 id="loading-the-data">Loading the Data</h2>
+<p>Each sample occupies a single newline in each file. For each type (positive or negative) we’ll generate the class labels for each sample.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="kw">def</span> load(file_name):
+  <span class="cf">with</span> <span class="bu">open</span>(file_name) <span class="im">as</span> f:
+    lines <span class="op">=</span> f.readlines()
+
+  <span class="cf">return</span> [x.strip().lower() <span class="cf">for</span> x <span class="kw">in</span> lines]
+
+positive_samples_train <span class="op">=</span> load(<span class="st">'positive.train.dat'</span>)
+negative_samples_train <span class="op">=</span> load(<span class="st">'negative.train.dat'</span>)
+samples_train <span class="op">=</span> positive_samples_train <span class="op">+</span> negative_samples_train
+labels_train <span class="op">=</span> [<span class="dv">1</span> <span class="cf">for</span> x <span class="kw">in</span> positive_samples_train] <span class="op">+</span> <span class="op">\</span>
+  [<span class="dv">0</span> <span class="cf">for</span> x <span class="kw">in</span> negative_samples_train]
+
+positive_samples_test <span class="op">=</span> load(<span class="st">'positive.test.dat'</span>)
+negative_samples_test <span class="op">=</span> load(<span class="st">'negative.test.dat'</span>)
+samples_test <span class="op">=</span> positive_samples_test <span class="op">+</span> negative_samples_test
+labels_test <span class="op">=</span> [<span class="dv">1</span> <span class="cf">for</span> x <span class="kw">in</span> positive_samples_test] <span class="op">+</span> <span class="op">\</span>
+  [<span class="dv">0</span> <span class="cf">for</span> x <span class="kw">in</span> negative_samples_test]</code></pre></div>
+<h2 id="word-frequencies-per-class">Word frequencies per class</h2>
+<p>To get a sense of the feature landscape let’s calculate the top word frequencies found for both positive, negative, train and test.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="kw">def</span> vocab_count(samples, typee):
+  vocab_counter <span class="op">=</span> CountVectorizer(
+    stop_words<span class="op">=</span><span class="st">'english'</span>,
+    ngram_range<span class="op">=</span>(<span class="dv">1</span>, <span class="dv">2</span>),
+    max_df<span class="op">=</span><span class="fl">1.0</span>,
+    min_df<span class="op">=</span><span class="fl">0.0</span>
+  )
+  dtm <span class="op">=</span> vocab_counter.fit_transform(samples)
+  vocab_indexes <span class="op">=</span> vocab_counter.get_feature_names()
+  vocab_totals <span class="op">=</span> {}
+  <span class="cf">for</span> row <span class="kw">in</span> dtm:
+    <span class="cf">for</span> j, count <span class="kw">in</span> <span class="bu">enumerate</span>(row.A[<span class="dv">0</span>]):
+      word <span class="op">=</span> vocab_indexes[j]
+      vocab_totals[word] <span class="op">=</span> vocab_totals.get(word, <span class="dv">0</span>)
+      vocab_totals[word] <span class="op">+=</span> count
+
+  <span class="bu">print</span>(
+    <span class="st">'Most frequent </span><span class="sc">%s</span><span class="st"> corpus features: </span><span class="sc">%s</span><span class="st">'</span> <span class="op">%</span> (
+      typee,
+      <span class="bu">sorted</span>(
+        vocab_totals.items(),
+        key<span class="op">=</span>operator.itemgetter(<span class="dv">1</span>),
+        reverse<span class="op">=</span><span class="va">True</span>
+      )[:<span class="dv">10</span>]
+    )
+  )
+
+vocab_count(positive_samples_train, <span class="st">'positive training'</span>)
+vocab_count(negative_samples_train, <span class="st">'negative training'</span>)
+vocab_count(positive_samples_test, <span class="st">'positive test'</span>)
+vocab_count(negative_samples_test, <span class="st">'negative test'</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">Most frequent positive training corpus features:
+  [
+    (<span class="st">'birthday'</span>, <span class="dv">32</span>),
+    (<span class="st">'age'</span>, <span class="dv">17</span>),
+    (<span class="st">'happy'</span>, <span class="dv">15</span>),
+    (<span class="st">'old'</span>, <span class="dv">14</span>),
+    (<span class="st">'candles'</span>, <span class="dv">12</span>),
+    (<span class="st">'happy birthday'</span>, <span class="dv">11</span>),
+    (<span class="st">'people'</span>, <span class="dv">11</span>),
+    (<span class="st">'year'</span>, <span class="dv">10</span>),
+    (<span class="st">'like'</span>, <span class="dv">9</span>),
+    (<span class="st">'cake'</span>, <span class="dv">9</span>)
+  ]
+
+Most frequent negative training corpus features:
+  [
+    (<span class="st">'condolences'</span>, <span class="dv">48</span>),
+    (<span class="st">'loss'</span>, <span class="dv">23</span>),
+    (<span class="st">'family'</span>, <span class="dv">22</span>),
+    (<span class="st">'peace'</span>, <span class="dv">21</span>),
+    (<span class="st">'soul'</span>, <span class="dv">20</span>),
+    (<span class="st">'god'</span>, <span class="dv">19</span>),
+    (<span class="st">'rest'</span>, <span class="dv">16</span>),
+    (<span class="st">'time'</span>, <span class="dv">16</span>),
+    (<span class="st">'comfort'</span>, <span class="dv">13</span>),
+    (<span class="st">'prayers'</span>, <span class="dv">13</span>)
+  ]
+
+Most frequent positive test corpus features:
+  [
+    (<span class="st">'birthday'</span>, <span class="dv">101</span>),
+    (<span class="st">'happy'</span>, <span class="dv">87</span>),
+    (<span class="st">'happy birthday'</span>, <span class="dv">84</span>),
+    (<span class="st">'friend'</span>, <span class="dv">31</span>),
+    (<span class="st">'day'</span>, <span class="dv">24</span>),
+    (<span class="st">'best'</span>, <span class="dv">24</span>),
+    (<span class="st">'special'</span>, <span class="dv">22</span>),
+    (<span class="st">'life'</span>, <span class="dv">21</span>),
+    (<span class="st">'world'</span>, <span class="dv">21</span>),
+    (<span class="st">'love'</span>, <span class="dv">20</span>)
+  ]
+
+Most frequent negative test corpus features:
+  [
+    (<span class="st">'condolences'</span>, <span class="dv">26</span>),
+    (<span class="st">'family'</span>, <span class="dv">19</span>),
+    (<span class="st">'insert'</span>, <span class="dv">17</span>),
+    (<span class="st">'deceased'</span>, <span class="dv">17</span>),
+    (<span class="st">'bereaved'</span>, <span class="dv">17</span>),
+    (<span class="st">'peace'</span>, <span class="dv">16</span>),
+    (<span class="st">'god'</span>, <span class="dv">14</span>),
+    (<span class="st">'soul'</span>, <span class="dv">14</span>),
+    (<span class="st">'deceased bereaved'</span>, <span class="dv">13</span>),
+    (<span class="st">'relationship'</span>, <span class="dv">13</span>)
+  ]</code></pre></div>
+<p>Even though it is early in the process, it is safe to say that <code>birthday</code> and <code>condolences</code> contain a lot of information about a greeting card’s class. The features <code>birthday</code> and <code>condolences</code> are not English stop-words nor are they stop-words for our particular corpus. Corpus specific stop-words are words found frequently in most/all classes providing little discrimination and a lot of overlap.</p>
+<h2 id="the-pipeline">The Pipeline</h2>
+<p>For convenience we’ll setup a pipeline that will take our raw text, pre-process it, and then pass it to our logistic regression model.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">pipeline <span class="op">=</span> Pipeline(
+  steps<span class="op">=</span>[
+    (<span class="st">'tfidf'</span>, TfidfVectorizer(ngram_range<span class="op">=</span>(<span class="dv">1</span>, <span class="dv">2</span>), stop_words<span class="op">=</span><span class="st">'english'</span>)),
+    (<span class="st">'logistic'</span>, LogisticRegression())
+  ]
+)</code></pre></div>
+<h3 id="tf-idf-weighting">TF-IDF Weighting</h3>
+<p>Not all words found in the corpus are equally important. For each sample, we will weight each of its words by the ratio of how many times they appear in the sentence versus how many times they appear in all of the sentences using <a href="../posts/2016-02-17-text-mining-in-r-death-row-prior-occupations.html#prior-occupation-weighting-tf-idf">TF-IDF</a>.</p>
+<h3 id="logistic-regression">Logistic Regression</h3>
+<p>Our binary classifier of choice will be logistic regression. In some ways it is similar to linear regression but uses a different hypothesis function <code>h(x) = 1 / (1 + e^(-Z))</code> where <code>Z = θ^(T) * x</code>. As an added bonus, the output of <code>h</code> is the positive class probability versus just a binary prediction of one or zero.</p>
+<h2 id="randomized-search-cross-validation">Randomized Search Cross Validation</h2>
+<p>Both the TF-IDF and logistic regression algorithms have hyperparameters that need to be defined up front. We could spend all day tweaking these and then cross validating but instead we’ll use scikit-learn’s <code>RandomizedSearchCV</code>. We’ll iterate 100 times doing 10-fold cross validation each time in order to find four hyperparamters: TF-IDF min-df (document frequency), TF-IDF max-df, logistic regression C (the inverse of the <a href="https://www.quora.com/What-is-regularization-in-machine-learning">regularization</a> strength), and the logistic regression regularization type or penalty. Our goal during our search is to minimize the <a href="http://www.r-bloggers.com/making-sense-of-logarithmic-loss/">logarithmic loss</a>.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">n <span class="op">=</span> <span class="dv">100</span>
+k <span class="op">=</span> <span class="dv">10</span>
+search <span class="op">=</span> <span class="at">RandomizedSearchCV</span>(
+  pipeline<span class="op">,</span>
+  param_distributions<span class="op">={</span>
+    <span class="st">'tfidf__min_df'</span><span class="op">:</span> <span class="at">uniform</span>(<span class="fl">0.0</span><span class="op">,</span> <span class="fl">0.2</span><span class="op">,</span> n)<span class="op">,</span>
+    <span class="st">'tfidf__max_df'</span><span class="op">:</span> <span class="at">uniform</span>(<span class="fl">0.8</span><span class="op">,</span> <span class="fl">1.0</span><span class="op">,</span> n)<span class="op">,</span>
+    <span class="st">'logistic__C'</span><span class="op">:</span> <span class="at">uniform</span>(<span class="fl">0.0</span><span class="op">,</span> <span class="fl">1.0</span><span class="op">,</span> n)<span class="op">,</span>
+    <span class="st">'logistic__penalty'</span><span class="op">:</span> [<span class="st">'l1'</span><span class="op">,</span> <span class="st">'l2'</span>]
+  <span class="op">},</span>
+  n_jobs<span class="op">=</span><span class="dv">8</span><span class="op">,</span>
+  cv<span class="op">=</span>k<span class="op">,</span>
+  scoring<span class="op">=</span><span class="st">'log_loss'</span><span class="op">,</span>
+  n_iter<span class="op">=</span>n
+)</code></pre></div>
+<h3 id="the-best-hyperparameters">The Best Hyperparameters</h3>
+<p>After performing the randomized search we arrive at:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">Best hyperparams<span class="op">:</span> <span class="op">{</span>
+  <span class="st">'tfidf__max_df'</span><span class="op">:</span> <span class="fl">0.84163294453018755</span><span class="op">,</span>
+  <span class="st">'tfidf__min_df'</span><span class="op">:</span> <span class="fl">0.053779330737934818</span><span class="op">,</span>
+  <span class="st">'logistic__penalty'</span><span class="op">:</span> <span class="st">'l1'</span><span class="op">,</span>
+  <span class="st">'logistic__C'</span><span class="op">:</span> <span class="fl">0.94865926441506498</span>
+<span class="op">}</span></code></pre></div>
+<p>The defaults are:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="op">{</span>
+  <span class="st">'tfidf__max_df'</span><span class="op">:</span> <span class="fl">1.0</span><span class="op">,</span>
+  <span class="st">'tfidf__min_df'</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span>
+  <span class="st">'logistic__penalty'</span><span class="op">:</span> <span class="st">'l2'</span><span class="op">,</span>
+  <span class="st">'logistic__C'</span><span class="op">:</span> <span class="fl">1.0</span>
+<span class="op">}</span></code></pre></div>
+<h3 id="tf-idf-vocabulary">TF-IDF vocabulary</h3>
+<p>Using the best hyperparameters found, let us take a look at the vocabulary or features actually used in the pipeline.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="bu">print</span>(
+  <span class="st">'TF-IDF Vocabulary: </span><span class="sc">%s</span><span class="st">'</span> <span class="op">%</span> (
+    [key <span class="cf">for</span> key, _ <span class="kw">in</span> tfidf.vocabulary_.items()],
+  )
+)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">TF<span class="op">-</span>IDF Vocabulary<span class="op">:</span> [
+ <span class="st">'god'</span><span class="op">,</span>
+ <span class="st">'happy birthday'</span><span class="op">,</span>
+ <span class="st">'know'</span><span class="op">,</span>
+ <span class="st">'old'</span><span class="op">,</span>
+ <span class="st">'prayers'</span><span class="op">,</span>
+ <span class="st">'people'</span><span class="op">,</span>
+ <span class="st">'words'</span><span class="op">,</span>
+ <span class="st">'soul'</span><span class="op">,</span>
+ <span class="st">'family'</span><span class="op">,</span>
+ <span class="st">'age'</span><span class="op">,</span>
+ <span class="st">'mother'</span><span class="op">,</span>
+ <span class="st">'love'</span><span class="op">,</span>
+ <span class="st">'comfort'</span><span class="op">,</span>
+ <span class="st">'peace'</span><span class="op">,</span>
+ <span class="st">'rest'</span><span class="op">,</span>
+ <span class="st">'time'</span><span class="op">,</span>
+ <span class="st">'candles'</span><span class="op">,</span>
+ <span class="st">'happy'</span><span class="op">,</span>
+ <span class="st">'like'</span><span class="op">,</span>
+ <span class="st">'loss'</span><span class="op">,</span>
+ <span class="st">'birthday'</span><span class="op">,</span>
+ <span class="st">'great'</span><span class="op">,</span>
+ <span class="st">'condolences'</span>
+]</code></pre></div>
+<p>Most of them are the same words listed above in the corpus word frequencies.</p>
+<h2 id="log-loss-cross-validation-score">Log Loss Cross Validation Score</h2>
+<p>Using our best found model, we can now perform 10-fold cross validation using the log loss scoring function. Imagine splitting up the training samples into 10 chunks. You find the best weights for the model/function using 9 out of the 10 chunks. You then test the trained model on the 10<sup>th</sup> chunk evaluating the log loss metric. Now do this 10 times until each chunk was used as the test chunk.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="bu">print</span>(
+  <span class="st">'</span><span class="sc">%s</span><span class="st">-fold mean Log Loss CV score: </span><span class="sc">%s</span><span class="st">'</span> <span class="op">%</span> (
+    k,
+    <span class="bu">abs</span>(  <span class="co"># scikit-learn outputs a negative score but log loss is non-negative</span>
+      cross_val_score(
+        pipeline,
+        samples_train,
+        labels_train,
+        scoring<span class="op">=</span><span class="st">'log_loss'</span>,
+        cv<span class="op">=</span>k,
+        n_jobs<span class="op">=</span><span class="dv">8</span>
+      ).mean()
+    ),
+  )
+)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="dv">10</span><span class="op">-</span>fold mean Log Loss CV score<span class="op">:</span> <span class="fl">0.28916885941</span></code></pre></div>
+<h2 id="test-metrics">Test Metrics</h2>
+<p>Our model is now trained, validated, and ready for testing on some unseen data.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">pipeline</span>.<span class="at">fit</span>(samples_train<span class="op">,</span> labels_train)
+classes <span class="op">=</span> <span class="va">pipeline</span>.<span class="va">classes_</span>.<span class="at">tolist</span>()
+
+<span class="at">print</span>(<span class="st">'Classes: %s'</span> <span class="op">%</span> (classes<span class="op">,</span>))
+
+<span class="kw">true</span> <span class="op">=</span> labels_test
+pred_prob <span class="op">=</span> <span class="va">pipeline</span>.<span class="at">predict_proba</span>(samples_test)
+pred_prob_pos <span class="op">=</span> [x[<span class="va">classes</span>.<span class="at">index</span>(<span class="dv">1</span>)] <span class="cf">for</span> x <span class="kw">in</span> pred_prob]
+
+<span class="at">print</span>(
+  <span class="st">'Test Log Loss: %s'</span> <span class="op">%</span> (
+    <span class="at">log_loss</span>(
+      <span class="kw">true</span><span class="op">,</span>
+      pred_prob
+    )
+  )
+)
+
+<span class="at">print</span>(
+  <span class="st">'Test ROC AUC: %s'</span> <span class="op">%</span> (
+    <span class="at">roc_auc_score</span>(
+      <span class="kw">true</span><span class="op">,</span>
+      pred_prob_pos
+    )
+  )
+)</code></pre></div>
+<h3 id="log-loss">Log Loss</h3>
+<p>The log loss score is very high when the classifier gives a very low class probability for a sample that is actually the class.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">Test Log Loss<span class="op">:</span> <span class="fl">0.164580415601</span></code></pre></div>
+<p>For example:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">In [<span class="dv">90</span>]: true <span class="op">=</span> [<span class="dv">1</span>] <span class="op">*</span> <span class="dv">5</span> <span class="op">+</span> [<span class="dv">0</span>] <span class="op">*</span> <span class="dv">5</span> <span class="co"># First five are yes and last 5 are no.</span>
+
+<span class="co"># First five give 100% probability to it being a yes and 0% probability to it being a no.</span>
+<span class="co"># Last  five give 100% probability to it being a  no and 0% probability to it being a yes.</span>
+In [<span class="dv">91</span>]: pred <span class="op">=</span> [[<span class="fl">0.0</span>, <span class="fl">1.0</span>] <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">5</span>)] <span class="op">+</span> [[<span class="fl">1.0</span>, <span class="fl">0.0</span>] <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">5</span>)]
+<span class="co">#                 no,  yes                         no,  yes</span>
+
+In [<span class="dv">92</span>]: log_loss(true, pred)
+Out[<span class="dv">92</span>]: <span class="fl">9.9920072216264128e-16</span> <span class="co"># It predicted each one completely right.</span>
+<span class="co">#                          ^ very small.</span>
+
+In [<span class="dv">93</span>]: pred <span class="op">=</span> pred[::<span class="op">-</span><span class="dv">1</span>] <span class="co"># Reverse it so it gets each one completely wrong.</span>
+
+In [<span class="dv">94</span>]: pred
+Out[<span class="dv">94</span>]:
+[[<span class="fl">1.0</span>, <span class="fl">0.0</span>],
+ [<span class="fl">1.0</span>, <span class="fl">0.0</span>],
+ [<span class="fl">1.0</span>, <span class="fl">0.0</span>],
+ [<span class="fl">1.0</span>, <span class="fl">0.0</span>],
+ [<span class="fl">1.0</span>, <span class="fl">0.0</span>],
+ [<span class="fl">0.0</span>, <span class="fl">1.0</span>],
+ [<span class="fl">0.0</span>, <span class="fl">1.0</span>],
+ [<span class="fl">0.0</span>, <span class="fl">1.0</span>],
+ [<span class="fl">0.0</span>, <span class="fl">1.0</span>],
+ [<span class="fl">0.0</span>, <span class="fl">1.0</span>]]
+
+In [<span class="dv">95</span>]: log_loss(true, pred)
+Out[<span class="dv">95</span>]: <span class="fl">34.538776394910677</span></code></pre></div>
+<h3 id="roc-auc-area-under-the-curve">ROC AUC (Area under the Curve)</h3>
+<p>The <a href="../posts/2016-03-28-reelin-and-rocin-receiver-operating-characteristic.html">ROC</a> AUC is the area under the receiver operating characteristic curve (ROC). An area of one is a perfect score.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">Test ROC AUC<span class="op">:</span> <span class="fl">0.9976</span></code></pre></div>
+<p>To hammer home the last post, let’s chart the ROC curve by varying the class probability thresholds.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">fpr<span class="op">,</span> tpr<span class="op">,</span> thresholds <span class="op">=</span> <span class="at">roc_curve</span>(<span class="kw">true</span><span class="op">,</span> pred_prob_pos<span class="op">,</span> pos_label<span class="op">=</span><span class="dv">1</span>)
+<span class="va">pyplot</span>.<span class="va">style</span>.<span class="at">use</span>(<span class="st">'ggplot'</span>)
+<span class="va">pyplot</span>.<span class="at">plot</span>([<span class="fl">0.0</span>] <span class="op">+</span> <span class="va">fpr</span>.<span class="at">tolist</span>()<span class="op">,</span> [<span class="fl">0.0</span>] <span class="op">+</span> <span class="va">fpr</span>.<span class="at">tolist</span>()<span class="op">,</span> <span class="st">'--'</span>)
+<span class="va">pyplot</span>.<span class="at">plot</span>([<span class="fl">0.0</span>] <span class="op">+</span> <span class="va">fpr</span>.<span class="at">tolist</span>()<span class="op">,</span> [<span class="fl">0.0</span>] <span class="op">+</span> <span class="va">tpr</span>.<span class="at">tolist</span>())
+<span class="va">pyplot</span>.<span class="at">title</span>(
+  <span class="st">'ROC Curve'</span><span class="op">,</span>
+  y<span class="op">=</span><span class="fl">1.08</span>
+)
+<span class="va">pyplot</span>.<span class="at">suptitle</span>(
+  <span class="st">'Logistic Regression Classifier '</span>
+  <span class="st">'of Birthday Wishes vs Condolences'</span><span class="op">,</span>
+  y<span class="op">=</span><span class="fl">0.95</span>
+)
+<span class="va">pyplot</span>.<span class="at">xlabel</span>(<span class="st">'False Positive Rate'</span>)
+<span class="va">pyplot</span>.<span class="at">ylabel</span>(<span class="st">'True Positive Rate'</span>)
+<span class="va">pyplot</span>.<span class="at">xlim</span>([<span class="op">-</span><span class="fl">0.05</span><span class="op">,</span> <span class="fl">1.05</span>])
+<span class="va">pyplot</span>.<span class="at">ylim</span>([<span class="op">-</span><span class="fl">0.05</span><span class="op">,</span> <span class="fl">1.05</span>])
+<span class="va">pyplot</span>.<span class="at">savefig</span>(<span class="st">'roc_curve.png'</span>)</code></pre></div>
+<div class="figure">
+<img src="../images/2016-04-10-birthday-condolences-greeting-card-classifier/roc_curve.png" alt="ROC Curve" class="post-img post-img-fill" />
+<p class="caption">ROC Curve</p>
+</div>
+<h2 id="recap">Recap</h2>
+<p>We explored our sample data set and held out some examples for testing. After building our pre-processing and model pipeline, we attempted to find the most optimal hyperparameters by using randomized search. Using the best model found, we cross validated it scoring its performance using log loss. Once trained and validated, we tested it on our test data set and charted the ROC curve.</p>
+<p>With our new classifier and the OCR on your phone, you should be able to sort out that mess on the floor in no time.</p>
+<h2 id="appendix">Appendix</h2>
+<h3 id="full-source-code">Full Source Code</h3>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="co">#! /usr/bin/python</span>
+
+<span class="st">'''</span>
+  David <span class="at">Lettier</span> (C) <span class="dv">2016</span>
+  http<span class="op">:</span><span class="co">//www.lettier.com</span>
+<span class="st">'''</span>
+
+<span class="im">import</span> operator
+<span class="im">import</span> <span class="va">matplotlib</span>.<span class="at">pyplot</span> <span class="at">as</span> <span class="at">pyplot</span>
+<span class="im">from</span> <span class="va">numpy</span>.<span class="at">random</span> <span class="at">import</span> <span class="at">uniform</span>
+<span class="im">from</span> <span class="va">sklearn</span>.<span class="at">pipeline</span> <span class="at">import</span> <span class="at">Pipeline</span>
+<span class="im">from</span> <span class="va">sklearn</span>.<span class="va">feature_extraction</span>.<span class="at">text</span> <span class="at">import</span> <span class="at">CountVectorizer</span>
+<span class="im">from</span> <span class="va">sklearn</span>.<span class="va">feature_extraction</span>.<span class="at">text</span> <span class="at">import</span> <span class="at">TfidfVectorizer</span>
+<span class="im">from</span> <span class="va">sklearn</span>.<span class="at">grid_search</span> <span class="at">import</span> <span class="at">RandomizedSearchCV</span>
+<span class="im">from</span> <span class="va">sklearn</span>.<span class="at">linear_model</span> <span class="at">import</span> <span class="at">LogisticRegression</span>
+<span class="im">from</span> <span class="va">sklearn</span>.<span class="at">cross_validation</span> <span class="at">import</span> <span class="at">cross_val_score</span>
+<span class="im">from</span> <span class="va">sklearn</span>.<span class="at">metrics</span> <span class="at">import</span> <span class="at">log_loss</span>
+<span class="im">from</span> <span class="va">sklearn</span>.<span class="at">metrics</span> <span class="at">import</span> <span class="at">roc_auc_score</span>
+<span class="im">from</span> <span class="va">sklearn</span>.<span class="at">metrics</span> <span class="at">import</span> <span class="at">roc_curve</span>
+
+
+def <span class="at">load</span>(file_name)<span class="op">:</span>
+  <span class="cf">with</span> <span class="at">open</span>(file_name) <span class="im">as</span> f<span class="op">:</span>
+    lines <span class="op">=</span> <span class="va">f</span>.<span class="at">readlines</span>()
+
+  <span class="cf">return</span> [<span class="va">x</span>.<span class="at">strip</span>().<span class="at">lower</span>() <span class="cf">for</span> x <span class="kw">in</span> lines]
+
+positive_samples_train <span class="op">=</span> <span class="at">load</span>(<span class="st">'positive.train.dat'</span>)
+negative_samples_train <span class="op">=</span> <span class="at">load</span>(<span class="st">'negative.train.dat'</span>)
+samples_train <span class="op">=</span> positive_samples_train <span class="op">+</span> negative_samples_train
+labels_train <span class="op">=</span> [<span class="dv">1</span> <span class="cf">for</span> x <span class="kw">in</span> positive_samples_train] <span class="op">+</span> \
+  [<span class="dv">0</span> <span class="cf">for</span> x <span class="kw">in</span> negative_samples_train]
+
+positive_samples_test <span class="op">=</span> <span class="at">load</span>(<span class="st">'positive.test.dat'</span>)
+negative_samples_test <span class="op">=</span> <span class="at">load</span>(<span class="st">'negative.test.dat'</span>)
+samples_test <span class="op">=</span> positive_samples_test <span class="op">+</span> negative_samples_test
+labels_test <span class="op">=</span> [<span class="dv">1</span> <span class="cf">for</span> x <span class="kw">in</span> positive_samples_test] <span class="op">+</span> \
+  [<span class="dv">0</span> <span class="cf">for</span> x <span class="kw">in</span> negative_samples_test]
+
+<span class="at">print</span>(<span class="st">'# of Pos Training Samples: %s'</span> <span class="op">%</span> (<span class="at">len</span>(positive_samples_train)<span class="op">,</span>))
+<span class="at">print</span>(<span class="st">'# of Neg Training Samples: %s'</span> <span class="op">%</span> (<span class="at">len</span>(negative_samples_train)<span class="op">,</span>))
+<span class="at">print</span>(<span class="st">'Total # of Training Samples: %s'</span> <span class="op">%</span> (<span class="at">len</span>(samples_train)<span class="op">,</span>))
+<span class="at">print</span>(<span class="st">'# of Pos. Test Samples: %s'</span> <span class="op">%</span> (<span class="at">len</span>(positive_samples_test)<span class="op">,</span>))
+<span class="at">print</span>(<span class="st">'# of Neg. Test Samples: %s'</span> <span class="op">%</span> (<span class="at">len</span>(negative_samples_test)<span class="op">,</span>))
+<span class="at">print</span>(<span class="st">'Total # of Test Samples: %s'</span> <span class="op">%</span> (<span class="at">len</span>(positive_samples_test)<span class="op">,</span>))
+
+
+def <span class="at">vocab_count</span>(samples<span class="op">,</span> typee)<span class="op">:</span>
+  vocab_counter <span class="op">=</span> <span class="at">CountVectorizer</span>(
+    stop_words<span class="op">=</span><span class="st">'english'</span><span class="op">,</span>
+    ngram_range<span class="op">=</span>(<span class="dv">1</span><span class="op">,</span> <span class="dv">2</span>)<span class="op">,</span>
+    max_df<span class="op">=</span><span class="fl">1.0</span><span class="op">,</span>
+    min_df<span class="op">=</span><span class="fl">0.0</span>
+  )
+  dtm <span class="op">=</span> <span class="va">vocab_counter</span>.<span class="at">fit_transform</span>(samples)
+  vocab_indexes <span class="op">=</span> <span class="va">vocab_counter</span>.<span class="at">get_feature_names</span>()
+  vocab_totals <span class="op">=</span> <span class="op">{}</span>
+  <span class="cf">for</span> row <span class="kw">in</span> dtm<span class="op">:</span>
+    <span class="cf">for</span> j<span class="op">,</span> count <span class="kw">in</span> <span class="at">enumerate</span>(<span class="va">row</span>.<span class="at">A</span>[<span class="dv">0</span>])<span class="op">:</span>
+      word <span class="op">=</span> vocab_indexes[j]
+      vocab_totals[word] <span class="op">=</span> <span class="va">vocab_totals</span>.<span class="at">get</span>(word<span class="op">,</span> <span class="dv">0</span>)
+      vocab_totals[word] <span class="op">+=</span> count
+
+  <span class="at">print</span>(
+    <span class="st">'Most frequent %s corpus features: %s'</span> <span class="op">%</span> (
+      typee<span class="op">,</span>
+      <span class="at">sorted</span>(
+        <span class="va">vocab_totals</span>.<span class="at">items</span>()<span class="op">,</span>
+        key<span class="op">=</span><span class="va">operator</span>.<span class="at">itemgetter</span>(<span class="dv">1</span>)<span class="op">,</span>
+        reverse<span class="op">=</span>True
+      )[<span class="op">:</span><span class="dv">10</span>]
+    )
+  )
+
+<span class="at">vocab_count</span>(positive_samples_train<span class="op">,</span> <span class="st">'positive training'</span>)
+<span class="at">vocab_count</span>(negative_samples_train<span class="op">,</span> <span class="st">'negative training'</span>)
+<span class="at">vocab_count</span>(positive_samples_test<span class="op">,</span> <span class="st">'positive test'</span>)
+<span class="at">vocab_count</span>(negative_samples_test<span class="op">,</span> <span class="st">'negative test'</span>)
+
+pipeline <span class="op">=</span> <span class="at">Pipeline</span>(
+  steps<span class="op">=</span>[
+    (<span class="st">'tfidf'</span><span class="op">,</span> <span class="at">TfidfVectorizer</span>(ngram_range<span class="op">=</span>(<span class="dv">1</span><span class="op">,</span> <span class="dv">2</span>)<span class="op">,</span> stop_words<span class="op">=</span><span class="st">'english'</span>))<span class="op">,</span>
+    (<span class="st">'logistic'</span><span class="op">,</span> <span class="at">LogisticRegression</span>())
+  ]
+)
+
+n <span class="op">=</span> <span class="dv">100</span>
+k <span class="op">=</span> <span class="dv">10</span>
+search <span class="op">=</span> <span class="at">RandomizedSearchCV</span>(
+  pipeline<span class="op">,</span>
+  param_distributions<span class="op">={</span>
+    <span class="st">'tfidf__min_df'</span><span class="op">:</span> <span class="at">uniform</span>(<span class="fl">0.0</span><span class="op">,</span> <span class="fl">0.2</span><span class="op">,</span> n)<span class="op">,</span>
+    <span class="st">'tfidf__max_df'</span><span class="op">:</span> <span class="at">uniform</span>(<span class="fl">0.8</span><span class="op">,</span> <span class="fl">1.0</span><span class="op">,</span> n)<span class="op">,</span>
+    <span class="st">'logistic__C'</span><span class="op">:</span> <span class="at">uniform</span>(<span class="fl">0.0</span><span class="op">,</span> <span class="fl">1.0</span><span class="op">,</span> n)<span class="op">,</span>
+    <span class="st">'logistic__penalty'</span><span class="op">:</span> [<span class="st">'l1'</span><span class="op">,</span> <span class="st">'l2'</span>]
+  <span class="op">},</span>
+  n_jobs<span class="op">=</span><span class="dv">8</span><span class="op">,</span>
+  cv<span class="op">=</span>k<span class="op">,</span>
+  scoring<span class="op">=</span><span class="st">'log_loss'</span><span class="op">,</span>
+  n_iter<span class="op">=</span>n
+)
+
+<span class="va">search</span>.<span class="at">fit</span>(samples_train<span class="op">,</span> labels_train)
+
+
+<span class="at">print</span>(<span class="st">'Best hyperparams: %s '</span> <span class="op">%</span> (<span class="va">search</span>.<span class="at">best_params_</span><span class="op">,</span>))
+
+pipeline <span class="op">=</span> <span class="va">search</span>.<span class="at">best_estimator_</span>
+tfidf <span class="op">=</span> <span class="va">pipeline</span>.<span class="at">named_steps</span>[<span class="st">'tfidf'</span>]
+logistic <span class="op">=</span> <span class="va">pipeline</span>.<span class="at">named_steps</span>[<span class="st">'logistic'</span>]
+
+<span class="at">print</span>(
+  <span class="st">'TF-IDF Vocabulary: %s'</span> <span class="op">%</span> (
+    [key <span class="cf">for</span> key<span class="op">,</span> _ <span class="kw">in</span> <span class="va">tfidf</span>.<span class="va">vocabulary_</span>.<span class="at">items</span>()]<span class="op">,</span>
+  )
+)
+
+<span class="at">print</span>(
+  <span class="st">'%s-fold mean Log Loss CV score: %s'</span> <span class="op">%</span> (
+    k<span class="op">,</span>
+    <span class="at">abs</span>(
+      <span class="at">cross_val_score</span>(
+        pipeline<span class="op">,</span>
+        samples_train<span class="op">,</span>
+        labels_train<span class="op">,</span>
+        scoring<span class="op">=</span><span class="st">'log_loss'</span><span class="op">,</span>
+        cv<span class="op">=</span>k<span class="op">,</span>
+        n_jobs<span class="op">=</span><span class="dv">8</span>
+      ).<span class="at">mean</span>()
+    )<span class="op">,</span>
+  )
+)
+
+<span class="va">pipeline</span>.<span class="at">fit</span>(samples_train<span class="op">,</span> labels_train)
+classes <span class="op">=</span> <span class="va">pipeline</span>.<span class="va">classes_</span>.<span class="at">tolist</span>()
+
+<span class="at">print</span>(<span class="st">'Classes: %s'</span> <span class="op">%</span> (classes<span class="op">,</span>))
+
+<span class="kw">true</span> <span class="op">=</span> labels_test
+pred_prob <span class="op">=</span> <span class="va">pipeline</span>.<span class="at">predict_proba</span>(samples_test)
+pred_prob_pos <span class="op">=</span> [x[<span class="va">classes</span>.<span class="at">index</span>(<span class="dv">1</span>)] <span class="cf">for</span> x <span class="kw">in</span> pred_prob]
+
+<span class="at">print</span>(
+  <span class="st">'Test Log Loss: %s'</span> <span class="op">%</span> (
+    <span class="at">log_loss</span>(
+      <span class="kw">true</span><span class="op">,</span>
+      pred_prob
+    )
+  )
+)
+
+<span class="at">print</span>(
+  <span class="st">'Test ROC AUC: %s'</span> <span class="op">%</span> (
+    <span class="at">roc_auc_score</span>(
+      <span class="kw">true</span><span class="op">,</span>
+      pred_prob_pos
+    )
+  )
+)
+
+fpr<span class="op">,</span> tpr<span class="op">,</span> thresholds <span class="op">=</span> <span class="at">roc_curve</span>(<span class="kw">true</span><span class="op">,</span> pred_prob_pos<span class="op">,</span> pos_label<span class="op">=</span><span class="dv">1</span>)
+<span class="va">pyplot</span>.<span class="va">style</span>.<span class="at">use</span>(<span class="st">'ggplot'</span>)
+<span class="va">pyplot</span>.<span class="at">figure</span>(figsize<span class="op">=</span>(<span class="dv">10</span><span class="op">,</span> <span class="dv">10</span>)<span class="op">,</span> dpi<span class="op">=</span><span class="dv">200</span>)
+<span class="va">pyplot</span>.<span class="at">plot</span>([<span class="fl">0.0</span>] <span class="op">+</span> <span class="va">fpr</span>.<span class="at">tolist</span>()<span class="op">,</span> [<span class="fl">0.0</span>] <span class="op">+</span> <span class="va">fpr</span>.<span class="at">tolist</span>()<span class="op">,</span> <span class="st">'--'</span>)
+<span class="va">pyplot</span>.<span class="at">plot</span>([<span class="fl">0.0</span>] <span class="op">+</span> <span class="va">fpr</span>.<span class="at">tolist</span>()<span class="op">,</span> [<span class="fl">0.0</span>] <span class="op">+</span> <span class="va">tpr</span>.<span class="at">tolist</span>())
+<span class="va">pyplot</span>.<span class="at">title</span>(
+  <span class="st">'ROC Curve'</span><span class="op">,</span>
+  y<span class="op">=</span><span class="fl">1.08</span>
+)
+<span class="va">pyplot</span>.<span class="at">suptitle</span>(
+  <span class="st">'Logistic Regression Classifier '</span>
+  <span class="st">'of Birthday Wishes vs Condolences'</span><span class="op">,</span>
+  y<span class="op">=</span><span class="fl">0.95</span>
+)
+<span class="va">pyplot</span>.<span class="at">xlabel</span>(<span class="st">'False Positive Rate'</span>)
+<span class="va">pyplot</span>.<span class="at">ylabel</span>(<span class="st">'True Positive Rate'</span>)
+<span class="va">pyplot</span>.<span class="at">xlim</span>([<span class="op">-</span><span class="fl">0.05</span><span class="op">,</span> <span class="fl">1.05</span>])
+<span class="va">pyplot</span>.<span class="at">ylim</span>([<span class="op">-</span><span class="fl">0.05</span><span class="op">,</span> <span class="fl">1.05</span>])
+<span class="va">pyplot</span>.<span class="at">savefig</span>(<span class="st">'roc_curve.png'</span>)</code></pre></div>
+</div>
+<div class="post-footer">
+  <div class="display-left">
+    <h2 class="post-footer-cta">
+      Hi there!
+      <a href="../" title="Home">Browse</a>
+      and subscribe to the
+      <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
+      for more content.
+    </h2>
+  </div>
+  <div class="display-right text-align-right post-footer-copyright">
+    <h4>
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2017</span> David Lettier
+    </h4>
+  </div>
+</div>
+
+    </div>
+    <div class="share-toolbox addthis_sharing_toolbox"></div>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4fc2bc7a00a9352b"></script>
+    <script>
+      (function(i,s,o,g,r,a,m){
+        i.GoogleAnalyticsObject = r;
+        i[r] = i[r] || function () { (i[r].q = i[r].q || []).push(arguments); };
+        i[r].l=1*new Date();
+        a=s.createElement(o);
+        m=s.getElementsByTagName(o)[0];
+        a.async=1;
+        a.src=g;
+        m.parentNode.insertBefore(a,m);
+      })(
+        window,
+        document,
+        'script',
+        '//www.google-analytics.com/analytics.js',
+        'ga'
+      );
+      ga('create', 'UA-34323684-2', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </body>
+</html>

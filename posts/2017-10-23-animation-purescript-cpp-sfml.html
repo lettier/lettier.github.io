@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta property="og:site_name" content="Lettier">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Leverage C++ to Build Awesome Apps with PureScript by David Lettier">
+    <meta property="og:image" content="https://lettier.github.io/images/2017-10-23-animation-purescript-cpp-sfml/jumbotron-image.jpg">
+    <meta property="og:url" content="https://lettier.github.io/posts/2017-10-23-animation-purescript-cpp-sfml.html">
+    <meta property="og:description" content="Using PureScript, Pure11, C++, and SFML, we programmatically create a recursive animation.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="David Lettier">
+    <meta name="description" content="Using PureScript, Pure11, C++, and SFML, we programmatically create a recursive animation.">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/pandoc.css">
+    <link rel="stylesheet" type="text/css" href="../css/default.css">
+    <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
+    
+      
+        <title>Leverage C++ to Build Awesome Apps with PureScript by David Lettier</title>
+      
+    
+  </head>
+  <body>
+    <div id="top"></div>
+    <div class="nav-bar-container nav-bar-background">
+      <div class="nav-bar-buttons-container">
+        <a href="../" title="Home">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-home nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="../rss.xml" title="RSS" type="application/rss+xml" target="_blank">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-rss nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="http://www.lettier.com/" title="Lettier.com">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <img src="../images/logo.svg" width="30" height="30" alt="Lettier.com" class="lettier-icon-img">
+            </div>
+          </div>
+        </a>
+        <a href="https://www.github.com/lettier" title="GitHub">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-github nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.linkedin.com/in/lettier" title="LinkedIn">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-linkedin nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.hackerrank.com/lettier" title="HackerRank">
+          <div class="nav-bar-button-container nav-button-container-second-last">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-trophy nav-bar-icon nav-bar-icon-second-last"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.behance.net/dlettier" title="Behance">
+          <div class="nav-bar-button-container nav-bar-button-container-last">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-behance nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="jumbotron">
+      <div class="absolute-top jumbotron jumbotron-background-image" style="background-image: url('/images/2017-10-23-animation-purescript-cpp-sfml/jumbotron-image.jpg');">
+      </div>
+    </div>
+    <div class="container jumbotron-text-position-container">
+      <div class="jumbotron-text-width-container">
+        <h1 class="jumbotron-text jumbotron-text-background">
+          
+            Leverage C++ to Build Awesome Apps with PureScript
+          
+          <span class="title-cursor">|</span>
+        </h1>
+      </div>
+    </div>
+    <div class="container content-container">
+      <div class="post-body">
+  <!--https://pixabay.com/en/staircase-staircase-spiral-france-2607787/-->
+<h2 id="the-final-product">The final product</h2>
+<p>Below is a GIF of what we’ll end up with at the end. The animation will continuously play until the user closes the window.</p>
+<div class="figure">
+<img src="../images/2017-10-23-animation-purescript-cpp-sfml/purescript-animation.gif" class="post-img post-img-small post-img-limit" />
+
+</div>
+<p>Note that the animation contains the <a href="https://github.com/purescript/logo">“PureScript Logo”</a> by Gareth Hughes, licensed under <a href="https://creativecommons.org/licenses/by/4.0/legalcode">CC BY 4.0</a> / “PURESCRIPT” text removed from the original.</p>
+<h2 id="who-this-is-for">Who this is for</h2>
+<ul>
+<li>Programmers interested in PureScript</li>
+<li>PureScript programmers wanting to target the desktop</li>
+<li>Programmers curious about functional programming</li>
+<li>Game developers looking to build a 2D game with SFML</li>
+<li>Recursion enthusiasts</li>
+</ul>
+<h2 id="what-well-cover">What we’ll cover</h2>
+<ul>
+<li>Installing the Haskell Platform</li>
+<li>Setting up PureScript/Pure11</li>
+<li>Pass by reference vs pass by value</li>
+<li>Binding SFML’s C++ API to PureScript</li>
+<li>Garbage collection</li>
+<li>Time-based Animation</li>
+<li>Compiling our project</li>
+</ul>
+<h2 id="project-setup">Project setup</h2>
+<p>Before we begin developing, we need to set up our project with all of its files and dependencies.</p>
+<h3 id="project-structure">Project structure</h3>
+<p>Listed below is the project structure we will end up with.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">project/</span>
+  <span class="ex">src/</span>
+    <span class="ex">Main.purs</span>
+    <span class="ex">Main.cc</span>
+    <span class="ex">Main.hh</span>
+  <span class="ex">static/</span>
+    <span class="ex">purescript-logo.png</span>
+    <span class="ex">purescript-logo-inverted.png</span>
+  <span class="ex">Makefile</span>
+  <span class="ex">psc-package.json</span></code></pre></div>
+<p>Go ahead and run the following commands.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="fu">mkdir</span> -p project project/src project/static
+<span class="fu">touch</span> src/Main.purs src/Main.css src/Main.hh</code></pre></div>
+<h3 id="images">Images</h3>
+<p>Below are the image files we will need. Make sure to right-click, save link as, and place them in <code>project/static/</code>.</p>
+<ul>
+<li><a href="../images/2017-10-23-animation-purescript-cpp-sfml/purescript-logo.png">purescript-logo.png</a></li>
+<li><a href="../images/2017-10-23-animation-purescript-cpp-sfml/purescript-logo-inverted.png">purescript-logo-inverted.png</a></li>
+</ul>
+<p>Note that both images contain the <a href="https://github.com/purescript/logo">“PureScript Logo”</a> by Gareth Hughes, licensed under <a href="https://creativecommons.org/licenses/by/4.0/legalcode">CC BY 4.0</a> / “PURESCRIPT” text removed from the original.</p>
+<h3 id="stack">Stack</h3>
+<p>To compile Pure11, the “C++11/native compiler backend for PureScript”, we will need the program Stack.</p>
+<p>You can install Stack via the <a href="https://www.haskell.org/platform/">Haskell Platform</a>.</p>
+<h3 id="pure11">Pure11</h3>
+<p>To target C++, we will need to build Pure11 for our machine. Make sure you have <code>git</code>, <code>make</code>, and a C++ compiler installed.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="fu">git</span> clone git@github.com:pure11/pure11.git
+<span class="bu">cd</span> pure11
+<span class="ex">stack</span> setup
+<span class="ex">stack</span> install
+<span class="bu">export</span> <span class="va">PATH=</span><span class="st">&quot;</span><span class="va">$PATH</span><span class="st">:</span><span class="va">$HOME</span><span class="st">/.local/bin/&quot;</span></code></pre></div>
+<h3 id="makefile">Makefile</h3>
+<p>With Pure11 built, we can now generate the <code>Makefile</code> we will need to build our project.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> project
+<span class="ex">pcc</span></code></pre></div>
+<p>We should now have a <code>Makefile</code> and a <code>psc-package.json</code> file in the root of our project directory.</p>
+<h3 id="sfml">SFML</h3>
+<p>We will need the <a href="https://www.sfml-dev.org/">Simple and Fast Multimedia Library</a> to load and animate our images. Go ahead and install SFML for your platform. Note that <a href="https://www.sfml-dev.org/download/sfml/2.4.2/">Version 2.4.2</a> is the version we will be using for our project.</p>
+<h2 id="source">Source</h2>
+<p>The source code for the project consists of three files.</p>
+<ul>
+<li><code>Main.hh</code>
+<ul>
+<li>The C++ header file containing the function declarations for the functions defined in <code>Main.cc</code></li>
+</ul></li>
+<li><code>Main.cc</code>
+<ul>
+<li>The function definitions of the functions declared in the header file <code>Main.hh</code></li>
+</ul></li>
+<li><code>Main.purs</code>
+<ul>
+<li>The PureScript file defining our program</li>
+</ul></li>
+</ul>
+<h3 id="main.hh">Main.hh</h3>
+<p>In <code>Main.hh</code>, we declare all of the functions we will be using in <code>Main.purs</code>.</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="co">/*</span>
+<span class="co">  (C) 2017 David Lettier</span>
+<span class="co">  lettier.com</span>
+<span class="co">*/</span>
+
+<span class="kw">namespace</span> Main {
+  <span class="kw">using</span> <span class="kw">namespace</span> PureScript;
+  <span class="kw">using</span> <span class="kw">namespace</span> std;
+
+  <span class="kw">auto</span> toNumber(<span class="at">const</span> <span class="dt">int</span>) -&gt; <span class="dt">double</span>;
+
+  <span class="kw">auto</span> easeIn(<span class="at">const</span> <span class="dt">double</span>) -&gt; <span class="dt">double</span>;
+
+  <span class="kw">auto</span> timeNow() -&gt; <span class="dt">double</span>;
+
+  <span class="kw">auto</span> makeWindow(<span class="at">const</span> <span class="dt">int</span>, <span class="at">const</span> <span class="dt">int</span>, <span class="at">const</span> <span class="bu">std::</span>string) -&gt; any;
+  <span class="kw">auto</span> makeColor(<span class="at">const</span> <span class="dt">int</span>, <span class="at">const</span> <span class="dt">int</span>, <span class="at">const</span> <span class="dt">int</span>, <span class="at">const</span> <span class="dt">int</span>) -&gt; any;
+  <span class="kw">auto</span> makeTextureFromFile(<span class="at">const</span> <span class="bu">std::</span>string) -&gt; any;
+  <span class="kw">auto</span> makeRectangleShape(<span class="at">const</span> <span class="dt">double</span>, <span class="at">const</span> <span class="dt">double</span>) -&gt; any;
+
+  <span class="kw">auto</span> shapeSetTexture(<span class="at">const</span> any&amp;, <span class="at">const</span> any&amp;, <span class="at">const</span> any&amp;) -&gt; any;
+
+  <span class="kw">auto</span> transformableSetRotation(<span class="at">const</span> any&amp;, <span class="at">const</span> any&amp;, <span class="at">const</span> <span class="dt">double</span>) -&gt; any;
+  <span class="kw">auto</span> transformableSetScale(<span class="at">const</span> any&amp;, <span class="at">const</span> any&amp;, <span class="at">const</span> <span class="dt">double</span>, <span class="at">const</span> <span class="dt">double</span>) -&gt; any;
+  <span class="kw">auto</span> transformableSetOrigin(<span class="at">const</span> any&amp;, <span class="at">const</span> any&amp;, <span class="at">const</span> <span class="dt">double</span>, <span class="at">const</span> <span class="dt">double</span>) -&gt; any;
+  <span class="kw">auto</span> transformableMove(<span class="at">const</span> any&amp;, <span class="at">const</span> any&amp;, <span class="at">const</span> <span class="dt">double</span>, <span class="at">const</span> <span class="dt">double</span>) -&gt; any;
+
+  <span class="kw">auto</span> eventIsClosed(<span class="at">const</span> any&amp;) -&gt; any;
+
+  <span class="kw">auto</span> windowIsOpen(<span class="at">const</span> any&amp;) -&gt; any;
+  <span class="kw">auto</span> windowPollEvent(<span class="at">const</span> any&amp;, <span class="at">const</span> any&amp;) -&gt; any;
+  <span class="kw">auto</span> windowClear(<span class="at">const</span> any&amp;, <span class="at">const</span> any&amp;) -&gt; any;
+  <span class="kw">auto</span> windowDisplay(<span class="at">const</span> any&amp;) -&gt; any;
+  <span class="kw">auto</span> windowDraw(<span class="at">const</span> any&amp;, <span class="at">const</span> any&amp;, <span class="at">const</span> any&amp;) -&gt; any;
+  <span class="kw">auto</span> windowClose(<span class="at">const</span> any&amp;) -&gt; any;
+
+  <span class="kw">auto</span> loop(<span class="at">const</span> any&amp;, <span class="at">const</span> any&amp;) -&gt; any;
+}</code></pre></div>
+<p>Go ahead and copy this into <code>project/src/Main.hh</code>.</p>
+<p>At the top of the file we define a namespace called <code>Main</code>. This will line up with our module name <code>Main</code> in <code>Main.purs</code>.</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">| PureScript  | C++           |
+|-------------|---------------|
+| Number      | <span class="dt">double</span>        |
+| Int         | <span class="dt">int</span>           |
+| String      | <span class="bu">std::</span>string   |
+| Boolean     | <span class="dt">bool</span>          |
+| Char        | <span class="dt">char</span>          |
+| any         | *             |</code></pre></div>
+<p>Pure11 supports the C++ types <code>double</code>, <code>int</code>, <code>char</code>, <code>std::string</code>, and <code>bool</code>. Thus we make use of them wherever possible. For the other types, that we will be dealing with, Pure11 provides us with the <a href="https://github.com/pure11/pure11/blob/pure11/pcc/runtime/purescript.hh#L81">any</a> type. You can think of <code>any</code> as a dynamic type.</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">auto</span> identifier (...args) -&gt; <span class="dt">return_type</span>;</code></pre></div>
+<p>If it has been awhile since you have written C++, you may not recognize the arrow syntax. The <code>auto</code> keyword lets the compiler know that the return type for the identifier will follow after it.</p>
+<p>If you have never programmed in C++, you may not recognize the <code>&amp;</code> operator. <code>const any&amp;</code> means that the function expects an <code>any</code> reference or alias—reference meaning that the <code>any</code> instance outside the function and the <code>any</code> instance inside the function are one in the same. In other words, the <code>any</code> inside the function is a <em>not</em> a copy of the one outside the function.</p>
+<blockquote>
+By definition, pass by value means you are making a copy in memory of the actual parameter’s value that is passed in, a copy of the contents of the actual parameter. […] In pass by reference (also called pass by address), a copy of the address of the actual parameter is stored.
+<footer>
+<a href="http://courses.washington.edu/css342/zander/css332/passby.html">Function pass by value vs. pass by reference by Dr. Carol Zander</a>
+</footer>
+</blockquote>
+<h3 id="main.cc">Main.cc</h3>
+<p>The following source contains all of the definitions for the functions we declared in <code>Main.hh</code>. Go ahead and copy it into <code>project/src/Main.cc</code>.</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="co">/*</span>
+<span class="co">  (C) 2017 David Lettier</span>
+<span class="co">  lettier.com</span>
+<span class="co">*/</span>
+
+<span class="pp">#include </span><span class="im">&lt;iostream&gt;</span>
+<span class="pp">#include </span><span class="im">&lt;cmath&gt;</span>
+<span class="pp">#include </span><span class="im">&lt;math.h&gt;</span>
+<span class="pp">#include </span><span class="im">&lt;chrono&gt;</span>
+<span class="pp">#include </span><span class="im">&lt;SFML/Graphics.hpp&gt;</span>
+<span class="er">#import &quot;PureScript/PureScript.hh&quot;</span>
+
+<span class="kw">namespace</span> Main {
+  <span class="kw">using</span> <span class="kw">namespace</span> PureScript;
+  <span class="kw">using</span> <span class="kw">namespace</span> std;
+  <span class="kw">using</span> <span class="kw">namespace</span> <span class="bu">std::</span>chrono;
+  <span class="kw">using</span> <span class="kw">namespace</span> sf;
+
+  <span class="kw">auto</span> toNumber(<span class="at">const</span> <span class="dt">int</span> x) -&gt; <span class="dt">double</span> {
+    <span class="cf">return</span> (<span class="dt">double</span>) x;
+  }
+
+  <span class="kw">auto</span> timeNow() -&gt; <span class="dt">double</span> {
+    <span class="cf">return</span> (<span class="dt">double</span>) duration_cast&lt;<span class="bu">std::</span>chrono<span class="bu">::</span>milliseconds&gt;(
+      system_clock::now().time_since_epoch()
+    ).count();
+  }
+
+  <span class="kw">auto</span> easeIn(<span class="at">const</span> <span class="dt">double</span> x) -&gt; <span class="dt">double</span> {
+    <span class="cf">return</span> pow(M_E, x / <span class="fl">5.0</span>) * (<span class="fl">1.0</span> / <span class="fl">20.0</span>);
+  }
+
+  <span class="kw">auto</span> makeWindow(<span class="at">const</span> <span class="dt">int</span> width, <span class="at">const</span> <span class="dt">int</span> height, <span class="at">const</span> <span class="bu">std::</span>string title) -&gt; any {
+    <span class="cf">return</span> [=]() -&gt; any {
+      <span class="kw">auto</span> window = make_managed&lt;sf::RenderWindow&gt;(
+        sf::VideoMode(width, height),
+        title
+      );
+      <span class="cf">return</span> window;
+    };
+  }
+
+  <span class="kw">auto</span> makeColor(<span class="at">const</span> <span class="dt">int</span> r, <span class="at">const</span> <span class="dt">int</span> g, <span class="at">const</span> <span class="dt">int</span> b, <span class="at">const</span> <span class="dt">int</span> a) -&gt; any {
+    <span class="cf">return</span> [=]() -&gt; any {
+      <span class="kw">auto</span> color = make_managed&lt;sf::Color&gt;(r, g, b, a);
+      <span class="cf">return</span> color;
+    };
+  }
+
+  <span class="kw">auto</span> makeTextureFromFile(<span class="at">const</span> <span class="bu">std::</span>string path) -&gt; any {
+    <span class="cf">return</span> [=]() -&gt; any {
+      <span class="kw">auto</span> texture = make_managed&lt;sf::Texture&gt;();
+      texture-&gt;loadFromFile(path);
+      <span class="cf">return</span> texture;
+    };
+  }
+
+  <span class="kw">auto</span> makeRectangleShape(<span class="at">const</span> <span class="dt">double</span> width, <span class="at">const</span> <span class="dt">double</span> height) -&gt; any {
+    <span class="cf">return</span> [=]() -&gt; any {
+      <span class="kw">auto</span> shape = make_managed&lt;sf::RectangleShape&gt;(sf::Vector2f(width, height));
+      <span class="cf">return</span> shape;
+    };
+  }
+
+  <span class="kw">auto</span> shapeSetTexture(<span class="at">const</span> any&amp; _, <span class="at">const</span> any&amp; s, <span class="at">const</span> any&amp; t) -&gt; any {
+    <span class="cf">return</span> [=]() -&gt; any {
+      <span class="kw">auto</span>&amp; shape = cast_managed&lt;sf::Shape&gt;(s);
+      <span class="kw">auto</span>&amp; texture = cast_managed&lt;sf::Texture&gt;(t);
+      shape.setTexture(&amp;texture);
+    };
+  }
+
+  <span class="kw">auto</span> transformableSetRotation(<span class="at">const</span> any&amp; _, <span class="at">const</span> any&amp; t, <span class="at">const</span> <span class="dt">double</span> rotation) -&gt; any {
+    <span class="cf">return</span> [=]() -&gt; any {
+      <span class="kw">auto</span>&amp; transformable = cast_managed&lt;sf::Shape&gt;(t);
+      transformable.setRotation(rotation);
+    };
+  }
+
+  <span class="kw">auto</span> transformableSetScale(<span class="at">const</span> any&amp; _, <span class="at">const</span> any&amp; t, <span class="at">const</span> <span class="dt">double</span> scaleX, <span class="at">const</span> <span class="dt">double</span> scaleY) -&gt; any {
+    <span class="cf">return</span> [=]() -&gt; any {
+      <span class="kw">auto</span>&amp; transformable = cast_managed&lt;sf::Shape&gt;(t);
+      transformable.setScale(scaleX, scaleY);
+    };
+  }
+
+  <span class="kw">auto</span> transformableSetOrigin(<span class="at">const</span> any&amp; i, <span class="at">const</span> any&amp; t, <span class="at">const</span> <span class="dt">double</span> x, <span class="at">const</span> <span class="dt">double</span> y) -&gt; any {
+    <span class="cf">return</span> [=]() -&gt; any {
+      <span class="kw">auto</span>&amp; transformable = cast_managed&lt;sf::Shape&gt;(t);
+      transformable.setOrigin(x, y);
+    };
+  }
+
+  <span class="kw">auto</span> transformableMove(<span class="at">const</span> any&amp; _, <span class="at">const</span> any&amp; t, <span class="at">const</span> <span class="dt">double</span> offsetX, <span class="at">const</span> <span class="dt">double</span> offsetY) -&gt; any {
+    <span class="cf">return</span> [=]() -&gt; any {
+      <span class="kw">auto</span>&amp; transformable = cast_managed&lt;sf::Shape&gt;(t);
+      transformable.move(offsetX, offsetY);
+    };
+  }
+
+  <span class="kw">auto</span> eventIsClosed(<span class="at">const</span> any&amp; e) -&gt; any {
+    <span class="cf">return</span> [=]() -&gt; any {
+      <span class="kw">auto</span>&amp; event = cast_managed&lt;sf::Event&gt;(e);
+      <span class="cf">return</span> event.type == sf::Event::Closed;
+    };
+  }
+
+  <span class="kw">auto</span> windowIsOpen(<span class="at">const</span> any&amp; w) -&gt; any {
+    <span class="cf">return</span> [=]() -&gt; any {
+      <span class="kw">auto</span>&amp; window = cast_managed&lt;sf::RenderWindow&gt;(w);
+      <span class="cf">return</span> window.isOpen();
+    };
+  }
+
+  <span class="kw">auto</span> windowPollEvent(<span class="at">const</span> any&amp; w, <span class="at">const</span> any&amp; f) -&gt; any {
+    <span class="cf">return</span> [=]() -&gt; any {
+      <span class="kw">auto</span>&amp; window = cast_managed&lt;sf::RenderWindow&gt;(w);
+      <span class="kw">auto</span> event = make_managed&lt;sf::Event&gt;();
+      <span class="cf">while</span> (window.pollEvent(*event)) {
+        f(event)();
+      }
+    };
+  }
+
+  <span class="kw">auto</span> windowDraw(<span class="at">const</span> any&amp; _, <span class="at">const</span> any&amp; w, <span class="at">const</span> any&amp; d) -&gt; any {
+    <span class="cf">return</span> [=]() -&gt; any {
+      <span class="kw">auto</span>&amp; window = cast_managed&lt;sf::RenderWindow&gt;(w);
+      <span class="kw">auto</span>&amp; drawable = cast_managed&lt;sf::Drawable&gt;(d);
+      window.draw(drawable);
+    };
+  }
+
+  <span class="kw">auto</span> windowClear(<span class="at">const</span> any&amp; w, <span class="at">const</span> any&amp; c) -&gt; any {
+    <span class="cf">return</span> [=]() -&gt; any {
+      <span class="kw">auto</span>&amp; window = cast_managed&lt;sf::RenderWindow&gt;(w);
+      <span class="kw">auto</span>&amp; color = cast_managed&lt;sf::Color&gt;(c);
+      window.clear(color);
+    };
+  }
+
+  <span class="kw">auto</span> windowDisplay(<span class="at">const</span> any&amp; w) -&gt; any {
+    <span class="cf">return</span> [=]() -&gt; any {
+      <span class="kw">auto</span>&amp; window = cast_managed&lt;sf::RenderWindow&gt;(w);
+      window.display();
+    };
+  }
+
+  <span class="kw">auto</span> windowClose(<span class="at">const</span> any&amp; w) -&gt; any {
+    <span class="cf">return</span> [=]() -&gt; any {
+      <span class="kw">auto</span>&amp; window = cast_managed&lt;sf::RenderWindow&gt;(w);
+      window.close();
+    };
+  }
+
+  <span class="kw">auto</span> loop(<span class="at">const</span> any&amp; iteration, <span class="at">const</span> any&amp; input) -&gt; any {
+    <span class="cf">return</span> [=]() -&gt; any {
+      any result = iteration(input)();
+      <span class="dt">bool</span> cont = result.at(<span class="st">&quot;continue&quot;</span>);
+      <span class="cf">while</span>(cont) {
+        result = iteration(result)();
+        cont = result.at(<span class="st">&quot;continue&quot;</span>);
+      }
+    };
+  }
+}</code></pre></div>
+<p>At the top of the file we include/import our dependencies. This is where we import the SFML graphics API. As we did in <code>Main.hh</code>, we declare our <code>Main</code> namespace. The <code>sf</code> namespace (that we let the compiler know we are using) is for SFML.</p>
+<p>When writing bindings to a library, not written in PureScript for the use in PureScript, we have to decide which functions are pure (the function always returns the same output for the same input and no side effects occur, that is, nothing outside the function is mutated or accessed) and which ones are impure (side effects do occur meaning something outside the function is mutated or at least accessed).</p>
+<p>We will designate <code>toNumber</code> and <code>easeIn</code> as pure. The rest of the functions will be designated as having effects.</p>
+<p>For impure functions, which take one or more arguments/parameters (an arity of one or more), we will have to use a C++11 lambda (an anonymous function, that is, a function with no identifier).</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">  <span class="kw">auto</span> windowClose(<span class="at">const</span> any&amp; w) -&gt; any {
+    <span class="cf">return</span> [=]() -&gt; any {
+      <span class="kw">auto</span>&amp; window = cast_managed&lt;sf::RenderWindow&gt;(w);
+      window.close();
+    };
+  }</code></pre></div>
+<p>For example, take a look at <code>windowClose</code>. It takes an address to an <code>any</code> instance and returns a lambda that captures <code>w</code> by value, makes <code>w</code> read only, takes no arguments, and returns the <code>any</code> type. Note that its real return type is <code>void</code> since there is no <code>return</code> statement.</p>
+<p>Fortunately, for foreign functions (these functions are foreign to PureScript) that take one or more parameters, we do not have to write them as curried functions.</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">  <span class="kw">auto</span> windowClear(<span class="at">const</span> any&amp; w) -&gt; any {
+    <span class="cf">return</span> [=](<span class="at">const</span> any&amp; c) -&gt; any {
+      <span class="cf">return</span> [=]() -&gt; any {
+        <span class="kw">auto</span>&amp; window = cast_managed&lt;sf::RenderWindow&gt;(w);
+        <span class="kw">auto</span>&amp; color = cast_managed&lt;sf::Color&gt;(c);
+        window.clear(color);
+      };
+    };
+  }</code></pre></div>
+<p>For example, we do <em>not</em> have to write <code>windowClear</code> like this (notice there is an extra lambda for <code>c</code>).</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">  <span class="kw">auto</span> windowDraw(<span class="at">const</span> any&amp; _, <span class="at">const</span> any&amp; w, <span class="at">const</span> any&amp; d) -&gt; any {
+    <span class="cf">return</span> [=]() -&gt; any {
+      <span class="kw">auto</span>&amp; window = cast_managed&lt;sf::RenderWindow&gt;(w);
+      <span class="kw">auto</span>&amp; drawable = cast_managed&lt;sf::Drawable&gt;(d);
+      window.draw(drawable);
+    };
+  }</code></pre></div>
+<p>Some functions have an ignored parameter such as <code>windowDraw</code>. In these cases, the generated C++ passes a PureScript type constraint to the function (in addition to its parameters). For example, <code>windowDraw</code> accepts a <code>Drawable</code> type which could be a <code>RectangleShape</code>, a <code>Shape</code>, or any other type that either directly or indirectly inherits from the <code>Drawable</code> C++ class. This class hierarchy is implemented as a type class on the PureScript side. As you will see later in <code>Main.purs</code>,<code>windowDraw</code> accepts any argument that is an instance of the type class (interface) <code>IDrawable</code>. For these polymorphic functions, the type constraint parameter is ignored on the C++ side.</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">shared_pointer pointer = make_managed&lt;<span class="dt">some_type</span>&gt;(params, to, constructor);
+<span class="co">// ...</span>
+<span class="dt">some_type</span> instance = cast_managed&lt;<span class="dt">some_type</span>&gt;(any_reference);</code></pre></div>
+<p>Pure11 provides automatic memory management (garbage collection) through the use of shared pointers. To take advantage of this, we will need to use <code>make_managed</code> and <code>cast_managed</code>.</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">  <span class="kw">auto</span> makeTextureFromFile(<span class="at">const</span> <span class="bu">std::</span>string path) -&gt; any {
+    <span class="cf">return</span> [=]() -&gt; any {
+      <span class="kw">auto</span> texture = make_managed&lt;sf::Texture&gt;();
+      texture-&gt;loadFromFile(path);
+      <span class="cf">return</span> texture;
+    };
+  }
+
+  <span class="kw">auto</span> makeRectangleShape(<span class="at">const</span> <span class="dt">double</span> width, <span class="at">const</span> <span class="dt">double</span> height) -&gt; any {
+    <span class="cf">return</span> [=]() -&gt; any {
+      <span class="kw">auto</span> shape = make_managed&lt;sf::RectangleShape&gt;(sf::Vector2f(width, height));
+      <span class="cf">return</span> shape;
+    };
+  }
+
+  <span class="kw">auto</span> shapeSetTexture(<span class="at">const</span> any&amp; _, <span class="at">const</span> any&amp; s, <span class="at">const</span> any&amp; t) -&gt; any {
+    <span class="cf">return</span> [=]() -&gt; any {
+      <span class="kw">auto</span>&amp; shape = cast_managed&lt;sf::Shape&gt;(s);
+      <span class="kw">auto</span>&amp; texture = cast_managed&lt;sf::Texture&gt;(t);
+      shape.setTexture(&amp;texture);
+    };
+  }</code></pre></div>
+<p>For example, take a look at <code>makeTextureFromFile</code>, <code>makeRectangleShape</code>, and <code>shapeSetTexture</code>. Both <code>makeTextureFromFile</code> and <code>makeRectangleShape</code> use <code>make_managed</code> which creates a shared pointer (a piece of memory that contains another memory address) that points to an instance of whatever is in the angle brackets (<code>&lt;...&gt;</code>). <code>shapeSetTexture</code> takes two <code>any</code> instances (<code>s</code> and <code>t</code>) and uses <code>cast_managed</code> to extract from them the shared <code>shape</code> and <code>texture</code> instances. It then sets the shape’s texture using the two extracted instances. Note that <code>shape</code> and <code>texture</code>, in <code>shapeSetTexture</code>, are the actual instances instead of the shared pointers to the instances, hence the <code>auto&amp;</code>.</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">  <span class="kw">auto</span> loop(<span class="at">const</span> any&amp; iteration, <span class="at">const</span> any&amp; input) -&gt; any {
+    <span class="cf">return</span> [=]() -&gt; any {
+      any output = iteration(input)();
+      <span class="dt">bool</span> cont = output.at(<span class="st">&quot;continue&quot;</span>);
+      <span class="cf">while</span>(cont) {
+        output = iteration(output)();
+        cont = output.at(<span class="st">&quot;continue&quot;</span>);
+      }
+    };
+  }</code></pre></div>
+<p>The last foreign function in <code>Main.cc</code> we will look at is <code>loop</code>. <code>loop</code> powers our draw cycle. Before it begins, it takes the <code>iteration</code> function it was given and feeds it some initial <code>input</code>. It then takes the <code>iteration</code> <code>output</code> (which is a PureScript record), checks if <code>continue</code> is true, and if so, runs <code>iteration</code> again. As long as <code>iteration</code> keeps returning <code>{ continue: true }</code>, <code>loop</code> will continue to run <code>iteration</code> by passing its <code>output</code> as its <code>input</code>.</p>
+<p>We could make <code>loop</code> a native PureScript function but without tail-call elimination for self-recursive monadic functions, we would end up overflowing the stack and crashing the application. So we will keep <code>loop</code> as a foreign function and make use of its efficient <code>while</code> loop. Note that there is a PureScript package for “stack-safe monadic tail recursion” called <a href="https://github.com/purescript/purescript-tailrec">purescript-tailrec</a> but it was not listed as an officially supported package for Pure11.</p>
+<h3 id="main.purs">Main.purs</h3>
+<p>Now that we have our C++ bindings, we can write the rest of our application in PureScript. Make sure to copy the following into <code>project/src/Main.purs</code>.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">{-</span>
+<span class="co">  (C) 2017 David Lettier</span>
+<span class="co">  lettier.com</span>
+<span class="co">-}</span>
+
+<span class="kw">module</span> <span class="dt">Main</span> <span class="kw">where</span>
+
+<span class="kw">import </span><span class="dt">Prelude</span>
+<span class="kw">import </span><span class="dt">Control.Monad.Eff</span> (<span class="dt">Eff</span>)
+
+<span class="kw">class</span> <span class="dt">ITransformable</span> a
+<span class="kw">class</span> <span class="dt">IDrawable</span> a
+<span class="kw">class</span> <span class="dt">IShape</span> a
+
+foreign <span class="kw">import </span>data <span class="dt">CHRONO</span> :: !
+foreign <span class="kw">import </span>data <span class="dt">SF</span> :: !
+
+foreign <span class="kw">import </span>data <span class="dt">Window</span> :: *
+foreign <span class="kw">import </span>data <span class="dt">Shape</span> :: *
+foreign <span class="kw">import </span>data <span class="dt">Transformable</span> :: *
+foreign <span class="kw">import </span>data <span class="dt">Drawable</span> :: *
+foreign <span class="kw">import </span>data <span class="dt">RectangleShape</span> :: *
+foreign <span class="kw">import </span>data <span class="dt">Event</span> :: *
+foreign <span class="kw">import </span>data <span class="dt">Color</span> :: *
+foreign <span class="kw">import </span>data <span class="dt">Texture</span> :: *
+
+<span class="kw">instance</span><span class="ot"> iTransformableRectangleShape ::</span> <span class="dt">ITransformable</span> <span class="dt">RectangleShape</span>
+<span class="kw">instance</span><span class="ot"> iDrawableRectangleShape ::</span> <span class="dt">IDrawable</span> <span class="dt">RectangleShape</span>
+<span class="kw">instance</span><span class="ot"> iShapeRectangleShape ::</span> <span class="dt">IShape</span> <span class="dt">RectangleShape</span>
+
+<span class="kw">type</span> <span class="dt">ChronoEffect</span> a <span class="fu">=</span> forall e<span class="fu">.</span> <span class="dt">Eff</span> (<span class="ot">chrono::</span><span class="dt">CHRONO</span> <span class="fu">|</span> e) a
+<span class="kw">type</span> <span class="dt">SfEffect</span> a <span class="fu">=</span> forall e<span class="fu">.</span> <span class="dt">Eff</span> (<span class="ot">sf::</span><span class="dt">SF</span> <span class="fu">|</span> e) a
+<span class="kw">type</span> <span class="dt">AllEffects</span> a <span class="fu">=</span> forall e<span class="fu">.</span> <span class="dt">Eff</span> (<span class="ot">sf::</span><span class="dt">SF</span>,<span class="ot"> chrono::</span><span class="dt">CHRONO</span> <span class="fu">|</span> e) a
+
+<span class="kw">type</span> <span class="dt">IterationData</span> <span class="fu">=</span>
+  {
+<span class="ot">      window ::</span> <span class="dt">Window</span>
+    ,<span class="ot"> pastTime ::</span> <span class="dt">Number</span>
+    ,<span class="ot"> backgroundColor ::</span> <span class="dt">Color</span>
+    ,<span class="ot"> startingRotation ::</span> <span class="dt">Number</span>
+    ,<span class="ot"> startingScale ::</span> <span class="dt">Number</span>
+    ,<span class="ot"> rotation ::</span> <span class="dt">Number</span>
+    ,<span class="ot"> scale ::</span> <span class="dt">Number</span>
+    ,<span class="ot"> bgShape ::</span> <span class="dt">RectangleShape</span>
+    ,<span class="ot"> fgShape ::</span> <span class="dt">RectangleShape</span>
+    ,<span class="ot"> continue ::</span> <span class="dt">Boolean</span>
+  }
+
+foreign <span class="kw">import </span>toNumber :: <span class="dt">Int</span> -&gt; <span class="dt">Number</span>
+
+foreign <span class="kw">import </span>easeIn :: <span class="dt">Number</span> -&gt; <span class="dt">Number</span>
+
+foreign <span class="kw">import </span>timeNow :: <span class="dt">ChronoEffect</span> <span class="dt">Number</span>
+
+foreign <span class="kw">import </span>makeWindow :: <span class="dt">Int</span> -&gt; <span class="dt">Int</span> -&gt; <span class="dt">String</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Window</span>
+foreign <span class="kw">import </span>makeColor :: <span class="dt">Int</span> -&gt; <span class="dt">Int</span> -&gt; <span class="dt">Int</span> -&gt; <span class="dt">Int</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Color</span>
+foreign <span class="kw">import </span>makeTextureFromFile :: <span class="dt">String</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Texture</span>
+foreign <span class="kw">import </span>makeRectangleShape :: <span class="dt">Number</span> -&gt; <span class="dt">Number</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">RectangleShape</span>
+
+foreign <span class="kw">import </span>shapeSetTexture :: forall s. (<span class="dt">IShape</span> s) =&gt; s -&gt; <span class="dt">Texture</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Unit</span>
+
+foreign <span class="kw">import </span>transformableSetRotation :: forall t. (<span class="dt">ITransformable</span> t) =&gt; t -&gt; <span class="dt">Number</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Unit</span>
+foreign <span class="kw">import </span>transformableSetScale :: forall t. (<span class="dt">ITransformable</span> t) =&gt; t -&gt; <span class="dt">Number</span> -&gt; <span class="dt">Number</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Unit</span>
+foreign <span class="kw">import </span>transformableSetOrigin :: forall t. (<span class="dt">ITransformable</span> t) =&gt; t -&gt; <span class="dt">Number</span> -&gt; <span class="dt">Number</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Unit</span>
+foreign <span class="kw">import </span>transformableMove :: forall t. (<span class="dt">ITransformable</span> t) =&gt; t -&gt; <span class="dt">Number</span> -&gt; <span class="dt">Number</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Unit</span>
+
+foreign <span class="kw">import </span>eventIsClosed :: <span class="dt">Event</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Boolean</span>
+
+foreign <span class="kw">import </span>windowIsOpen :: <span class="dt">Window</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Boolean</span>
+foreign <span class="kw">import </span>windowPollEvent :: <span class="dt">Window</span> -&gt; (<span class="dt">Event</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Unit</span>) -&gt; <span class="dt">SfEffect</span> <span class="dt">Unit</span>
+foreign <span class="kw">import </span>windowClear :: <span class="dt">Window</span> -&gt; <span class="dt">Color</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Unit</span>
+foreign <span class="kw">import </span>windowDisplay :: <span class="dt">Window</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Unit</span>
+foreign <span class="kw">import </span>windowDraw :: forall d. (<span class="dt">IDrawable</span> d) =&gt; <span class="dt">Window</span> -&gt; d -&gt; <span class="dt">SfEffect</span> <span class="dt">Unit</span>
+foreign <span class="kw">import </span>windowClose :: <span class="dt">Window</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Unit</span>
+
+foreign <span class="kw">import </span>loop ::
+      forall r<span class="fu">.</span>
+      ({<span class="ot">continue ::</span> <span class="dt">Boolean</span> <span class="fu">|</span> r} <span class="ot">-&gt;</span> <span class="dt">AllEffects</span> {<span class="ot">continue ::</span> <span class="dt">Boolean</span> <span class="fu">|</span> r})
+  <span class="ot">-&gt;</span>  {<span class="ot">continue ::</span> <span class="dt">Boolean</span> <span class="fu">|</span> r}
+  <span class="ot">-&gt;</span>  <span class="dt">AllEffects</span> <span class="dt">Unit</span>
+
+<span class="ot">main ::</span> <span class="dt">AllEffects</span> <span class="dt">Unit</span>
+main <span class="fu">=</span> <span class="kw">do</span>
+  window <span class="ot">&lt;-</span> makeWindow windowWidth windowHeight <span class="st">&quot;PureScript Pure11 C++11 Animation - Lettier.com&quot;</span>
+  startAppLoop window
+
+<span class="ot">windowWidth ::</span> <span class="dt">Int</span>
+windowWidth <span class="fu">=</span> <span class="dv">600</span>
+
+<span class="ot">windowHeight ::</span> <span class="dt">Int</span>
+windowHeight <span class="fu">=</span> <span class="dv">600</span>
+
+<span class="ot">windowWidthN ::</span> <span class="dt">Number</span>
+windowWidthN <span class="fu">=</span> toNumber windowWidth
+
+<span class="ot">windowHeightN ::</span> <span class="dt">Number</span>
+windowHeightN <span class="fu">=</span> toNumber windowHeight
+
+<span class="ot">startAppLoop ::</span> <span class="dt">Window</span> <span class="ot">-&gt;</span> <span class="dt">AllEffects</span> <span class="dt">Unit</span>
+startAppLoop window <span class="fu">=</span> <span class="kw">do</span>
+  <span class="kw">let</span> textureWidth <span class="fu">=</span> <span class="fl">500.0</span>
+  <span class="kw">let</span> textureHeight <span class="fu">=</span> textureWidth
+
+  <span class="kw">let</span> startingRotation <span class="fu">=</span> <span class="fl">0.0</span>
+  <span class="kw">let</span> startingScale <span class="fu">=</span> <span class="fl">0.0</span>
+  <span class="kw">let</span> rotation <span class="fu">=</span> startingRotation
+  <span class="kw">let</span> scale <span class="fu">=</span> startingScale
+  <span class="kw">let</span> scaleTemp <span class="fu">=</span> easeIn scale
+
+  texture0 <span class="ot">&lt;-</span> makeTextureFromFile <span class="st">&quot;static/purescript-logo.png&quot;</span>
+  texture1 <span class="ot">&lt;-</span> makeTextureFromFile <span class="st">&quot;static/purescript-logo-inverted.png&quot;</span>
+
+  shape0 <span class="ot">&lt;-</span> makeRectangleShape textureWidth textureHeight
+  shape1 <span class="ot">&lt;-</span> makeRectangleShape textureWidth textureHeight
+
+  shapeSetTexture shape0 texture0
+  shapeSetTexture shape1 texture1
+
+  transformableSetOrigin shape0 (textureWidth <span class="fu">/</span> <span class="fl">2.0</span>) (textureHeight <span class="fu">/</span> <span class="fl">2.0</span>)
+  transformableSetOrigin shape1 (textureWidth <span class="fu">/</span> <span class="fl">2.0</span>) (textureHeight <span class="fu">/</span> <span class="fl">2.0</span>)
+
+  transformableMove shape0 (windowWidthN <span class="fu">/</span> <span class="fl">2.0</span>) (windowHeightN <span class="fu">/</span> <span class="fl">2.0</span>)
+  transformableMove shape1 (windowWidthN <span class="fu">/</span> <span class="fl">2.0</span>) (windowHeightN <span class="fu">/</span> <span class="fl">2.0</span>)
+
+  transformableSetRotation shape0 rotation
+  transformableSetRotation shape1 rotation
+
+  transformableSetScale shape0 scaleTemp scaleTemp
+  transformableSetScale shape1 scaleTemp scaleTemp
+
+  <span class="kw">let</span> bgShape <span class="fu">=</span> shape1
+  <span class="kw">let</span> fgShape <span class="fu">=</span> shape0
+
+  backgroundColor <span class="ot">&lt;-</span> makeColor <span class="dv">29</span> <span class="dv">34</span> <span class="dv">45</span> <span class="dv">255</span>
+  presentTime <span class="ot">&lt;-</span> timeNow
+
+  loop
+    iteration
+    {
+        window<span class="fu">:</span> window
+      , pastTime<span class="fu">:</span> presentTime
+      , backgroundColor<span class="fu">:</span> backgroundColor
+      , startingRotation<span class="fu">:</span> startingRotation
+      , startingScale<span class="fu">:</span> startingScale
+      , rotation<span class="fu">:</span> rotation
+      , scale<span class="fu">:</span> scale
+      , bgShape<span class="fu">:</span> bgShape
+      , fgShape<span class="fu">:</span> fgShape
+      , continue<span class="fu">:</span> true
+    }
+
+<span class="ot">iteration ::</span>
+      <span class="dt">IterationData</span>
+  <span class="ot">-&gt;</span>  <span class="dt">AllEffects</span> <span class="dt">IterationData</span>
+iteration
+  {
+      window<span class="fu">:</span> window
+    , pastTime<span class="fu">:</span> pastTime
+    , backgroundColor<span class="fu">:</span> backgroundColor
+    , startingRotation<span class="fu">:</span> startingRotation
+    , startingScale<span class="fu">:</span> startingScale
+    , rotation<span class="fu">:</span> rotation
+    , scale<span class="fu">:</span> scale
+    , bgShape<span class="fu">:</span> bgShape
+    , fgShape<span class="fu">:</span> fgShape
+    , continue<span class="fu">:</span> continue
+  }
+  <span class="fu">=</span> <span class="kw">do</span>
+  presentTime <span class="ot">&lt;-</span> timeNow
+  <span class="kw">let</span> diff <span class="fu">=</span> presentTime <span class="fu">-</span> pastTime
+  <span class="kw">let</span> delta <span class="fu">=</span> diff <span class="fu">/</span> <span class="fl">1000.0</span>
+
+  <span class="kw">let</span> rotation' <span class="fu">=</span> ((<span class="fl">60.0</span> <span class="fu">*</span> delta) <span class="fu">+</span> (<span class="kw">if</span> rotation <span class="fu">&gt;=</span> <span class="fl">360.0</span> <span class="fu">||</span> scale <span class="fu">&gt;</span> <span class="fl">34.0</span> <span class="kw">then</span> startingRotation <span class="kw">else</span> rotation))
+  <span class="kw">let</span> scale' <span class="fu">=</span> ((<span class="fl">8.0</span> <span class="fu">*</span> delta) <span class="fu">+</span> (<span class="kw">if</span> scale <span class="fu">&gt;</span> <span class="fl">34.0</span> <span class="kw">then</span> startingScale <span class="kw">else</span> scale))
+  <span class="kw">let</span> scaleTemp <span class="fu">=</span> easeIn scale'
+
+  <span class="kw">let</span> bgShape' <span class="fu">=</span> <span class="kw">if</span> scale <span class="fu">&gt;</span> <span class="fl">34.0</span> <span class="kw">then</span> fgShape <span class="kw">else</span> bgShape
+  <span class="kw">let</span> fgShape' <span class="fu">=</span> <span class="kw">if</span> scale <span class="fu">&gt;</span> <span class="fl">34.0</span> <span class="kw">then</span> bgShape <span class="kw">else</span> fgShape
+
+  transformableSetRotation fgShape' rotation'
+  transformableSetScale    fgShape' scaleTemp scaleTemp
+
+  windowPollEvent window (\ event <span class="ot">-&gt;</span> <span class="kw">do</span>
+      isClosed <span class="ot">&lt;-</span> eventIsClosed event
+      <span class="kw">if</span> isClosed
+        <span class="kw">then</span> <span class="kw">do</span>
+          windowClose window
+          pure unit
+        <span class="kw">else</span> pure unit
+    )
+
+  <span class="kw">let</span> output <span class="fu">=</span>
+        {
+            window<span class="fu">:</span> window
+          , pastTime<span class="fu">:</span> presentTime
+          , backgroundColor<span class="fu">:</span> backgroundColor
+          , startingRotation<span class="fu">:</span> startingRotation
+          , startingScale<span class="fu">:</span> startingScale
+          , rotation<span class="fu">:</span> rotation'
+          , scale<span class="fu">:</span> scale'
+          , bgShape<span class="fu">:</span> bgShape'
+          , fgShape<span class="fu">:</span> fgShape'
+          , continue<span class="fu">:</span> true
+        }
+
+  isOpen <span class="ot">&lt;-</span> windowIsOpen window
+  <span class="kw">if</span> not isOpen
+    <span class="kw">then</span> pure (output { continue <span class="fu">=</span> false })
+    <span class="kw">else</span> <span class="kw">do</span>
+      render
+        {
+            window<span class="fu">:</span> window
+          , backgroundColor<span class="fu">:</span> backgroundColor
+          , bgShape<span class="fu">:</span> bgShape'
+          , fgShape<span class="fu">:</span> fgShape'
+        }
+
+      pure output
+
+<span class="ot">render ::</span>
+      forall r<span class="fu">.</span>
+      {
+<span class="ot">          window ::</span> <span class="dt">Window</span>
+        ,<span class="ot"> backgroundColor ::</span> <span class="dt">Color</span>
+        ,<span class="ot"> bgShape ::</span> <span class="dt">RectangleShape</span>
+        ,<span class="ot"> fgShape ::</span> <span class="dt">RectangleShape</span>
+        <span class="fu">|</span> r
+      }
+  <span class="ot">-&gt;</span>  <span class="dt">SfEffect</span> <span class="dt">Unit</span>
+render
+  {
+      window<span class="fu">:</span> window
+    , backgroundColor<span class="fu">:</span> backgroundColor
+    , bgShape<span class="fu">:</span> bgShape
+    , fgShape<span class="fu">:</span> fgShape
+  }
+  <span class="fu">=</span> <span class="kw">do</span>
+  windowClear window backgroundColor
+  windowDraw window bgShape
+  windowDraw window fgShape
+  windowDisplay window</code></pre></div>
+<p>At the top of the file, we define our <code>Main</code> module, import the <code>Prelude</code>, and import the <code>Eff</code> type constructor. <code>Eff</code> takes a row of effects (like the <code>SF</code> effect you will see later) and a return type. These row of effects are checked and if the compiler detects a called function with an effect not listed, it will raise an error.</p>
+<p>As we mentioned earlier, some of our foreign functions are polymorphic (they accept different types that share an interface). To facilitate them, we define the three types classes <code>ITransformable</code>, <code>IDrawable</code>, and <code>IShape</code>. The <code>I</code> prefix indicates they are an interface.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">foreign <span class="kw">import </span>data <span class="dt">CHRONO</span> :: !
+foreign <span class="kw">import </span>data <span class="dt">SF</span> :: !</code></pre></div>
+<p>We define two custom effects called <code>SF</code> and <code>CHRONO</code> which are named after the namespaces we use in <code>Main.cc</code>. Note that we could call them something else but these names make it clear.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">foreign <span class="kw">import </span>data <span class="dt">Window</span> :: *
+foreign <span class="kw">import </span>data <span class="dt">Shape</span> :: *
+foreign <span class="kw">import </span>data <span class="dt">Transformable</span> :: *
+foreign <span class="kw">import </span>data <span class="dt">Drawable</span> :: *
+foreign <span class="kw">import </span>data <span class="dt">RectangleShape</span> :: *
+foreign <span class="kw">import </span>data <span class="dt">Event</span> :: *
+foreign <span class="kw">import </span>data <span class="dt">Color</span> :: *
+foreign <span class="kw">import </span>data <span class="dt">Texture</span> :: *</code></pre></div>
+<p>After the custom effects, we define our foreign data types that are returned by our foreign functions.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span><span class="ot"> iTransformableRectangleShape ::</span> <span class="dt">ITransformable</span> <span class="dt">RectangleShape</span>
+<span class="kw">instance</span><span class="ot"> iDrawableRectangleShape ::</span> <span class="dt">IDrawable</span> <span class="dt">RectangleShape</span>
+<span class="kw">instance</span><span class="ot"> iShapeRectangleShape ::</span> <span class="dt">IShape</span> <span class="dt">RectangleShape</span></code></pre></div>
+<p>Keeping in line with SFML’s class hierarchy, we define three type class instances. For example, <code>RectangleShape</code> an instance of <code>ITransformable</code> since it has the interface methods of the <code>sf::Transformable</code> C++ class.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">ChronoEffect</span> a <span class="fu">=</span> forall e<span class="fu">.</span> <span class="dt">Eff</span> (<span class="ot">chrono::</span><span class="dt">CHRONO</span> <span class="fu">|</span> e) a
+<span class="kw">type</span> <span class="dt">SfEffect</span> a <span class="fu">=</span> forall e<span class="fu">.</span> <span class="dt">Eff</span> (<span class="ot">sf::</span><span class="dt">SF</span> <span class="fu">|</span> e) a
+<span class="kw">type</span> <span class="dt">AllEffects</span> a <span class="fu">=</span> forall e<span class="fu">.</span> <span class="dt">Eff</span> (<span class="ot">sf::</span><span class="dt">SF</span>,<span class="ot"> chrono::</span><span class="dt">CHRONO</span> <span class="fu">|</span> e) a</code></pre></div>
+<p>Out of convenience, we define three type synonyms to help describe the various types of side-effect having functions we use. The <code>ChronoEffect</code> is for impure functions that support the <code>CHRONO</code> effect, the <code>SfEffect</code> is for impure functions that support the <code>SF</code> effect. and the <code>AllEffects</code> is for impure functions that support the <code>SF</code> effect, the <code>CHRONO</code> effect, or both. By listing the effects, we can control what effects are allowed to occur.</p>
+<p>The <code>forall e. (... | e)</code> portion has to do with “extensible effects.” By using this construction, we can call functions that use <code>SF</code> and/or <code>CHRONO</code> from functions that use <code>AllEffects</code>. We cannot, however, call functions that use <code>ChronoEffect</code> from functions that use <code>SfEffect</code> and vice versa. If we wanted to, we could remove the <code>e</code> from <code>AllEffects</code> and <code>Main.purs</code> would still compile. It would not compile, however, if we removed it from say <code>SfEffect</code> because there would be no way to match <code>(sf :: SF)</code> with <code>(chrono :: CHRONO | e)</code> and make it look like <code>(sf :: SF , chrono :: CHRONO | e)</code> which is <code>AllEffects</code>.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">IterationData</span> <span class="fu">=</span>
+  {
+<span class="ot">      window ::</span> <span class="dt">Window</span>
+    ,<span class="ot"> pastTime ::</span> <span class="dt">Number</span>
+    ,<span class="ot"> backgroundColor ::</span> <span class="dt">Color</span>
+    ,<span class="ot"> startingRotation ::</span> <span class="dt">Number</span>
+    ,<span class="ot"> startingScale ::</span> <span class="dt">Number</span>
+    ,<span class="ot"> rotation ::</span> <span class="dt">Number</span>
+    ,<span class="ot"> scale ::</span> <span class="dt">Number</span>
+    ,<span class="ot"> bgShape ::</span> <span class="dt">RectangleShape</span>
+    ,<span class="ot"> fgShape ::</span> <span class="dt">RectangleShape</span>
+    ,<span class="ot"> continue ::</span> <span class="dt">Boolean</span>
+  }</code></pre></div>
+<p><code>IterationData</code> is a record used to hold the state of the application. <code>loop</code> will continuously feed this record to <code>iteration</code> until <code>iteration</code> returns <code>continue</code> as false.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">foreign <span class="kw">import </span>toNumber :: <span class="dt">Int</span> -&gt; <span class="dt">Number</span>
+
+foreign <span class="kw">import </span>easeIn :: <span class="dt">Number</span> -&gt; <span class="dt">Number</span>
+
+foreign <span class="kw">import </span>timeNow :: <span class="dt">ChronoEffect</span> <span class="dt">Number</span>
+
+foreign <span class="kw">import </span>makeWindow :: <span class="dt">Int</span> -&gt; <span class="dt">Int</span> -&gt; <span class="dt">String</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Window</span>
+foreign <span class="kw">import </span>makeColor :: <span class="dt">Int</span> -&gt; <span class="dt">Int</span> -&gt; <span class="dt">Int</span> -&gt; <span class="dt">Int</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Color</span>
+foreign <span class="kw">import </span>makeTextureFromFile :: <span class="dt">String</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Texture</span>
+foreign <span class="kw">import </span>makeRectangleShape :: <span class="dt">Number</span> -&gt; <span class="dt">Number</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">RectangleShape</span>
+
+foreign <span class="kw">import </span>shapeSetTexture :: forall s. (<span class="dt">IShape</span> s) =&gt; s -&gt; <span class="dt">Texture</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Unit</span>
+
+foreign <span class="kw">import </span>transformableSetRotation :: forall t. (<span class="dt">ITransformable</span> t) =&gt; t -&gt; <span class="dt">Number</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Unit</span>
+foreign <span class="kw">import </span>transformableSetScale :: forall t. (<span class="dt">ITransformable</span> t) =&gt; t -&gt; <span class="dt">Number</span> -&gt; <span class="dt">Number</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Unit</span>
+foreign <span class="kw">import </span>transformableSetOrigin :: forall t. (<span class="dt">ITransformable</span> t) =&gt; t -&gt; <span class="dt">Number</span> -&gt; <span class="dt">Number</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Unit</span>
+foreign <span class="kw">import </span>transformableMove :: forall t. (<span class="dt">ITransformable</span> t) =&gt; t -&gt; <span class="dt">Number</span> -&gt; <span class="dt">Number</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Unit</span>
+
+foreign <span class="kw">import </span>eventIsClosed :: <span class="dt">Event</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Boolean</span>
+
+foreign <span class="kw">import </span>windowIsOpen :: <span class="dt">Window</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Boolean</span>
+foreign <span class="kw">import </span>windowPollEvent :: <span class="dt">Window</span> -&gt; (<span class="dt">Event</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Unit</span>) -&gt; <span class="dt">SfEffect</span> <span class="dt">Unit</span>
+foreign <span class="kw">import </span>windowClear :: <span class="dt">Window</span> -&gt; <span class="dt">Color</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Unit</span>
+foreign <span class="kw">import </span>windowDisplay :: <span class="dt">Window</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Unit</span>
+foreign <span class="kw">import </span>windowDraw :: forall d. (<span class="dt">IDrawable</span> d) =&gt; <span class="dt">Window</span> -&gt; d -&gt; <span class="dt">SfEffect</span> <span class="dt">Unit</span>
+foreign <span class="kw">import </span>windowClose :: <span class="dt">Window</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Unit</span>
+
+foreign <span class="kw">import </span>loop ::
+      forall r<span class="fu">.</span>
+      ({<span class="ot">continue ::</span> <span class="dt">Boolean</span> <span class="fu">|</span> r} <span class="ot">-&gt;</span> <span class="dt">AllEffects</span> {<span class="ot">continue ::</span> <span class="dt">Boolean</span> <span class="fu">|</span> r})
+  <span class="ot">-&gt;</span>  {<span class="ot">continue ::</span> <span class="dt">Boolean</span> <span class="fu">|</span> r}
+  <span class="ot">-&gt;</span>  <span class="dt">AllEffects</span> <span class="dt">Unit</span></code></pre></div>
+<p>Here we import our foreign functions into PureScript that are defined in <code>Main.cc</code>. For the impure functions, you can see how we use the <code>Eff</code> monad type synonyms. Remember that <code>toNumber</code> and <code>easeIn</code> are pure and thus do not use the <code>Eff</code> monad.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">foreign <span class="kw">import </span>transformableSetRotation :: forall t. (<span class="dt">ITransformable</span> t) =&gt; t -&gt; <span class="dt">Number</span> -&gt; <span class="dt">SfEffect</span> <span class="dt">Unit</span></code></pre></div>
+<p>For the polymorphic functions, you can see the type constraints</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">forall instanceOf<span class="fu">.</span> (<span class="dt">TypeClass</span> instanceOf) <span class="ot">=&gt;</span> instanceOf <span class="ot">-&gt;</span> <span class="fu">...</span></code></pre></div>
+<p>we talked about earlier.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">foreign <span class="kw">import </span>loop ::
+      forall r<span class="fu">.</span>
+      ({<span class="ot">continue ::</span> <span class="dt">Boolean</span> <span class="fu">|</span> r} <span class="ot">-&gt;</span> <span class="dt">AllEffects</span> {<span class="ot">continue ::</span> <span class="dt">Boolean</span> <span class="fu">|</span> r})
+  <span class="ot">-&gt;</span>  {<span class="ot">continue ::</span> <span class="dt">Boolean</span> <span class="fu">|</span> r}
+  <span class="ot">-&gt;</span>  <span class="dt">AllEffects</span> <span class="dt">Unit</span></code></pre></div>
+<p>Here you see the PureScript import for <code>loop</code> which uses the “extensible records” syntax. The import says that <code>loop</code>:</p>
+<ul>
+<li>accepts
+<ul>
+<li>a function that
+<ul>
+<li>accepts a record that contains at least a field called <code>continue</code></li>
+<li>has/supports <code>AllEffects</code></li>
+<li>returns a record that contains at least a field called <code>continue</code></li>
+</ul></li>
+<li>a record that contains at least a field called <code>continue</code></li>
+</ul></li>
+<li>has <code>AllEffects</code></li>
+<li>returns <code>Unit</code> (nothing)</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">main ::</span> <span class="dt">AllEffects</span> <span class="dt">Unit</span>
+main <span class="fu">=</span> <span class="kw">do</span>
+  window <span class="ot">&lt;-</span> makeWindow windowWidth windowHeight <span class="st">&quot;PureScript Pure11 C++11 Animation - Lettier.com&quot;</span>
+  startAppLoop window</code></pre></div>
+<p><code>main</code> is the entry point for our application. This is where we create the window and start the application loop.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">startAppLoop ::</span> <span class="dt">Window</span> <span class="ot">-&gt;</span> <span class="dt">AllEffects</span> <span class="dt">Unit</span>
+startAppLoop window <span class="fu">=</span> <span class="kw">do</span>
+
+  <span class="co">-- ...</span>
+
+  loop
+    iteration
+    {
+        window<span class="fu">:</span> window
+      , pastTime<span class="fu">:</span> presentTime
+      , backgroundColor<span class="fu">:</span> backgroundColor
+      , startingRotation<span class="fu">:</span> startingRotation
+      , startingScale<span class="fu">:</span> startingScale
+      , rotation<span class="fu">:</span> rotation
+      , scale<span class="fu">:</span> scale
+      , bgShape<span class="fu">:</span> bgShape
+      , fgShape<span class="fu">:</span> fgShape
+      , continue<span class="fu">:</span> true
+    }</code></pre></div>
+<p><code>startAppLoop</code> initializes the state of our application and calls <code>loop</code> with the <code>interation</code> function and the initial state. The initial state contains our two shapes that, when rendered, show the two images we downloaded earlier.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">iteration ::</span>
+      <span class="dt">IterationData</span>
+  <span class="ot">-&gt;</span>  <span class="dt">AllEffects</span> <span class="dt">IterationData</span>
+iteration
+  <span class="co">-- ...</span>
+  <span class="fu">=</span> <span class="kw">do</span>
+
+  presentTime <span class="ot">&lt;-</span> timeNow
+  <span class="kw">let</span> diff <span class="fu">=</span> presentTime <span class="fu">-</span> pastTime
+  <span class="kw">let</span> delta <span class="fu">=</span> diff <span class="fu">/</span> <span class="fl">1000.0</span>
+
+  <span class="kw">let</span> rotation' <span class="fu">=</span> ((<span class="fl">60.0</span> <span class="fu">*</span> delta) <span class="fu">+</span> (<span class="kw">if</span> rotation <span class="fu">&gt;=</span> <span class="fl">360.0</span> <span class="fu">||</span> scale <span class="fu">&gt;</span> <span class="fl">34.0</span> <span class="kw">then</span> startingRotation <span class="kw">else</span> rotation))
+  <span class="kw">let</span> scale' <span class="fu">=</span> ((<span class="fl">8.0</span> <span class="fu">*</span> delta) <span class="fu">+</span> (<span class="kw">if</span> scale <span class="fu">&gt;</span> <span class="fl">34.0</span> <span class="kw">then</span> startingScale <span class="kw">else</span> scale))
+  <span class="kw">let</span> scaleTemp <span class="fu">=</span> easeIn scale'</code></pre></div>
+<p><code>iteration</code> starts off by calculating the amount of time that has passed since it was last called. If no time has passed, <code>delta</code> will be zero. However, if say a second has gone by, <code>delta</code> will be one.</p>
+<p>We need this <code>delta</code> to produce a time-based animation versus say a frame-based animation. A time-based animation is preferred because our program will run at different frame rates or frames per second depending on the available resources of the machine it is running on. By making the animation time-based, the animation will be fairly consistent no matter what the frame rate is.</p>
+<p>Every second (1000 milliseconds), we want the rotation to increase by 60 degrees and the scale to increase by eight times. Working out the math, you can see how <code>delta</code> helps determine the proportion of increase needed for this frame or iteration. If two seconds have passed, we need to update the rotation by 120 degrees and the scale by 16. If half of a second has passed, we need to update the rotation by 30 degrees and the scale by four. And so on and so forth.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  <span class="kw">let</span> bgShape' <span class="fu">=</span> <span class="kw">if</span> scale <span class="fu">&gt;</span> <span class="fl">34.0</span> <span class="kw">then</span> fgShape <span class="kw">else</span> bgShape
+  <span class="kw">let</span> fgShape' <span class="fu">=</span> <span class="kw">if</span> scale <span class="fu">&gt;</span> <span class="fl">34.0</span> <span class="kw">then</span> bgShape <span class="kw">else</span> fgShape
+
+  transformableSetRotation fgShape' rotation'
+  transformableSetScale    fgShape' scaleTemp scaleTemp</code></pre></div>
+<p>Our animation works by only operating on the foreground image while leaving the background image in the state it was in just before we flipped it from foreground to background. The number 34 was found through trial and error. Once the scale reaches 34 or greater, we make the foreground image the background image and vice versa.</p>
+<p>Before we render the images to the screen, we update the rotation and scale of the foreground shape/image.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  windowPollEvent window (\ event <span class="ot">-&gt;</span> <span class="kw">do</span>
+      isClosed <span class="ot">&lt;-</span> eventIsClosed event
+      <span class="kw">if</span> isClosed
+        <span class="kw">then</span> <span class="kw">do</span>
+          windowClose window
+          pure unit
+        <span class="kw">else</span> pure unit
+    )</code></pre></div>
+<p>Here you see our event loop where we handle the <em>close-the-window</em> event after the user attempts to close the window.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  <span class="kw">let</span> output <span class="fu">=</span> <span class="co">-- ...</span>
+
+  isOpen <span class="ot">&lt;-</span> windowIsOpen window
+  <span class="kw">if</span> not isOpen
+    <span class="kw">then</span> pure (output { continue <span class="fu">=</span> false })
+    <span class="kw">else</span> <span class="kw">do</span>
+      render
+        {
+            window<span class="fu">:</span> window
+          , backgroundColor<span class="fu">:</span> backgroundColor
+          , bgShape<span class="fu">:</span> bgShape'
+          , fgShape<span class="fu">:</span> fgShape'
+        }
+
+      pure output</code></pre></div>
+<p>If the window is closed, we return <code>continue</code> as false to <code>loop</code> and the program will exit. Otherwise, we render the background and foreground shapes to the window and return to <code>loop</code> the updated state of our program.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">render ::</span>
+      forall r<span class="fu">.</span>
+      <span class="co">-- ...</span>
+  <span class="ot">-&gt;</span>  <span class="dt">SfEffect</span> <span class="dt">Unit</span>
+render
+  {
+      window<span class="fu">:</span> window
+    , backgroundColor<span class="fu">:</span> backgroundColor
+    , bgShape<span class="fu">:</span> bgShape
+    , fgShape<span class="fu">:</span> fgShape
+  }
+  <span class="fu">=</span> <span class="kw">do</span>
+  windowClear window backgroundColor
+  windowDraw window bgShape
+  windowDraw window fgShape
+  windowDisplay window</code></pre></div>
+<p>The render function is tasked with updating the final composite image that is shown to the user. Off to the side and out of view, it first fills in the image with the background color. Like a painter, it starts with the background and works its way forward.</p>
+<p>Once it is done drawing, it takes the finished image and swaps it with the one currently being displayed to the user. If run fast enough, this pulls off the illusion of movement and creates our animation.</p>
+<h2 id="build-and-run">Build and run</h2>
+<p>Now that we have the source code, we can compile our program and run it.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> project
+<span class="fu">make</span> GC=yes LDFLAGS=<span class="st">&quot;-lsfml-graphics -lsfml-window -lsfml-system&quot;</span></code></pre></div>
+<p>Make sure you are in the root of the project before you run the <code>make</code> command. The <code>LDFLAGS</code> are passed to the linker and are needed to use SFML. Make sure to include the <code>GC=yes</code> flag. If we leave it off, our program will crash by running out of memory or by trying to access memory it does not have access to.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">./output/bin/main</span></code></pre></div>
+<p>If everything went well, you should see the animation shown earlier.</p>
+<h2 id="recap">Recap</h2>
+<p>Using <a href="http://www.purescript.org/">PureScript</a>, the <a href="https://github.com/pure11">Pure11</a> back end, and the <a href="https://www.sfml-dev.org/">Simple and Fast Multimedia Library</a>, we created a desktop GUI program that continuously renders an animation to the screen. PureScript normally targets JavaScript but by using Pure11, we can target C++ which opens up a wide range of opportunities. If we were to keep going with this example, we could easily create a 2D video game for the desktop.</p>
+<p>If you enjoyed this article be sure to checkout <a href="../posts/2017-02-25-matrix-inverse-purescript.html">Let’s make a Matrix Inverse Calculator with PureScript</a> and <a href="../posts/2017-01-15-linear-regression-and-the-amazing-beard.html">Let’s make a Linear Regression Calculator with PureScript</a>.</p>
+</div>
+<div class="post-footer">
+  <div class="display-left">
+    <h2 class="post-footer-cta">
+      Hi there!
+      <a href="../" title="Home">Browse</a>
+      and subscribe to the
+      <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
+      for more content.
+    </h2>
+  </div>
+  <div class="display-right text-align-right post-footer-copyright">
+    <h4>
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2017</span> David Lettier
+    </h4>
+  </div>
+</div>
+
+    </div>
+    <div class="share-toolbox addthis_sharing_toolbox"></div>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4fc2bc7a00a9352b"></script>
+    <script>
+      (function(i,s,o,g,r,a,m){
+        i.GoogleAnalyticsObject = r;
+        i[r] = i[r] || function () { (i[r].q = i[r].q || []).push(arguments); };
+        i[r].l=1*new Date();
+        a=s.createElement(o);
+        m=s.getElementsByTagName(o)[0];
+        a.async=1;
+        a.src=g;
+        m.parentNode.insertBefore(a,m);
+      })(
+        window,
+        document,
+        'script',
+        '//www.google-analytics.com/analytics.js',
+        'ga'
+      );
+      ga('create', 'UA-34323684-2', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </body>
+</html>

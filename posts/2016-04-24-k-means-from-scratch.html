@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta property="og:site_name" content="Lettier">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Boost your skills, how to easily write K-Means by David Lettier">
+    <meta property="og:image" content="https://lettier.github.io/images/2016-04-24-k-means-from-scratch/jumbotron_image.jpg">
+    <meta property="og:url" content="https://lettier.github.io/posts/2016-04-24-k-means-from-scratch.html">
+    <meta property="og:description" content="Using vanilla JavaScript, we build an interactive k-means clustering application from scratch and test the clusters using the silhouette coefficient metric.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="David Lettier">
+    <meta name="description" content="Using vanilla JavaScript, we build an interactive k-means clustering application from scratch and test the clusters using the silhouette coefficient metric.">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/pandoc.css">
+    <link rel="stylesheet" type="text/css" href="../css/default.css">
+    <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
+    
+      
+        <title>Boost your skills, how to easily write K-Means by David Lettier</title>
+      
+    
+  </head>
+  <body>
+    <div id="top"></div>
+    <div class="nav-bar-container nav-bar-background">
+      <div class="nav-bar-buttons-container">
+        <a href="../" title="Home">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-home nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="../rss.xml" title="RSS" type="application/rss+xml" target="_blank">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-rss nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="http://www.lettier.com/" title="Lettier.com">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <img src="../images/logo.svg" width="30" height="30" alt="Lettier.com" class="lettier-icon-img">
+            </div>
+          </div>
+        </a>
+        <a href="https://www.github.com/lettier" title="GitHub">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-github nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.linkedin.com/in/lettier" title="LinkedIn">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-linkedin nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.hackerrank.com/lettier" title="HackerRank">
+          <div class="nav-bar-button-container nav-button-container-second-last">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-trophy nav-bar-icon nav-bar-icon-second-last"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.behance.net/dlettier" title="Behance">
+          <div class="nav-bar-button-container nav-bar-button-container-last">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-behance nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="jumbotron">
+      <div class="absolute-top jumbotron jumbotron-background-image" style="background-image: url('/images/2016-04-24-k-means-from-scratch/jumbotron_image.jpg');">
+      </div>
+    </div>
+    <div class="container jumbotron-text-position-container">
+      <div class="jumbotron-text-width-container">
+        <h1 class="jumbotron-text jumbotron-text-background">
+          
+            Boost your skills, how to easily write K-Means
+          
+          <span class="title-cursor">|</span>
+        </h1>
+      </div>
+    </div>
+    <div class="container content-container">
+      <div class="post-body">
+  <h2 id="the-final-product">The final product</h2>
+<div class="figure">
+<img src="../images/2016-04-24-k-means-from-scratch/demo.gif" class="post-img post-img-limit post-img-small" />
+
+</div>
+<p>You can play with the final build at <a href="http://www.lettier.com/kmeans">lettier.com/kmeans</a>. All of its source is stored on <a href="https://github.com/lettier/interactivekmeans">GitHub</a>.</p>
+<h2 id="k-means">K-Means</h2>
+<p>K-Means is an unsupervised machine learning technique that (hopefully) clusters similar items/data-points given. The entire algorithm consists of the following three major steps.</p>
+<ul>
+<li>Initialization</li>
+<li>Assignment</li>
+<li>Update</li>
+</ul>
+<blockquote>
+K-means clustering aims to partition <code>n</code> observations into <code>k</code> clusters in which each observation belongs to the cluster with the nearest mean, serving as a prototype of the cluster.
+<footer>
+<a href="https://en.wikipedia.org/wiki/K-means_clustering">K-Means Clustering, Wikipedia</a>
+</footer>
+</blockquote>
+<p>One of the caveats with k-means is that you must know (or guess) the number of clusters <code>k</code> before clustering.</p>
+<h3 id="mean-initialization">Mean initialization</h3>
+<p>At the start of the algorithm you must initialize the means’ features/coordinates in the X dimensional space your data points reside in. For example, the features/dimensions for fruit could be:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">[circumfrence<span class="op">,</span> height<span class="op">,</span> volume<span class="op">,</span> sugar grams<span class="op">,</span> ...]</code></pre></div>
+<p>We will offer two initialization methods for our k-means object:</p>
+<ul>
+<li>Random</li>
+<li>The Fouad Khan Method</li>
+</ul>
+<p>Other methods include randomly choosing <code>k</code> data points as the starting means and <em>k-means++</em>.</p>
+<h4 id="random">Random</h4>
+<p>The first method randomly scatters the <code>k</code> means throughout the feature space making sure not to go outside the bounds of the input data points.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">KMeans</span>.<span class="va">prototype</span>.<span class="at">initializeMeansMethod0</span> <span class="op">=</span> <span class="kw">function</span> () <span class="op">{</span>
+  <span class="cf">if</span> (<span class="kw">this</span>.<span class="va">means</span>.<span class="at">length</span> <span class="op">==</span> <span class="kw">this</span>.<span class="at">k</span>) <span class="op">{</span>
+    <span class="cf">return</span><span class="op">;</span>
+  <span class="op">}</span>
+
+  <span class="kw">this</span>.<span class="va">means</span>.<span class="at">length</span> <span class="op">=</span> <span class="dv">0</span><span class="op">;</span>
+
+  <span class="kw">var</span> k <span class="op">=</span> <span class="kw">this</span>.<span class="at">k</span><span class="op">;</span>
+  <span class="cf">while</span> (k<span class="op">--</span>) <span class="op">{</span>
+    <span class="kw">var</span> i <span class="op">=</span> <span class="kw">this</span>.<span class="at">featureLength</span><span class="op">;</span>
+    <span class="kw">var</span> mean <span class="op">=</span> <span class="kw">new</span> <span class="at">Mean</span>()<span class="op">;</span>
+    <span class="va">mean</span>.<span class="at">id</span> <span class="op">=</span> k<span class="op">;</span>
+    <span class="cf">while</span> (i<span class="op">--</span>) <span class="op">{</span>
+      <span class="kw">var</span> min <span class="op">=</span> <span class="kw">this</span>.<span class="at">featuresMin</span>[i]<span class="op">;</span>
+      <span class="kw">var</span> max <span class="op">=</span> <span class="kw">this</span>.<span class="at">featuresMax</span>[i]<span class="op">;</span>
+      <span class="kw">var</span> value <span class="op">=</span> <span class="at">randomValueInRange</span>(max<span class="op">,</span> min)<span class="op">;</span>
+      <span class="va">mean</span>.<span class="va">features</span>.<span class="at">unshift</span>(value)<span class="op">;</span>
+    <span class="op">}</span>
+    <span class="kw">this</span>.<span class="va">means</span>.<span class="at">push</span>(mean)<span class="op">;</span>
+  <span class="op">}</span>
+<span class="op">};</span></code></pre></div>
+<h4 id="the-fouad-khan-method">The Fouad Khan method</h4>
+<p>The following initialization method is outlined in <!--
+https://www.academia.edu/5988806/An_initial_seed_selection_algorithm_for_k-means_clustering_of_georeferenced_data_to_improve_replicability_of_cluster_assignments_for_mapping_application
+--> <a href="http://bit.ly/28XOO5y">Fouad Khan’s paper</a>.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">KMeans</span>.<span class="va">prototype</span>.<span class="at">initializeMeansMethod1</span> <span class="op">=</span> <span class="kw">function</span> () <span class="op">{</span>
+  <span class="kw">var</span> mean <span class="op">=</span> <span class="kw">null</span><span class="op">;</span>
+  <span class="kw">var</span> magnitudeSortedDataPoints <span class="op">=</span> []<span class="op">;</span>
+  <span class="kw">var</span> consecutiveDataPointDistances <span class="op">=</span> []<span class="op">;</span>
+  <span class="kw">var</span> sortedConsecutiveDataPointDistances <span class="op">=</span> []<span class="op">;</span>
+  <span class="kw">var</span> upperBoundIndexes <span class="op">=</span> []<span class="op">;</span>
+  <span class="kw">var</span> lowerBoundIndexes <span class="op">=</span> []<span class="op">;</span>
+  <span class="kw">var</span> upperLowerBoundDataPoints <span class="op">=</span> []<span class="op">;</span>
+  <span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></code></pre></div>
+<p>We will begin by defining all of our variables upfront at the start of the method.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">  <span class="kw">this</span>.<span class="va">dataPoints</span>.<span class="at">forEach</span>(<span class="kw">function</span> (dataPoint) <span class="op">{</span>
+    <span class="va">dataPoint</span>.<span class="at">magnitude</span> <span class="op">=</span> <span class="at">magnitude</span>(dataPoint)<span class="op">;</span>
+  <span class="op">}</span>)<span class="op">;</span>
+
+  magnitudeSortedDataPoints <span class="op">=</span> <span class="kw">this</span>.<span class="va">dataPoints</span>.<span class="at">sort</span>(
+    compareDataPointMagnitudes
+  )<span class="op">;</span>
+
+  <span class="cf">if</span> (<span class="va">magnitudeSortedDataPoints</span>.<span class="at">length</span> <span class="op">===</span> <span class="dv">0</span>) <span class="op">{</span><span class="cf">return</span><span class="op">;}</span>
+
+  <span class="cf">if</span> (<span class="va">magnitudeSortedDataPoints</span>.<span class="at">length</span> <span class="op">===</span> <span class="dv">1</span>) <span class="op">{</span>
+      mean <span class="op">=</span> <span class="kw">new</span> <span class="at">Mean</span>()<span class="op">;</span>
+      <span class="va">mean</span>.<span class="at">id</span> <span class="op">=</span> <span class="dv">0</span><span class="op">;</span>
+      <span class="va">mean</span>.<span class="at">features</span> <span class="op">=</span> magnitudeSortedDataPoints[<span class="dv">0</span>].<span class="at">features</span><span class="op">;</span>
+      <span class="kw">this</span>.<span class="va">means</span>.<span class="at">push</span>(mean)<span class="op">;</span>
+      <span class="cf">return</span><span class="op">;</span>
+  <span class="op">}</span></code></pre></div>
+<p>The algorithm starts off with finding the magnitude–length of the <a href="https://www.mathsisfun.com/algebra/vectors.html">vector</a> from the origin <code>[0,0]</code> to the data point–of each data point. We then sort these data points by their magnitudes where the first is the closest to the origin and the last is the farthest away.</p>
+<p>If we have no data points, just return. If we only have one, just set it as the mean.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">  <span class="kw">function</span> <span class="at">ConsecutiveDataPointDistance</span>(dataPoint<span class="op">,</span> distance<span class="op">,</span> index) <span class="op">{</span>
+    <span class="kw">this</span>.<span class="at">dataPoint</span> <span class="op">=</span> dataPoint<span class="op">;</span>
+    <span class="kw">this</span>.<span class="at">distance</span> <span class="op">=</span> distance<span class="op">;</span>
+    <span class="kw">this</span>.<span class="at">index</span> <span class="op">=</span> index<span class="op">;</span>
+  <span class="op">}</span>
+
+  <span class="co">//...</span>
+
+  <span class="cf">for</span> (i<span class="op">=</span><span class="dv">1</span><span class="op">;</span> i<span class="op">&lt;</span><span class="va">magnitudeSortedDataPoints</span>.<span class="at">length</span><span class="op">;</span> <span class="op">++</span>i) <span class="op">{</span>
+    <span class="kw">var</span> d1 <span class="op">=</span> magnitudeSortedDataPoints[i]<span class="op">;</span>
+    <span class="kw">var</span> d0 <span class="op">=</span> magnitudeSortedDataPoints[i<span class="op">-</span><span class="dv">1</span>]<span class="op">;</span>
+    <span class="kw">var</span> consecutiveDataPointDistance <span class="op">=</span> <span class="kw">new</span> <span class="at">ConsecutiveDataPointDistance</span>(
+      d0<span class="op">,</span>
+      <span class="kw">this</span>.<span class="at">euclideanDistance</span>(d1<span class="op">,</span> d0)<span class="op">,</span>
+      i<span class="op">-</span><span class="dv">1</span>
+    )<span class="op">;</span>
+    <span class="va">consecutiveDataPointDistances</span>.<span class="at">push</span>(consecutiveDataPointDistance)<span class="op">;</span>
+  <span class="op">}</span>
+
+  sortedConsecutiveDataPointDistances <span class="op">=</span> <span class="va">consecutiveDataPointDistances</span>.<span class="at">sort</span>(
+    compareConsecutiveDataPointDistances
+  )<span class="op">;</span></code></pre></div>
+<p>Now we take these data points, sorted by their magnitudes, and compute the euclidean distance between each of them.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">d0 <span class="op">&lt;---</span>distance<span class="op">---&gt;</span> d1 <span class="op">&lt;---</span>distance<span class="op">---&gt;</span> d2 <span class="op">&lt;---</span>distance<span class="op">---&gt;</span> ... <span class="at">dn</span><span class="op">-</span><span class="dv">1</span></code></pre></div>
+<p>And similarly with the magnitudes, we sort the data points <code>di</code> by the distance to their next neighbor <code>di+1</code> but in descending order.</p>
+<p>So say we have three data points:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">d0<span class="op">:</span>
+  Magnitude Index<span class="op">:</span> <span class="dv">0</span>
+  Magnitude<span class="op">:</span> <span class="dv">1</span>
+  Distance to d1<span class="op">:</span> <span class="dv">1</span>
+d1<span class="op">:</span>
+  Magnitude Index<span class="op">:</span> <span class="dv">1</span>
+  Magnitude<span class="op">:</span> <span class="dv">2</span>
+  Distance to d2<span class="op">:</span> <span class="dv">2</span>
+d2<span class="op">:</span>
+  Magnitude Index <span class="dv">2</span>
+  Magnitude<span class="op">:</span> <span class="dv">3</span>
+  Distance to <span class="kw">null</span><span class="op">:</span> <span class="dv">0</span></code></pre></div>
+<p>they would be sorted like so:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">d1<span class="op">:</span>
+  Magnitude Index<span class="op">:</span> <span class="dv">1</span>
+  Magnitude<span class="op">:</span> <span class="dv">2</span>
+  Distance to d2<span class="op">:</span> <span class="dv">2</span>
+d0<span class="op">:</span>
+  Magnitude Index<span class="op">:</span> <span class="dv">0</span>
+  Magnitude<span class="op">:</span> <span class="dv">1</span>
+  Distance to d1<span class="op">:</span> <span class="dv">1</span>
+d2<span class="op">:</span>
+  Magnitude Index <span class="dv">2</span>
+  Magnitude<span class="op">:</span> <span class="dv">3</span>
+  Distance to <span class="kw">null</span><span class="op">:</span> <span class="dv">0</span></code></pre></div>
+<p>Note that we remember the index they had in the <code>magnitudeSortedDataPoints</code>.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">  <span class="cf">for</span> (i<span class="op">=</span><span class="dv">0</span><span class="op">;</span> i<span class="op">&lt;</span>(<span class="kw">this</span>.<span class="at">k</span> <span class="op">-</span> <span class="dv">1</span>)<span class="op">;</span> <span class="op">++</span>i) <span class="op">{</span>
+    <span class="va">upperBoundIndexes</span>.<span class="at">push</span>(
+      sortedConsecutiveDataPointDistances[i].<span class="at">index</span>
+    )<span class="op">;</span>
+  <span class="op">}</span>
+  <span class="va">upperBoundIndexes</span>.<span class="at">push</span>(<span class="va">magnitudeSortedDataPoints</span>.<span class="at">length</span> <span class="op">-</span> <span class="dv">1</span>)<span class="op">;</span>
+  upperBoundIndexes <span class="op">=</span> <span class="va">upperBoundIndexes</span>.<span class="at">sort</span>(<span class="kw">function</span> (a<span class="op">,</span> b)<span class="op">{</span> <span class="cf">return</span> a <span class="op">-</span> b<span class="op">;</span> <span class="op">}</span>)<span class="op">;</span></code></pre></div>
+<p>Using the sorted consecutive data points’ distances, we now need to gather the upper and lower cluster bounds. The upper bounds are the first <code>k-1</code> <code>magnitudeSortedDataPoints</code> indexes in the <code>sortedConsecutiveDataPointDistances</code> plus the last index in <code>magnitudeSortedDataPoints</code>. With the upper bound indexes added, we sort them in ascending order.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">  <span class="va">lowerBoundIndexes</span>.<span class="at">push</span>(<span class="dv">0</span>)<span class="op">;</span>
+  <span class="cf">for</span> (i<span class="op">=</span><span class="dv">0</span><span class="op">;</span> i<span class="op">&lt;</span>(<span class="va">upperBoundIndexes</span>.<span class="at">length</span> <span class="op">-</span> <span class="dv">1</span>)<span class="op">;</span> <span class="op">++</span>i) <span class="op">{</span>
+    <span class="va">lowerBoundIndexes</span>.<span class="at">push</span>(upperBoundIndexes[i] <span class="op">+</span> <span class="dv">1</span>)<span class="op">;</span>
+  <span class="op">}</span></code></pre></div>
+<p>For each upper bound index <code>i</code>, the corresponding lower bound index is <code>i + 1</code>. Index <code>0</code> is added at the beginning.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">  <span class="cf">for</span> (i<span class="op">=</span><span class="dv">0</span><span class="op">;</span> i<span class="op">&lt;</span><span class="va">upperBoundIndexes</span>.<span class="at">length</span><span class="op">;</span> <span class="op">++</span>i) <span class="op">{</span>
+    <span class="kw">var</span> temp <span class="op">=</span> []<span class="op">;</span>
+    <span class="va">temp</span>.<span class="at">push</span>(
+      magnitudeSortedDataPoints[upperBoundIndexes[i]]
+    )<span class="op">;</span>
+    <span class="va">temp</span>.<span class="at">push</span>(
+      magnitudeSortedDataPoints[lowerBoundIndexes[i]]
+    )<span class="op">;</span>
+    <span class="va">upperLowerBoundDataPoints</span>.<span class="at">push</span>(temp)<span class="op">;</span>
+  <span class="op">}</span></code></pre></div>
+<p>For convenience we’ll create an array of arrays such that each array is <code>[upper index, lower index]</code>.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">  <span class="cf">for</span> (i<span class="op">=</span><span class="dv">0</span><span class="op">;</span> i<span class="op">&lt;</span><span class="va">upperLowerBoundDataPoints</span>.<span class="at">length</span><span class="op">;</span> <span class="op">++</span>i) <span class="op">{</span>
+    mean <span class="op">=</span> <span class="kw">new</span> <span class="at">Mean</span>()<span class="op">;</span>
+    <span class="va">mean</span>.<span class="at">id</span> <span class="op">=</span> i<span class="op">;</span>
+    <span class="va">mean</span>.<span class="at">features</span> <span class="op">=</span> <span class="kw">this</span>.<span class="at">meanFeatures</span>(
+      upperLowerBoundDataPoints[i]
+    )<span class="op">;</span>
+    <span class="kw">this</span>.<span class="va">means</span>.<span class="at">push</span>(mean)<span class="op">;</span>
+  <span class="op">}</span></code></pre></div>
+<p>We can now compute the mean of the features between each upper and lower bound where each upper and lower bound is one of the input data points. For each pair, the mean of their features become the initial means we will use to cluster all of the data points.</p>
+<blockquote>
+The methodology discussed above simply draws the cluster boundaries at points in the data where the gap between consecutive data values is the highest or the data has deepest “valleys”.
+<footer>
+Fouad Khan
+</footer>
+</blockquote>
+<p>To make this initialization method more concrete, imagine we have the following six data points:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="st">&quot;dataPoints&quot;</span><span class="op">:</span>[
+  <span class="op">{</span>
+    <span class="st">&quot;features&quot;</span><span class="op">:</span>[<span class="dv">1</span><span class="op">,</span><span class="dv">2</span>]<span class="op">,</span>
+    <span class="st">&quot;magnitude&quot;</span><span class="op">:</span><span class="fl">2.23606797749979</span><span class="op">,</span>
+    <span class="st">&quot;index&quot;</span><span class="op">:</span><span class="dv">0</span>
+  <span class="op">},</span>
+  <span class="op">{</span>
+    <span class="st">&quot;features&quot;</span><span class="op">:</span>[<span class="dv">2</span><span class="op">,</span><span class="dv">3</span>]<span class="op">,</span>
+    <span class="st">&quot;magnitude&quot;</span><span class="op">:</span><span class="fl">3.605551275463989</span><span class="op">,</span>
+    <span class="st">&quot;index&quot;</span><span class="op">:</span><span class="dv">1</span>
+  <span class="op">},</span>
+  <span class="op">{</span>
+    <span class="st">&quot;features&quot;</span><span class="op">:</span>[<span class="dv">3</span><span class="op">,</span><span class="dv">4</span>]<span class="op">,</span>
+    <span class="st">&quot;magnitude&quot;</span><span class="op">:</span><span class="dv">5</span>
+    <span class="st">&quot;index&quot;</span><span class="op">:</span><span class="dv">2</span>
+  <span class="op">},</span>
+  <span class="op">{</span>
+    <span class="st">&quot;features&quot;</span><span class="op">:</span>[<span class="dv">10</span><span class="op">,</span><span class="dv">11</span>]<span class="op">,</span>
+    <span class="st">&quot;magnitude&quot;</span><span class="op">:</span><span class="fl">14.866068747318506</span>
+    <span class="st">&quot;index&quot;</span><span class="op">:</span><span class="dv">3</span>
+  <span class="op">},</span>
+  <span class="op">{</span>
+    <span class="st">&quot;features&quot;</span><span class="op">:</span>[<span class="dv">11</span><span class="op">,</span><span class="dv">12</span>]<span class="op">,</span>
+    <span class="st">&quot;magnitude&quot;</span><span class="op">:</span><span class="fl">16.278820596099706</span>
+    <span class="st">&quot;index&quot;</span><span class="op">:</span><span class="dv">4</span>
+  <span class="op">},</span>
+  <span class="op">{</span>
+    <span class="st">&quot;features&quot;</span><span class="op">:</span>[<span class="dv">12</span><span class="op">,</span><span class="dv">13</span>]<span class="op">,</span>
+    <span class="st">&quot;magnitude&quot;</span><span class="op">:</span><span class="fl">17.69180601295413</span>
+    <span class="st">&quot;index&quot;</span><span class="op">:</span><span class="dv">5</span>
+  <span class="op">}</span>
+]</code></pre></div>
+<div class="figure">
+<img src="../images/2016-04-24-k-means-from-scratch/means_init_0.svg" alt="Data points’ Magnitudes" class="post-img post-img-fill" />
+<p class="caption">Data points’ Magnitudes</p>
+</div>
+<p>The magnitudes have already been calculated and the data points have been sorted in ascending order by their <code>magnitude</code>. Notice the large gap between the <code>[3,4]</code> and <code>[10,11]</code> magnitudes.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="st">&quot;dataPoints&quot;</span><span class="op">:</span>[
+  <span class="op">{</span>
+    <span class="st">&quot;features&quot;</span><span class="op">:</span>[<span class="dv">3</span><span class="op">,</span><span class="dv">4</span>]<span class="op">,</span>
+    <span class="st">&quot;magnitude&quot;</span><span class="op">:</span><span class="dv">5</span>
+    <span class="st">&quot;index&quot;</span><span class="op">:</span><span class="dv">2</span><span class="op">,</span>
+    <span class="st">&quot;distanceToNext&quot;</span><span class="op">:</span><span class="fl">9.899495</span>
+  <span class="op">},</span>
+  <span class="op">{</span>
+    <span class="st">&quot;features&quot;</span><span class="op">:</span>[<span class="dv">1</span><span class="op">,</span><span class="dv">2</span>]<span class="op">,</span>
+    <span class="st">&quot;magnitude&quot;</span><span class="op">:</span><span class="fl">2.23606797749979</span><span class="op">,</span>
+    <span class="st">&quot;index&quot;</span><span class="op">:</span><span class="dv">0</span><span class="op">,</span>
+    <span class="st">&quot;distanceToNext&quot;</span><span class="op">:</span><span class="fl">1.414214</span>
+  <span class="op">},</span>
+  <span class="op">{</span>
+    <span class="st">&quot;features&quot;</span><span class="op">:</span>[<span class="dv">2</span><span class="op">,</span><span class="dv">3</span>]<span class="op">,</span>
+    <span class="st">&quot;magnitude&quot;</span><span class="op">:</span><span class="fl">3.605551275463989</span><span class="op">,</span>
+    <span class="st">&quot;index&quot;</span><span class="op">:</span><span class="dv">1</span><span class="op">,</span>
+    <span class="st">&quot;distanceToNext&quot;</span><span class="op">:</span><span class="fl">1.414214</span>
+  <span class="op">},</span>
+  <span class="op">{</span>
+    <span class="st">&quot;features&quot;</span><span class="op">:</span>[<span class="dv">10</span><span class="op">,</span><span class="dv">11</span>]<span class="op">,</span>
+    <span class="st">&quot;magnitude&quot;</span><span class="op">:</span><span class="fl">14.866068747318506</span>
+    <span class="st">&quot;index&quot;</span><span class="op">:</span><span class="dv">3</span><span class="op">,</span>
+    <span class="st">&quot;distanceToNext&quot;</span><span class="op">:</span><span class="fl">1.414214</span>
+  <span class="op">},</span>
+  <span class="op">{</span>
+    <span class="st">&quot;features&quot;</span><span class="op">:</span>[<span class="dv">11</span><span class="op">,</span><span class="dv">12</span>]<span class="op">,</span>
+    <span class="st">&quot;magnitude&quot;</span><span class="op">:</span><span class="fl">16.278820596099706</span>
+    <span class="st">&quot;index&quot;</span><span class="op">:</span><span class="dv">4</span><span class="op">,</span>
+    <span class="st">&quot;distanceToNext&quot;</span><span class="op">:</span><span class="fl">1.414214</span>
+  <span class="op">},</span>
+  <span class="op">{</span>
+    <span class="st">&quot;features&quot;</span><span class="op">:</span>[<span class="dv">12</span><span class="op">,</span><span class="dv">13</span>]<span class="op">,</span>
+    <span class="st">&quot;magnitude&quot;</span><span class="op">:</span><span class="fl">17.69180601295413</span>
+    <span class="st">&quot;index&quot;</span><span class="op">:</span><span class="dv">5</span><span class="op">,</span>
+    <span class="st">&quot;distanceToNext&quot;</span><span class="op">:</span><span class="kw">null</span>
+  <span class="op">}</span>
+]</code></pre></div>
+<div class="figure">
+<img src="../images/2016-04-24-k-means-from-scratch/means_init_1.svg" alt="Data points’ Distances to Next" class="post-img post-img-fill" />
+<p class="caption">Data points’ Distances to Next</p>
+</div>
+<p>We compute the distances between each and sort them by their <code>distanceToNext</code>.</p>
+<p>Now say our <code>k</code> is two such that we want to cluster these data points into two clusters.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="st">&quot;upperBoundDataPoints&quot;</span><span class="op">:</span>[
+  <span class="op">{</span>
+    <span class="st">&quot;features&quot;</span><span class="op">:</span>[<span class="dv">3</span><span class="op">,</span><span class="dv">4</span>]<span class="op">,</span>
+    <span class="st">&quot;magnitude&quot;</span><span class="op">:</span><span class="dv">5</span>
+    <span class="st">&quot;index&quot;</span><span class="op">:</span><span class="dv">2</span><span class="op">,</span>
+    <span class="st">&quot;distanceToNext&quot;</span><span class="op">:</span><span class="fl">9.899495</span>
+  <span class="op">},</span>
+  <span class="op">{</span>
+    <span class="st">&quot;features&quot;</span><span class="op">:</span>[<span class="dv">12</span><span class="op">,</span><span class="dv">13</span>]<span class="op">,</span>
+    <span class="st">&quot;magnitude&quot;</span><span class="op">:</span><span class="fl">17.69180601295413</span>
+    <span class="st">&quot;index&quot;</span><span class="op">:</span><span class="dv">5</span><span class="op">,</span>
+    <span class="st">&quot;distanceToNext&quot;</span><span class="op">:</span><span class="kw">null</span>
+  <span class="op">}</span>
+]</code></pre></div>
+<p>We identify <code>k-1</code> highest distances, sort by <code>index</code> in ascending order, and add in the last index. Recall that the highest distance-to-next was <code>[3,4]</code> and the last index was <code>5</code> for the data point <code>[12,13]</code>. These are our <code>upperBoundDataPoints</code>.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="st">&quot;lowerBoundDataPoints&quot;</span><span class="op">:</span>[
+  <span class="op">{</span>
+    <span class="st">&quot;features&quot;</span><span class="op">:</span>[<span class="dv">1</span><span class="op">,</span><span class="dv">2</span>]<span class="op">,</span>
+    <span class="st">&quot;magnitude&quot;</span><span class="op">:</span><span class="fl">2.23606797749979</span><span class="op">,</span>
+    <span class="st">&quot;index&quot;</span><span class="op">:</span><span class="dv">0</span><span class="op">,</span>
+    <span class="st">&quot;distanceToNext&quot;</span><span class="op">:</span><span class="fl">1.414214</span>
+  <span class="op">},</span>
+  <span class="op">{</span>
+    <span class="st">&quot;features&quot;</span><span class="op">:</span>[<span class="dv">10</span><span class="op">,</span><span class="dv">11</span>]<span class="op">,</span>
+    <span class="st">&quot;magnitude&quot;</span><span class="op">:</span><span class="fl">14.866068747318506</span>
+    <span class="st">&quot;index&quot;</span><span class="op">:</span><span class="dv">3</span><span class="op">,</span>
+    <span class="st">&quot;distanceToNext&quot;</span><span class="op">:</span><span class="fl">1.414214</span>
+  <span class="op">}</span>
+]</code></pre></div>
+<p>The lower bound indexes are the first one (index <code>0</code>) and then the <code>index + 1</code> for all upper bound indexes <i>except</i> the last one (in this case index five). So indexes <code>0</code> and <code>2 + 1 = 3</code>. Recall that index <code>0</code> was the data point closest to the origin.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="st">&quot;upperLowerBoundDataPoints&quot;</span><span class="op">:</span>[
+  [
+    <span class="op">{</span>
+      <span class="st">&quot;features&quot;</span><span class="op">:</span>[<span class="dv">3</span><span class="op">,</span><span class="dv">4</span>]<span class="op">,</span>
+      <span class="st">&quot;magnitude&quot;</span><span class="op">:</span><span class="dv">5</span>
+      <span class="st">&quot;index&quot;</span><span class="op">:</span><span class="dv">2</span><span class="op">,</span>
+      <span class="st">&quot;distanceToNext&quot;</span><span class="op">:</span><span class="fl">9.899495</span>
+    <span class="op">},</span>
+    <span class="op">{</span>
+      <span class="st">&quot;features&quot;</span><span class="op">:</span>[<span class="dv">1</span><span class="op">,</span><span class="dv">2</span>]<span class="op">,</span>
+      <span class="st">&quot;magnitude&quot;</span><span class="op">:</span><span class="fl">2.23606797749979</span><span class="op">,</span>
+      <span class="st">&quot;index&quot;</span><span class="op">:</span><span class="dv">0</span><span class="op">,</span>
+      <span class="st">&quot;distanceToNext&quot;</span><span class="op">:</span><span class="fl">1.414214</span>
+    <span class="op">}</span>
+  ]<span class="op">,</span>
+  [
+    <span class="op">{</span>
+      <span class="st">&quot;features&quot;</span><span class="op">:</span>[<span class="dv">12</span><span class="op">,</span><span class="dv">13</span>]<span class="op">,</span>
+      <span class="st">&quot;magnitude&quot;</span><span class="op">:</span><span class="fl">17.69180601295413</span>
+      <span class="st">&quot;index&quot;</span><span class="op">:</span><span class="dv">5</span><span class="op">,</span>
+      <span class="st">&quot;distanceToNext&quot;</span><span class="op">:</span><span class="kw">null</span>
+    <span class="op">},</span>
+    <span class="op">{</span>
+      <span class="st">&quot;features&quot;</span><span class="op">:</span>[<span class="dv">10</span><span class="op">,</span><span class="dv">11</span>]<span class="op">,</span>
+      <span class="st">&quot;magnitude&quot;</span><span class="op">:</span><span class="fl">14.866068747318506</span>
+      <span class="st">&quot;index&quot;</span><span class="op">:</span><span class="dv">3</span><span class="op">,</span>
+      <span class="st">&quot;distanceToNext&quot;</span><span class="op">:</span><span class="fl">1.414214</span>
+    <span class="op">}</span>
+  ]
+]</code></pre></div>
+<p>Now we couple the upper with its lower bound counterpart.</p>
+<div class="figure">
+<img src="../images/2016-04-24-k-means-from-scratch/means_init_2.svg" alt="Upper and Lower Bounds" class="post-img post-img-fill" />
+<p class="caption">Upper and Lower Bounds</p>
+</div>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="st">&quot;means&quot;</span><span class="op">:</span>[
+  <span class="op">{</span>
+    <span class="st">&quot;features&quot;</span><span class="op">:</span>[<span class="dv">2</span><span class="op">,</span><span class="dv">3</span>]<span class="op">,</span>
+    <span class="st">&quot;id&quot;</span><span class="op">:</span><span class="dv">0</span>
+  <span class="op">},</span>
+  <span class="op">{</span>
+    <span class="st">&quot;features&quot;</span><span class="op">:</span>[<span class="dv">11</span><span class="op">,</span><span class="dv">12</span>]<span class="op">,</span>
+    <span class="st">&quot;id&quot;</span><span class="op">:</span><span class="dv">1</span>
+  <span class="op">}</span>
+]</code></pre></div>
+<p>We compute the means between each feature index and create our new initial means.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">mean <span class="dv">0</span><span class="op">:</span>
+  [(<span class="dv">3</span> <span class="op">+</span> <span class="dv">1</span>)/<span class="dv">2</span><span class="op">,</span> (<span class="dv">4</span> <span class="op">+</span> <span class="dv">2</span>)/<span class="dv">2</span>]
+meant <span class="dv">1</span><span class="op">:</span>
+  [(<span class="dv">12</span> <span class="op">+</span> <span class="dv">10</span>)/<span class="dv">2</span><span class="op">,</span> (<span class="dv">13</span> <span class="op">+</span> <span class="dv">11</span>)/<span class="dv">2</span>]</code></pre></div>
+<p>Note that the means in this case happen to correspond to the two data points:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="st">&quot;dataPoints&quot;</span><span class="op">:</span>[
+  <span class="op">{</span>
+    <span class="st">&quot;features&quot;</span><span class="op">:</span>[<span class="dv">2</span><span class="op">,</span><span class="dv">3</span>]<span class="op">,</span>
+    <span class="st">&quot;magnitude&quot;</span><span class="op">:</span><span class="fl">3.605551275463989</span><span class="op">,</span>
+    <span class="st">&quot;index&quot;</span><span class="op">:</span><span class="dv">1</span><span class="op">,</span>
+    <span class="st">&quot;distanceToNext&quot;</span><span class="op">:</span><span class="fl">1.414214</span>
+  <span class="op">},</span>
+  <span class="op">{</span>
+    <span class="st">&quot;features&quot;</span><span class="op">:</span>[<span class="dv">11</span><span class="op">,</span><span class="dv">12</span>]<span class="op">,</span>
+    <span class="st">&quot;magnitude&quot;</span><span class="op">:</span><span class="fl">16.278820596099706</span>
+    <span class="st">&quot;index&quot;</span><span class="op">:</span><span class="dv">4</span><span class="op">,</span>
+    <span class="st">&quot;distanceToNext&quot;</span><span class="op">:</span><span class="fl">1.414214</span>
+  <span class="op">}</span>
+]</code></pre></div>
+<p>which are the two points across the large cap and in between their closest neighbors.</p>
+<div class="figure">
+<img src="../images/2016-04-24-k-means-from-scratch/means_init.svg" alt="Initialized Means" class="post-img post-img-fill" />
+<p class="caption">Initialized Means</p>
+</div>
+<h3 id="assignment">Assignment</h3>
+<p>With our means initialized, we can begin assigning them to each data point.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">KMeans</span>.<span class="va">prototype</span>.<span class="at">assignmentStep</span> <span class="op">=</span> <span class="kw">function</span> () <span class="op">{</span>
+  <span class="cf">for</span> (<span class="kw">var</span> i<span class="op">=</span><span class="dv">0</span><span class="op">;</span> i<span class="op">&lt;</span><span class="kw">this</span>.<span class="va">dataPoints</span>.<span class="at">length</span><span class="op">;</span> <span class="op">++</span>i) <span class="op">{</span>
+    <span class="kw">var</span> dataPoint <span class="op">=</span> <span class="kw">this</span>.<span class="at">dataPoints</span>[i]<span class="op">;</span>
+    <span class="kw">var</span> euclideanDistances <span class="op">=</span> []<span class="op">;</span>
+    <span class="cf">for</span> (<span class="kw">var</span> j<span class="op">=</span><span class="dv">0</span><span class="op">;</span> j<span class="op">&lt;</span><span class="kw">this</span>.<span class="va">means</span>.<span class="at">length</span><span class="op">;</span> <span class="op">++</span>j) <span class="op">{</span>
+      <span class="kw">var</span> mean <span class="op">=</span> <span class="kw">this</span>.<span class="at">means</span>[j]<span class="op">;</span>
+      <span class="va">euclideanDistances</span>.<span class="at">push</span>(
+          <span class="op">{</span>
+            <span class="dt">euclideanDistance</span><span class="op">:</span> <span class="kw">this</span>.<span class="at">euclideanDistance</span>(
+              dataPoint<span class="op">,</span>
+              mean
+            )<span class="op">,</span>
+            <span class="dt">meanId</span><span class="op">:</span> <span class="va">mean</span>.<span class="at">id</span>
+          <span class="op">}</span>
+      )<span class="op">;</span>
+    <span class="op">}</span>
+    <span class="kw">this</span>.<span class="at">dataPoints</span>[i].<span class="at">meanId</span> <span class="op">=</span> <span class="va">euclideanDistances</span>.<span class="at">sort</span>(
+      <span class="kw">this</span>.<span class="at">compareEuclideanDistances</span>
+    )[<span class="dv">0</span>].<span class="at">meanId</span><span class="op">;</span>
+  <span class="op">}</span>
+<span class="op">};</span></code></pre></div>
+<p>Each data point is assigned to its closest mean based on the euclidean distance from it to the mean. We keep track of the assignment by setting the mean ID on the data point object. Each mean has a unique identifier.</p>
+<h3 id="update">Update</h3>
+<p>With every data point assigned to a mean, we can now update each mean’s features based on the data points assigned to each one.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">KMeans</span>.<span class="va">prototype</span>.<span class="at">updateStep</span> <span class="op">=</span> <span class="kw">function</span> () <span class="op">{</span>
+  <span class="kw">var</span> newMeans <span class="op">=</span> []<span class="op">;</span>
+  <span class="kw">var</span> clusters <span class="op">=</span> []<span class="op">;</span>
+  <span class="kw">var</span> k <span class="op">=</span> <span class="kw">this</span>.<span class="at">k</span><span class="op">;</span>
+  <span class="kw">var</span> converged <span class="op">=</span> <span class="dv">0</span><span class="op">;</span>
+  <span class="kw">var</span> that <span class="op">=</span> <span class="kw">this</span><span class="op">;</span>
+
+  <span class="cf">while</span> (k<span class="op">--</span>) <span class="op">{</span>
+    <span class="va">clusters</span>.<span class="at">push</span>([])<span class="op">;</span>
+  <span class="op">}</span>
+
+  <span class="cf">for</span> (i<span class="op">=</span><span class="dv">0</span><span class="op">;</span> i<span class="op">&lt;</span><span class="kw">this</span>.<span class="va">dataPoints</span>.<span class="at">length</span><span class="op">;</span> <span class="op">++</span>i) <span class="op">{</span>
+    dataPoint <span class="op">=</span> <span class="kw">this</span>.<span class="at">dataPoints</span>[i]<span class="op">;</span>
+    clusters[<span class="va">dataPoint</span>.<span class="at">meanId</span>].<span class="at">push</span>(dataPoint)<span class="op">;</span>
+  <span class="op">}</span>
+
+  <span class="kw">this</span>.<span class="at">clusters</span> <span class="op">=</span> clusters<span class="op">;</span>
+  <span class="kw">this</span>.<span class="at">converged</span> <span class="op">=</span> <span class="kw">false</span><span class="op">;</span>
+
+  <span class="cf">for</span> (i<span class="op">=</span><span class="dv">0</span><span class="op">;</span> i<span class="op">&lt;</span><span class="kw">this</span>.<span class="va">means</span>.<span class="at">length</span><span class="op">;</span> <span class="op">++</span>i) <span class="op">{</span>
+    <span class="kw">var</span> equal <span class="op">=</span> <span class="dv">0</span><span class="op">;</span>
+    <span class="kw">var</span> newMeanFeatures <span class="op">=</span> <span class="kw">this</span>.<span class="at">meanFeatures</span>(
+      clusters[<span class="kw">this</span>.<span class="at">means</span>[i].<span class="at">id</span>]
+    )<span class="op">;</span>
+
+    <span class="cf">for</span> (<span class="kw">var</span> j<span class="op">=</span><span class="dv">0</span><span class="op">;</span> j<span class="op">&lt;</span><span class="kw">this</span>.<span class="at">featureLength</span><span class="op">;</span> <span class="op">++</span>j) <span class="op">{</span>
+      <span class="cf">if</span> (newMeanFeatures[j] <span class="op">===</span> <span class="kw">this</span>.<span class="at">means</span>[i].<span class="at">features</span>[j]) <span class="op">{</span>
+        equal <span class="op">+=</span><span class="dv">1</span><span class="op">;</span>
+      <span class="op">}</span>
+    <span class="op">}</span>
+
+    <span class="cf">if</span> (equal <span class="op">===</span> <span class="kw">this</span>.<span class="at">featureLength</span>) <span class="op">{</span>converged <span class="op">+=</span> <span class="dv">1</span><span class="op">;}</span>
+
+    <span class="kw">this</span>.<span class="at">means</span>[i].<span class="at">features</span> <span class="op">=</span> newMeanFeatures<span class="op">;</span>
+  <span class="op">}</span>
+
+  <span class="cf">if</span> (converged <span class="op">===</span> <span class="kw">this</span>.<span class="at">k</span>) <span class="op">{</span><span class="kw">this</span>.<span class="at">converged</span> <span class="op">=</span> <span class="kw">true</span><span class="op">;}</span>
+<span class="op">};</span></code></pre></div>
+<p>First we reset the clusters and then cluster each data point based on its mean ID. With the clusters populated, we compute the mean of all the features of all the data points per cluster. For each cluster, these averaged features become the new features/coordinates of the mean. Each time this is called, the means will move across the dimensional space until the updates no longer change. When no changes occur we can say the algorithm converged.</p>
+<h3 id="iterate">Iterate</h3>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">KMeans</span>.<span class="va">prototype</span>.<span class="at">iterate</span> <span class="op">=</span> <span class="kw">function</span> () <span class="op">{</span>
+  <span class="kw">var</span> iterations <span class="op">=</span> <span class="dv">0</span><span class="op">;</span>
+  <span class="kw">var</span> that <span class="op">=</span> <span class="kw">this</span><span class="op">;</span>
+
+  <span class="cf">if</span> (<span class="kw">this</span>.<span class="va">dataPoints</span>.<span class="at">length</span> <span class="op">===</span> <span class="dv">0</span>) <span class="op">{</span><span class="cf">return</span><span class="op">;}</span>
+
+  <span class="kw">this</span>.<span class="at">featureBounds</span>()<span class="op">;</span>
+  <span class="kw">this</span>.<span class="at">initializeMeans</span>(<span class="dv">1</span>)<span class="op">;</span>
+
+  <span class="kw">var</span> cycle <span class="op">=</span> <span class="kw">function</span> () <span class="op">{</span>
+    <span class="cf">if</span> (<span class="va">that</span>.<span class="va">dataPoints</span>.<span class="at">length</span> <span class="op">===</span> <span class="dv">0</span>) <span class="op">{</span><span class="cf">return</span><span class="op">;}</span>
+
+    <span class="cf">if</span> (iterations <span class="op">&lt;=</span> <span class="va">that</span>.<span class="at">maxIterations</span> <span class="op">&amp;&amp;</span> <span class="va">that</span>.<span class="at">converged</span> <span class="op">===</span> <span class="kw">false</span>) <span class="op">{</span>
+      <span class="va">that</span>.<span class="at">assignmentStep</span>()<span class="op">;</span>
+      <span class="va">that</span>.<span class="at">updateStep</span>()<span class="op">;</span>
+      <span class="va">that</span>.<span class="at">onIterate</span>(that)<span class="op">;</span>
+      iterations <span class="op">+=</span> <span class="dv">1</span><span class="op">;</span>
+      <span class="va">window</span>.<span class="at">requestAnimationFrame</span>(cycle)<span class="op">;</span>
+    <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span>
+      <span class="va">that</span>.<span class="at">onComplete</span>(that)<span class="op">;</span>
+      <span class="cf">return</span><span class="op">;</span>
+    <span class="op">}</span>
+  <span class="op">};</span>
+  <span class="va">window</span>.<span class="at">requestAnimationFrame</span>(cycle)<span class="op">;</span>
+<span class="op">};</span></code></pre></div>
+<p>Each iteration involves one assignment step and one update step. Remember that each assignment step assigns each data point to its closest mean and that each update steps moves the mean based on the average features of all the data points in its cluster.</p>
+<p>So that we do not hang the browser while k-means runs, we perform the iterations by queuing requested animation frames. This allows the application to still be responsive while we progress towards convergence (or max iterations, whichever comes first). While we are not explicitly doing any actual animation each call, the <code>onIterate</code> function callback is called. When the <code>KMeans</code> object is used in <code>canvas.js</code>, the <code>onIterate</code> callback does update the visual means’ positions and the dots’ cluster membership colors. This allows the user to see k-means progress instead of just seeing the final result after the stop criteria is met. Another approach would be to use <code>setTimeout</code>.</p>
+<h2 id="silhouette-coefficient-metric">Silhouette Coefficient Metric</h2>
+<p>Even though k-means is unsupervised we can still check its solution using the silhouette coefficient metric. Not all cluster configurations produced by k-means will be the most optimal or even remotely correct. This is especially the case when the wrong <code>k</code> is chosen.</p>
+<p>The silhouette coefficient for a single data point is <code>s = (b - a) / max(b, a)</code> where <code>a</code> is the mean distance between a data point and its cluster members and <code>b</code> is the mean distance between a data point and the cluster members of the nearest cluster closest to the data point’s cluster.</p>
+<h3 id="constructor">Constructor</h3>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">function</span> <span class="at">SilhouetteCoefficient</span>(params) <span class="op">{</span>
+  <span class="kw">this</span>.<span class="at">dataPointClusterMembersFunction</span> <span class="op">=</span> <span class="va">params</span>.<span class="at">dataPointClusterMembersFunction</span><span class="op">;</span>
+  <span class="kw">this</span>.<span class="at">dataPointNearestClusterMembersFunction</span> <span class="op">=</span> <span class="va">params</span>.<span class="at">dataPointNearestClusterMembersFunction</span><span class="op">;</span>
+  <span class="kw">this</span>.<span class="at">distanceFunction</span> <span class="op">=</span> <span class="va">params</span>.<span class="at">distanceFunction</span><span class="op">;</span>
+<span class="op">}</span></code></pre></div>
+<p>The constructor requires three functions:</p>
+<ul>
+<li>One to return the cluster members for a data point</li>
+<li>One to return the cluster members of the nearest cluster to the cluster a data point is assigned to</li>
+<li>One to calculate the distance</li>
+</ul>
+<h3 id="the-formula">The formula</h3>
+<p>Recall that the formula for the Silhouette Coefficient is <code>s = (b - a) / max(b, a)</code>.</p>
+<h4 id="a">A</h4>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">SilhouetteCoefficient</span>.<span class="va">prototype</span>.<span class="at">a</span> <span class="op">=</span> <span class="kw">function</span> (dataPoint) <span class="op">{</span>
+  <span class="kw">var</span> dataPointClusterMembers <span class="op">=</span> <span class="kw">this</span>.<span class="at">dataPointClusterMembersFunction</span>(dataPoint)<span class="op">;</span>
+
+  <span class="cf">return</span> <span class="kw">this</span>.<span class="at">meanDistance</span>(dataPoint<span class="op">,</span> dataPointClusterMembers)<span class="op">;</span>
+<span class="op">};</span></code></pre></div>
+<h4 id="b">B</h4>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">SilhouetteCoefficient</span>.<span class="va">prototype</span>.<span class="at">b</span> <span class="op">=</span> <span class="kw">function</span>(dataPoint) <span class="op">{</span>
+  <span class="kw">var</span> dataPointNearestClusterMembers <span class="op">=</span> <span class="kw">this</span>.<span class="at">dataPointNearestClusterMembersFunction</span>(
+    dataPoint
+  )<span class="op">;</span>
+
+  <span class="cf">return</span> <span class="kw">this</span>.<span class="at">meanDistance</span>(dataPoint<span class="op">,</span> dataPointNearestClusterMembers)<span class="op">;</span>
+<span class="op">};</span></code></pre></div>
+<h4 id="s">S</h4>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">SilhouetteCoefficient</span>.<span class="va">prototype</span>.<span class="at">s</span> <span class="op">=</span> <span class="kw">function</span> (a<span class="op">,</span> b) <span class="op">{</span>
+  <span class="kw">var</span> max <span class="op">=</span> <span class="va">Math</span>.<span class="at">max</span>(a<span class="op">,</span> b)<span class="op">;</span>
+  <span class="cf">if</span> (max <span class="op">===</span> <span class="dv">0</span>) <span class="op">{</span><span class="cf">return</span> <span class="fl">0.0</span><span class="op">;}</span>
+
+  <span class="cf">return</span> (b <span class="op">-</span> a) / max<span class="op">;</span>
+<span class="op">};</span></code></pre></div>
+<h3 id="multiple-data-points">Multiple data points</h3>
+<p>To compute the silhouette coefficient for multiple data points we must compute it for each, sum them, and then divide by the number of data points given.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">SilhouetteCoefficient</span>.<span class="va">prototype</span>.<span class="at">dataPoints</span> <span class="op">=</span> <span class="kw">function</span> (dataPoints<span class="op">,</span> onComplete) <span class="op">{</span>
+  <span class="kw">var</span> that <span class="op">=</span> <span class="kw">this</span><span class="op">;</span>
+  <span class="kw">var</span> cycle <span class="op">=</span> <span class="kw">function</span> <span class="at">cycle</span>() <span class="op">{</span>
+    <span class="kw">var</span> score <span class="op">=</span> <span class="fl">0.0</span><span class="op">;</span>
+    <span class="cf">if</span> (<span class="va">that</span>.<span class="at">dataPointsIndex</span> <span class="op">===</span> <span class="op">-</span><span class="dv">1</span>) <span class="op">{</span>
+      <span class="cf">if</span> (<span class="va">that</span>.<span class="va">scores</span>.<span class="at">length</span> <span class="op">===</span> <span class="dv">0</span>) <span class="op">{</span><span class="cf">return</span> score<span class="op">;}</span>
+      score <span class="op">=</span> <span class="va">that</span>.<span class="va">scores</span>.<span class="at">reduce</span>(
+        <span class="kw">function</span> (x<span class="op">,</span> y) <span class="op">{</span><span class="cf">return</span> x <span class="op">+</span> y<span class="op">;}</span>
+      ) / <span class="va">that</span>.<span class="va">scores</span>.<span class="at">length</span><span class="op">;</span>
+      <span class="va">that</span>.<span class="at">onComplete</span>(score)<span class="op">;</span>
+      <span class="cf">return</span> score<span class="op">;</span>
+    <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span>
+      <span class="va">that</span>.<span class="va">scores</span>.<span class="at">push</span>(
+        <span class="va">that</span>.<span class="at">dataPoint</span>(
+          <span class="va">that</span>.<span class="at">dataPoints</span>[<span class="va">that</span>.<span class="at">dataPointsIndex</span>]
+        )
+      )<span class="op">;</span>
+      <span class="va">that</span>.<span class="at">dataPointsIndex</span> <span class="op">-=</span> <span class="dv">1</span><span class="op">;</span>
+      <span class="va">window</span>.<span class="at">requestAnimationFrame</span>(cycle)<span class="op">;</span>
+    <span class="op">}</span>
+  <span class="op">};</span>
+
+  <span class="cf">if</span> (<span class="kw">typeof</span> onComplete <span class="op">===</span> <span class="st">'undefined'</span>) <span class="op">{</span>
+      <span class="kw">this</span>.<span class="at">onComplete</span> <span class="op">=</span> <span class="kw">function</span> (score) <span class="op">{};</span>
+  <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span>
+    <span class="kw">this</span>.<span class="at">onComplete</span> <span class="op">=</span> onComplete<span class="op">;</span>
+  <span class="op">}</span>
+  <span class="cf">if</span> (<span class="kw">typeof</span> dataPoints <span class="op">===</span> <span class="st">'undefined'</span>) <span class="op">{</span><span class="kw">this</span>.<span class="at">onComplete</span>(<span class="fl">0.0</span>)<span class="op">;}</span>
+
+  <span class="kw">this</span>.<span class="at">dataPoints</span> <span class="op">=</span> dataPoints<span class="op">;</span>
+  <span class="kw">this</span>.<span class="at">dataPointsIndex</span> <span class="op">=</span> <span class="va">dataPoints</span>.<span class="at">length</span> <span class="op">-</span> <span class="dv">1</span><span class="op">;</span>
+  <span class="kw">this</span>.<span class="at">scores</span> <span class="op">=</span> []<span class="op">;</span>
+
+  <span class="va">window</span>.<span class="at">requestAnimationFrame</span>(cycle)<span class="op">;</span>
+<span class="op">};</span></code></pre></div>
+<p>The <code>cycle</code> function is the workhorse. It runs with each call to <code>requestAnimationFrame</code>. By using <code>requestAnimationFrame</code> our calls to <code>cycle</code> will queue and thus not lock up the browser window. You will notice that even after k-means finishes, the <code>silhouetteCoefficient</code> takes a bit longer to update but you can still interact with the dots.</p>
+<h3 id="edge-cases">Edge cases</h3>
+<div class="figure">
+<img src="../images/2016-04-24-k-means-from-scratch/10_perfect.jpg" alt="Perfect score when k equals the amount of data points." class="post-img post-img-fill" />
+<p class="caption">Perfect score when k equals the amount of data points.</p>
+</div>
+<p>An average score of one across all data points indicates that the data is perfectly clustered. As shown above, when <code>k</code> equals the number of data points (10 in this case) you get a perfect silhouette coefficient score. However, this is clearly not 10 clusters but rather just one cluster.</p>
+<div class="figure">
+<img src="../images/2016-04-24-k-means-from-scratch/10_neg_one.jpg" alt="Imperfect score when k is one but the amount of data points is larger." class="post-img post-img-fill" />
+<p class="caption">Imperfect score when k is one but the amount of data points is larger.</p>
+</div>
+<p>If we change <code>k</code> to one, you would expect to still receive a perfect score (the circle is clustered nicely) but instead we get the absolute lowest score of <code>-1</code>. When <code>k = 1</code> but the <code>dataPoints.length &gt; k</code>, the <code>b</code> in <code>s = (b - a)/max(b, a)</code> is zero making <code>s = -1</code> for each data point. This is because there are no data points in the nearest cluster to the cluster the data point belongs to since that cluster, that the data point belongs to, <i>is the only cluster</i>.</p>
+<p>So if you suspect that your data is truly just one cluster and you have more than one sample, the silhouette coefficient is not for you.</p>
+<div class="figure">
+<img src="../images/2016-04-24-k-means-from-scratch/2_clusters_95.jpg" alt="Two perfect clusters but the score is not a perfect one." class="post-img post-img-fill" />
+<p class="caption">Two perfect clusters but the score is not a perfect one.</p>
+</div>
+<p>Clearly we have two perfect clusters and we appropriately set <code>k = 2</code>. However, we only received a score of roughly <code>0.95</code> versus the <code>1</code> you would have expected. The score was high but not perfect even though our clusters were.</p>
+<h2 id="recap">Recap</h2>
+<p>Using plain vanilla JavaScript, we built the k-means algorithm from scratch as well as the silhouette coefficient metric. We discussed different mean initialization techniques and went into depth about Fouad Kahn’s approach. The assignment and update steps were discussed where the data points are assigned to their closest means and the means are updated by averaging the features of their currently assigned data points. To not lock up our interface we used <code>requestAnimationFrame</code> and cycled our iterations for both k-means and the silhouette coefficient metric. Lastly, we discussed one way of determining how well our data is clustered using the silhouette coefficient metric and went over some unintuitive cases.</p>
+<p>Clustering is a viable technique when you have unlabeled data but if you have labeled data take a look at <a href="2016-06-10-k-nearest-neighbors-from-scratch.html">K-Nearest Neighbors from Scratch</a>–a supervised clustering method.</p>
+</div>
+<div class="post-footer">
+  <div class="display-left">
+    <h2 class="post-footer-cta">
+      Hi there!
+      <a href="../" title="Home">Browse</a>
+      and subscribe to the
+      <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
+      for more content.
+    </h2>
+  </div>
+  <div class="display-right text-align-right post-footer-copyright">
+    <h4>
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2017</span> David Lettier
+    </h4>
+  </div>
+</div>
+
+    </div>
+    <div class="share-toolbox addthis_sharing_toolbox"></div>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4fc2bc7a00a9352b"></script>
+    <script>
+      (function(i,s,o,g,r,a,m){
+        i.GoogleAnalyticsObject = r;
+        i[r] = i[r] || function () { (i[r].q = i[r].q || []).push(arguments); };
+        i[r].l=1*new Date();
+        a=s.createElement(o);
+        m=s.getElementsByTagName(o)[0];
+        a.async=1;
+        a.src=g;
+        m.parentNode.insertBefore(a,m);
+      })(
+        window,
+        document,
+        'script',
+        '//www.google-analytics.com/analytics.js',
+        'ga'
+      );
+      ga('create', 'UA-34323684-2', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </body>
+</html>

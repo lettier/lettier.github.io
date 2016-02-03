@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta property="og:site_name" content="Lettier">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Let's make a Search Engine with Vue.js by David Lettier">
+    <meta property="og:image" content="https://lettier.github.io/images/2016-10-25-tf-idf-vsm-vs-bm25-with-vuejs/jumbotron_image.jpg">
+    <meta property="og:url" content="https://lettier.github.io/posts/2016-10-25-tf-idf-vsm-vs-bm25-with-vuejs.html">
+    <meta property="og:description" content="Using Vue.js, we build a JavaScript based search engine capable of using tf-idf VSM and Okapi BM25 simultaneously.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="David Lettier">
+    <meta name="description" content="Using Vue.js, we build a JavaScript based search engine capable of using tf-idf VSM and Okapi BM25 simultaneously.">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/pandoc.css">
+    <link rel="stylesheet" type="text/css" href="../css/default.css">
+    <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
+    
+      
+        <title>Let's make a Search Engine with Vue.js by David Lettier</title>
+      
+    
+  </head>
+  <body>
+    <div id="top"></div>
+    <div class="nav-bar-container nav-bar-background">
+      <div class="nav-bar-buttons-container">
+        <a href="../" title="Home">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-home nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="../rss.xml" title="RSS" type="application/rss+xml" target="_blank">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-rss nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="http://www.lettier.com/" title="Lettier.com">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <img src="../images/logo.svg" width="30" height="30" alt="Lettier.com" class="lettier-icon-img">
+            </div>
+          </div>
+        </a>
+        <a href="https://www.github.com/lettier" title="GitHub">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-github nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.linkedin.com/in/lettier" title="LinkedIn">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-linkedin nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.hackerrank.com/lettier" title="HackerRank">
+          <div class="nav-bar-button-container nav-button-container-second-last">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-trophy nav-bar-icon nav-bar-icon-second-last"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.behance.net/dlettier" title="Behance">
+          <div class="nav-bar-button-container nav-bar-button-container-last">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-behance nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="jumbotron">
+      <div class="absolute-top jumbotron jumbotron-background-image" style="background-image: url('/images/2016-10-25-tf-idf-vsm-vs-bm25-with-vuejs/jumbotron_image.jpg');">
+      </div>
+    </div>
+    <div class="container jumbotron-text-position-container">
+      <div class="jumbotron-text-width-container">
+        <h1 class="jumbotron-text jumbotron-text-background">
+          
+            Let's make a Search Engine with Vue.js
+          
+          <span class="title-cursor">|</span>
+        </h1>
+      </div>
+    </div>
+    <div class="container content-container">
+      <div class="post-body">
+  <!--https://pixabay.com/en/shredder-mechanically-device-71775/-->
+<h1 id="overview">Overview</h1>
+<p>Scikit-learn may soon have an implementation of Okapi Best Matching 25 (BM25) given this active <a href="https://github.com/scikit-learn/scikit-learn/pull/6973">pull request</a>. In light of this, we will take a look at how it differs from the more well known term-frequency inverse document-frequency (tf-idf) vector space model (VSM) approach to retrieving relevant information.</p>
+<blockquote>
+In information retrieval, Okapi BM25 (BM stands for Best Matching) is a ranking function used by search engines to rank matching documents according to their relevance to a given search query.
+<footer>
+<a href="https://en.wikipedia.org/wiki/Okapi_BM25">Okapi BM25, Wikipedia</a>
+</blockquote>
+<p>For both tf-idf VSM and BM25, we will build up each technique from scratch. The JavaScript framework, Vue.js, will provide the tools needed to create a two-way data bound interface where each approach can run and rank our input as we type. When we are finished, we will have a search engine capable of retrieving relevant Mother Goose nursery rhymes using both tf-idf VSM and BM25 simultaneously.</p>
+<h1 id="demo">Demo</h1>
+<p>If you would like to play along as we build up the project, there is a playable demo located <a href="http://www.lettier.com/search-engine">here</a>.</p>
+<div class="figure">
+<img src="../images/2016-10-25-tf-idf-vsm-vs-bm25-with-vuejs/demo.jpg" alt="Demo built with Vue.js" class="post-img post-img-fill" />
+<p class="caption">Demo built with Vue.js</p>
+</div>
+<h1 id="preparation">Preparation</h1>
+<p>Before we can build the tf-idf VSM and BM25 approaches from scratch, we will need to collect our input documents, scrub them of unwanted characters, tokenize each input document, and assemble our dictionary.</p>
+<h2 id="corpus">Corpus</h2>
+<p>Our input documents will come from <a href="https://www.gutenberg.org/files/23794/23794-h/23794-h.htm">Project Gutenberg’s Mother Goose or the Old Nursery Rhyme</a>.</p>
+<ul>
+<li>Little Jack Horner sat in the corner, Eating a Christmas pie; He put in his thumb, and pulled out a plum, And said, oh! what a good boy am I.</li>
+<li>Diddlty, diddlty, dumpty, The cat ran up the plum tree, Give her a plum, and down she’ll come, Diddlty, diddlty, dumpty.</li>
+<li>To market, to market, to buy a plum cake, Home again, home again, market is late; To market, to market, to buy a plum bun, Home again, home again, market is done.</li>
+<li>Jack and Jill Went up the hill, To fetch a pail of water; Jack fell down And broke his crown, And Jill came tumbling after.</li>
+</ul>
+<p>In a more real world scenario, one would typically have many more documents but for our purposes this is sufficient.</p>
+<h2 id="scrub">Scrub</h2>
+<p>Not all of the characters found in the stream of sequences (the input documents) are needed. We will go ahead and scrub any punctuation character from our documents.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">text</span>.<span class="at">toLowerCase</span>().<span class="at">replace</span>(
+    <span class="ss">/</span><span class="sc">[~`’!@#$%^&amp;*(){}\[\];:&quot;'&lt;,.&gt;?\/\\|_+=-]</span><span class="ss">/g</span>
+  <span class="op">,</span> <span class="st">''</span>
+)</code></pre></div>
+<p>Note that we are also lowercasing all characters to avoid any scenario where <code>XyZ</code> and <code>xyZ</code> are considered different during computation. In some cases you may want to keep the letter case when the case adds information. For example, letter case could be a feature during <a href="https://blog.insightdatascience.com/named-entity-recognition-examining-the-stanford-ner-tagger-623b191e64df">named entity recognition (NER)</a>.</p>
+<p>Our input documents now look like the following:</p>
+<ul>
+<li>little jack horner sat in the corner eating a christmas pie he put in his thumb and pulled out a plum and said oh what a good boy am i</li>
+<li>diddlty diddlty dumpty the cat ran up the plum tree give her a plum and down shell come diddlty diddlty dumpty</li>
+<li>to market to market to buy a plum cake home again home again market is late to market to market to buy a plum bun home again home again market is done</li>
+<li>jack and jill went up the hill to fetch a pail of water jack fell down and broke his crown and jill came tumbling after</li>
+</ul>
+<h2 id="tokenize">Tokenize</h2>
+<p>At this point we need to shred our documents up into little piles of pieces. This is the bag-of-words model.</p>
+<blockquote>
+In this model, a text (such as a sentence or a document) is represented as the bag (multiset) of its words, disregarding grammar and even word order but keeping multiplicity.
+<footer>
+<a href="https://en.wikipedia.org/wiki/Bag-of-words_model">Bag-of-Words model</a>
+</footer>
+</blockquote>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> makeTokens <span class="op">=</span> <span class="kw">function</span> (text) <span class="op">{</span>
+  <span class="cf">if</span> (text <span class="op">===</span> <span class="kw">null</span>) <span class="op">{</span> <span class="cf">return</span> []<span class="op">;</span> <span class="op">}</span>
+  <span class="cf">if</span> (<span class="va">text</span>.<span class="at">length</span> <span class="op">===</span> <span class="dv">0</span>) <span class="op">{</span> <span class="cf">return</span> []<span class="op">;</span> <span class="op">}</span>
+  <span class="cf">return</span> <span class="va">text</span>.<span class="at">toLowerCase</span>().<span class="at">replace</span>(
+      <span class="ss">/</span><span class="sc">[~`!@#$%^&amp;*(){}\[\];:&quot;'&lt;,.&gt;?\/\\|_+=-’]</span><span class="ss">/g</span>
+    <span class="op">,</span> <span class="st">''</span>
+  ).<span class="at">split</span>(<span class="st">' '</span>).<span class="at">filter</span>(<span class="kw">function</span> (token) <span class="op">{</span> <span class="cf">return</span> <span class="va">token</span>.<span class="at">length</span> <span class="op">&gt;</span> <span class="dv">0</span><span class="op">;</span> <span class="op">}</span>)<span class="op">;</span>
+}<span class="op">;</span></code></pre></div>
+<p>Our tokens will be one n-grams or unigrams since we are splitting on white space.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">[<span class="st">&quot;little&quot;</span><span class="op">,</span> <span class="st">&quot;jack&quot;</span><span class="op">,</span> <span class="st">&quot;horner&quot;</span><span class="op">,</span> <span class="st">&quot;sat&quot;</span><span class="op">,</span> <span class="st">&quot;in&quot;</span><span class="op">,</span> <span class="st">&quot;the&quot;</span><span class="op">,</span> <span class="st">&quot;corner&quot;</span><span class="op">,</span> <span class="st">&quot;eating&quot;</span><span class="op">,</span> <span class="st">&quot;a&quot;</span><span class="op">,</span> <span class="st">&quot;christmas&quot;</span><span class="op">,</span> <span class="st">&quot;pie&quot;</span><span class="op">,</span> <span class="st">&quot;he&quot;</span><span class="op">,</span> <span class="st">&quot;put&quot;</span><span class="op">,</span> <span class="st">&quot;in&quot;</span><span class="op">,</span> <span class="st">&quot;his&quot;</span><span class="op">,</span> <span class="st">&quot;thumb&quot;</span><span class="op">,</span> <span class="st">&quot;and&quot;</span><span class="op">,</span> <span class="st">&quot;pulled&quot;</span><span class="op">,</span> <span class="st">&quot;out&quot;</span><span class="op">,</span> <span class="st">&quot;a&quot;</span><span class="op">,</span> <span class="st">&quot;plum&quot;</span><span class="op">,</span> <span class="st">&quot;and&quot;</span><span class="op">,</span> <span class="st">&quot;said&quot;</span><span class="op">,</span> <span class="st">&quot;oh&quot;</span><span class="op">,</span> <span class="st">&quot;what&quot;</span><span class="op">,</span> <span class="st">&quot;a&quot;</span><span class="op">,</span> <span class="st">&quot;good&quot;</span><span class="op">,</span> <span class="st">&quot;boy&quot;</span><span class="op">,</span> <span class="st">&quot;am&quot;</span><span class="op">,</span> <span class="st">&quot;i&quot;</span>]
+[<span class="st">&quot;diddlty&quot;</span><span class="op">,</span> <span class="st">&quot;diddlty&quot;</span><span class="op">,</span> <span class="st">&quot;dumpty&quot;</span><span class="op">,</span> <span class="st">&quot;the&quot;</span><span class="op">,</span> <span class="st">&quot;cat&quot;</span><span class="op">,</span> <span class="st">&quot;ran&quot;</span><span class="op">,</span> <span class="st">&quot;up&quot;</span><span class="op">,</span> <span class="st">&quot;the&quot;</span><span class="op">,</span> <span class="st">&quot;plum&quot;</span><span class="op">,</span> <span class="st">&quot;tree&quot;</span><span class="op">,</span> <span class="st">&quot;give&quot;</span><span class="op">,</span> <span class="st">&quot;her&quot;</span><span class="op">,</span> <span class="st">&quot;a&quot;</span><span class="op">,</span> <span class="st">&quot;plum&quot;</span><span class="op">,</span> <span class="st">&quot;and&quot;</span><span class="op">,</span> <span class="st">&quot;down&quot;</span><span class="op">,</span> <span class="st">&quot;shell&quot;</span><span class="op">,</span> <span class="st">&quot;come&quot;</span><span class="op">,</span> <span class="st">&quot;diddlty&quot;</span><span class="op">,</span> <span class="st">&quot;diddlty&quot;</span><span class="op">,</span> <span class="st">&quot;dumpty&quot;</span>]
+[<span class="st">&quot;to&quot;</span><span class="op">,</span> <span class="st">&quot;market&quot;</span><span class="op">,</span> <span class="st">&quot;to&quot;</span><span class="op">,</span> <span class="st">&quot;market&quot;</span><span class="op">,</span> <span class="st">&quot;to&quot;</span><span class="op">,</span> <span class="st">&quot;buy&quot;</span><span class="op">,</span> <span class="st">&quot;a&quot;</span><span class="op">,</span> <span class="st">&quot;plum&quot;</span><span class="op">,</span> <span class="st">&quot;cake&quot;</span><span class="op">,</span> <span class="st">&quot;home&quot;</span><span class="op">,</span> <span class="st">&quot;again&quot;</span><span class="op">,</span> <span class="st">&quot;home&quot;</span><span class="op">,</span> <span class="st">&quot;again&quot;</span><span class="op">,</span> <span class="st">&quot;market&quot;</span><span class="op">,</span> <span class="st">&quot;is&quot;</span><span class="op">,</span> <span class="st">&quot;late&quot;</span><span class="op">,</span> <span class="st">&quot;to&quot;</span><span class="op">,</span> <span class="st">&quot;market&quot;</span><span class="op">,</span> <span class="st">&quot;to&quot;</span><span class="op">,</span> <span class="st">&quot;market&quot;</span><span class="op">,</span> <span class="st">&quot;to&quot;</span><span class="op">,</span> <span class="st">&quot;buy&quot;</span><span class="op">,</span> <span class="st">&quot;a&quot;</span><span class="op">,</span> <span class="st">&quot;plum&quot;</span><span class="op">,</span> <span class="st">&quot;bun&quot;</span><span class="op">,</span> <span class="st">&quot;home&quot;</span><span class="op">,</span> <span class="st">&quot;again&quot;</span><span class="op">,</span> <span class="st">&quot;home&quot;</span><span class="op">,</span> <span class="st">&quot;again&quot;</span><span class="op">,</span> <span class="st">&quot;market&quot;</span><span class="op">,</span> <span class="st">&quot;is&quot;</span><span class="op">,</span> <span class="st">&quot;done&quot;</span>]
+[<span class="st">&quot;jack&quot;</span><span class="op">,</span> <span class="st">&quot;and&quot;</span><span class="op">,</span> <span class="st">&quot;jill&quot;</span><span class="op">,</span> <span class="st">&quot;went&quot;</span><span class="op">,</span> <span class="st">&quot;up&quot;</span><span class="op">,</span> <span class="st">&quot;the&quot;</span><span class="op">,</span> <span class="st">&quot;hill&quot;</span><span class="op">,</span> <span class="st">&quot;to&quot;</span><span class="op">,</span> <span class="st">&quot;fetch&quot;</span><span class="op">,</span> <span class="st">&quot;a&quot;</span><span class="op">,</span> <span class="st">&quot;pail&quot;</span><span class="op">,</span> <span class="st">&quot;of&quot;</span><span class="op">,</span> <span class="st">&quot;water&quot;</span><span class="op">,</span> <span class="st">&quot;jack&quot;</span><span class="op">,</span> <span class="st">&quot;fell&quot;</span><span class="op">,</span> <span class="st">&quot;down&quot;</span><span class="op">,</span> <span class="st">&quot;and&quot;</span><span class="op">,</span> <span class="st">&quot;broke&quot;</span><span class="op">,</span> <span class="st">&quot;his&quot;</span><span class="op">,</span> <span class="st">&quot;crown&quot;</span><span class="op">,</span> <span class="st">&quot;and&quot;</span><span class="op">,</span> <span class="st">&quot;jill&quot;</span><span class="op">,</span> <span class="st">&quot;came&quot;</span><span class="op">,</span> <span class="st">&quot;tumbling&quot;</span><span class="op">,</span> <span class="st">&quot;after&quot;</span>]</code></pre></div>
+<h2 id="dictionary">Dictionary</h2>
+<p>We will now take each shredded pile of tokens and build a dictionary—an array of unique words (unigrams) ordered alphabetically.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="op">,</span> dictionary<span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+    <span class="cf">return</span> <span class="kw">this</span>.<span class="va">tokens</span>.<span class="at">reduce</span>(
+        <span class="kw">function</span> (acc<span class="op">,</span> tokens) <span class="op">{</span>
+          <span class="cf">return</span> <span class="va">acc</span>.<span class="at">concat</span>(tokens)<span class="op">;</span>
+        <span class="op">}</span>
+      <span class="op">,</span> []
+    ).<span class="at">reduce</span>(
+        <span class="kw">function</span> (acc<span class="op">,</span> word) <span class="op">{</span>
+          <span class="cf">if</span> (<span class="va">acc</span>.<span class="at">indexOf</span>(word) <span class="op">===</span> <span class="op">-</span><span class="dv">1</span>) <span class="op">{</span>
+            <span class="va">acc</span>.<span class="at">push</span>(word)<span class="op">;</span>
+            <span class="cf">return</span> acc<span class="op">;</span>
+          <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span>
+            <span class="cf">return</span> acc<span class="op">;</span>
+          <span class="op">}</span>
+        <span class="op">}</span>
+      <span class="op">,</span> []
+    ).<span class="at">sort</span>()<span class="op">;</span>
+  <span class="op">}</span></code></pre></div>
+<h1 id="tf-idf-vsm">TF-IDF VSM</h1>
+<p>We can now use tf-idf to weight the terms/tokens in each of our bag-of-word documents which will ultimately help rank each document given a query.</p>
+<h2 id="vector-space-model">Vector Space Model</h2>
+<p>We could use only tf-idf to rank our documents given a query. One could argue that this would be a more even comparison to BM25. One way to do this would be to do the following (pseudo code).</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">Q <span class="op">=</span> Query
+D <span class="op">=</span> Docs
+<span class="cf">for</span> every document d <span class="kw">in</span> D
+  total <span class="op">=</span> <span class="dv">0</span>
+  <span class="cf">for</span> every query token q <span class="kw">in</span> Q
+    total <span class="op">+=</span> <span class="at">findTfIdfWeight</span>(d<span class="op">,</span> q)
+  <span class="va">d</span>.<span class="at">score</span> <span class="op">=</span> total
+D <span class="op">=</span> <span class="at">sortDocsByScores</span>(D<span class="op">,</span> descending)</code></pre></div>
+<p>However, we will use the tf-idf weights as the components to our vectorized documents under the vector space model (VSM).</p>
+<blockquote>
+Each dimension corresponds to a separate term. If a term occurs in the document, its value in the vector is non-zero. Several different ways of computing these values, also known as (term) weights, have been developed. One of the best known schemes is tf-idf weighting […].
+<footer>
+<a href="https://en.wikipedia.org/wiki/Vector_space_model">Vector space model, Wikipedia</a>
+</footer>
+</blockquote>
+<p>Ultimately, the document scores—given a query—will be the cosine similarity between the query vector and the document vectors. It is the tf-idf weights, however, that determine where each document ends up in the multidimensional token space.</p>
+<h2 id="count">Count</h2>
+<p>The term frequency (tf) could simply be the number of times token <code>X</code> occurs in document <code>Y</code>. However, we will be using a different tf variant and so the counts will be a pre-step to computing the term frequencies.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="op">,</span> countVectors<span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+    <span class="cf">return</span> <span class="kw">this</span>.<span class="va">tokens</span>.<span class="at">map</span>(
+      <span class="kw">function</span> (tokens) <span class="op">{</span>
+        <span class="cf">return</span> <span class="kw">this</span>.<span class="va">dictionary</span>.<span class="at">map</span>(
+          <span class="kw">function</span> (word) <span class="op">{</span>
+            <span class="cf">return</span> <span class="va">tokens</span>.<span class="at">reduce</span>(
+                <span class="kw">function</span> (acc<span class="op">,</span> token) <span class="op">{</span> <span class="cf">return</span> token <span class="op">===</span> word <span class="op">?</span> acc <span class="op">+</span> <span class="dv">1</span> : acc<span class="op">;</span> <span class="op">}</span>
+              <span class="op">,</span> <span class="dv">0</span>
+            )<span class="op">;</span>
+          <span class="op">}</span>
+        )<span class="op">;</span>
+      <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+    )<span class="op">;</span>
+  <span class="op">}</span>
+<span class="op">,</span> countVectorsT<span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+    <span class="kw">let</span> arr <span class="op">=</span> []<span class="op">;</span>
+    <span class="kw">this</span>.<span class="va">countVectors</span>.<span class="at">map</span>(
+      <span class="kw">function</span> (countVector<span class="op">,</span> row<span class="op">,</span> countVectors) <span class="op">{</span>
+        <span class="va">countVector</span>.<span class="at">map</span>(
+          <span class="kw">function</span> (count<span class="op">,</span> col<span class="op">,</span> countVector) <span class="op">{</span>
+            <span class="cf">if</span> (row <span class="op">===</span> <span class="dv">0</span>) <span class="op">{</span> <span class="va">arr</span>.<span class="at">push</span>([])<span class="op">;</span> <span class="op">}</span>
+            arr[col].<span class="at">push</span>(count)<span class="op">;</span>
+          <span class="op">}</span>
+        )<span class="op">;</span>
+      <span class="op">}</span>
+    )<span class="op">;</span>
+    <span class="cf">return</span> arr<span class="op">;</span>
+  <span class="op">}</span></code></pre></div>
+<p>The first function, <code>countVectors</code>, produces a matrix where the rows are the documents, the columns are the tokens, and each cell is the number of observances of token column <code>X</code> in document row <code>Y</code>. The second function, <code>countVectorsT</code>, flips/transposes this around where the rows are the tokens, the columns are the documents, and each cell is the number of observances of token row <code>X</code> in document column <code>Y</code>.</p>
+<p>Our document by token/term matrix looks like the following.</p>
+<div class="figure">
+<img src="../images/2016-10-25-tf-idf-vsm-vs-bm25-with-vuejs/count_matrix.png" alt="Count Matrix" class="post-img post-img-fill" />
+<p class="caption">Count Matrix</p>
+</div>
+<h2 id="term-frequency">Term Frequency</h2>
+<p>For the term frequency we will take the count of the token divided by the sum of the document count vector. For example, say <code>X</code> occurs two times in document <code>Y</code> and <code>Y</code> has four total tokens. In this case, the tf for <code>X</code> for document <code>Y</code> would be <code>2 / 4 = 0.5</code>.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> makeTfVector <span class="op">=</span> <span class="kw">function</span> (countVector) <span class="op">{</span>
+  <span class="kw">let</span> total <span class="op">=</span> <span class="at">sum</span>(countVector)<span class="op">;</span>
+  <span class="cf">return</span> <span class="va">countVector</span>.<span class="at">map</span>(
+    <span class="kw">function</span> (count) <span class="op">{</span>
+      <span class="cf">return</span> total <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> : count / total<span class="op">;</span>
+    <span class="op">}</span>
+  )<span class="op">;</span>
+<span class="op">};</span>
+<span class="co">// ...</span>
+<span class="op">,</span> tfVectors<span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+    <span class="cf">return</span> <span class="kw">this</span>.<span class="va">countVectors</span>.<span class="at">map</span>(
+      <span class="kw">function</span> (countVector) <span class="op">{</span>
+        <span class="cf">return</span> <span class="at">makeTfVector</span>(countVector)<span class="op">;</span>
+      <span class="op">}</span>
+    )<span class="op">;</span>
+  <span class="op">}</span></code></pre></div>
+<div class="figure">
+<img src="../images/2016-10-25-tf-idf-vsm-vs-bm25-with-vuejs/tf_matrix.png" alt="TF Matrix" class="post-img post-img-fill" />
+<p class="caption">TF Matrix</p>
+</div>
+<h2 id="inverse-document-frequency">Inverse Document Frequency</h2>
+<p>For idf, we will be using the</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="at">idf</span>(D<span class="op">,</span>t) <span class="op">=</span> <span class="at">log</span>((number of docs D)/(number of docs that have token t))</code></pre></div>
+<p>variant.</p>
+<p>So if a token/term is in every document, the idf will be <code>log(X/X) = log(1) = 0</code>.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="op">,</span> idfVectors<span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+    <span class="kw">let</span> total <span class="op">=</span> <span class="kw">this</span>.<span class="at">numberOfDocs</span><span class="op">;</span>
+    <span class="cf">if</span> (total <span class="op">===</span> <span class="dv">0</span>) <span class="op">{</span> <span class="cf">return</span> <span class="kw">this</span>.<span class="va">countVectors</span>.<span class="at">map</span>(<span class="kw">function</span> () <span class="op">{</span> <span class="cf">return</span> []<span class="op">;</span> <span class="op">}</span>)<span class="op">;</span> <span class="op">}</span>
+    <span class="kw">let</span> idfVector <span class="op">=</span> <span class="kw">this</span>.<span class="at">countVectors</span>[<span class="dv">0</span>].<span class="at">map</span>(
+      <span class="kw">function</span> (count<span class="op">,</span> col) <span class="op">{</span>
+        <span class="kw">let</span> inDocCount <span class="op">=</span> <span class="kw">this</span>.<span class="at">countVectorsT</span>[col].<span class="at">reduce</span>(
+            <span class="kw">function</span> (acc<span class="op">,</span> x) <span class="op">{</span>
+              <span class="cf">return</span> acc <span class="op">+</span> (x <span class="op">&gt;</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">1</span> : <span class="dv">0</span>)<span class="op">;</span>
+            <span class="op">}</span>
+          <span class="op">,</span> <span class="dv">0</span>
+        )<span class="op">;</span>
+        <span class="cf">if</span> (total <span class="op">===</span> <span class="dv">0</span>) <span class="op">{</span> <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span> <span class="op">}</span>
+        <span class="cf">if</span> (inDocCount <span class="op">===</span> <span class="dv">0</span>) <span class="op">{</span> <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span> <span class="op">}</span>
+        <span class="cf">return</span> <span class="va">Math</span>.<span class="at">log</span>(total / inDocCount)<span class="op">;</span>
+      <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+    )<span class="op">;</span>
+    <span class="cf">return</span> <span class="kw">this</span>.<span class="va">countVectors</span>.<span class="at">map</span>(<span class="kw">function</span> () <span class="op">{</span> <span class="cf">return</span> idfVector<span class="op">;</span> <span class="op">}</span>)<span class="op">;</span>
+  <span class="op">}</span></code></pre></div>
+<p>Note that for each document row, its idf row vector is the same for any other document row.</p>
+<div class="figure">
+<img src="../images/2016-10-25-tf-idf-vsm-vs-bm25-with-vuejs/idf_matrix.png" alt="IDF Matrix" class="post-img post-img-fill" />
+<p class="caption">IDF Matrix</p>
+</div>
+<h2 id="tf-idf">TF * IDF</h2>
+<p>Now that we the tf and the idf vectors, we can multiply each component together, per document vector, giving us our final vectorized documents.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="op">,</span> tfIdfVectors<span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+    <span class="cf">return</span> <span class="kw">this</span>.<span class="va">tfVectors</span>.<span class="at">map</span>(
+      <span class="kw">function</span> (tfVector<span class="op">,</span> row) <span class="op">{</span>
+        <span class="cf">return</span> <span class="va">tfVector</span>.<span class="at">map</span>(
+          <span class="kw">function</span> (tf<span class="op">,</span> col) <span class="op">{</span>
+            <span class="cf">return</span> tf <span class="op">*</span> <span class="kw">this</span>.<span class="at">idfVectors</span>[row][col]<span class="op">;</span>
+          <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+        )<span class="op">;</span>
+      <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+    )<span class="op">;</span>
+  <span class="op">}</span></code></pre></div>
+<p>You will notice that if a token is in all documents, its final tf-idf score is zero (because its idf is zero) for any document in the corpus. When a token is in every document, it is effectively ignored when calculating the relevance of documents in a corpus again a given query. You can see this happening for <code>a</code> in our documents.</p>
+<p>When a token’s tf is zero, for a given document vector, its resulting tf-idf score is zero even if its idf is non-zero. This makes sense since the document never had that word or term.</p>
+<div class="figure">
+<img src="../images/2016-10-25-tf-idf-vsm-vs-bm25-with-vuejs/tfidf_matrix.png" alt="TF-IDF Matrix" class="post-img post-img-fill" />
+<p class="caption">TF-IDF Matrix</p>
+</div>
+<h2 id="query">Query</h2>
+<p>For the query, we will do the same thing we did to vectorize the corpus documents. We will not alter the idf document vectors based on the query tokens, however. Also, our dictionary will not expand to include any query terms not found in any document.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="op">,</span> queryTokens<span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+    <span class="cf">return</span> <span class="at">makeTokens</span>(<span class="kw">this</span>.<span class="at">query</span>)<span class="op">;</span>
+  <span class="op">}</span>
+<span class="op">,</span> queryCountVector<span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+    <span class="cf">return</span> <span class="kw">this</span>.<span class="va">dictionary</span>.<span class="at">map</span>(
+      <span class="kw">function</span> (word) <span class="op">{</span>
+        <span class="cf">return</span> <span class="kw">this</span>.<span class="va">queryTokens</span>.<span class="at">reduce</span>(
+            <span class="kw">function</span> (acc<span class="op">,</span> token) <span class="op">{</span> <span class="cf">return</span> token <span class="op">===</span> word <span class="op">?</span> acc <span class="op">+</span> <span class="dv">1</span> : acc<span class="op">;</span> <span class="op">}</span>
+          <span class="op">,</span> <span class="dv">0</span>
+        )<span class="op">;</span>
+      <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+    )<span class="op">;</span>
+  <span class="op">}</span>
+<span class="op">,</span> queryTfVector<span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+    <span class="cf">return</span> <span class="at">makeTfVector</span>(<span class="kw">this</span>.<span class="at">queryCountVector</span>)<span class="op">;</span>
+  <span class="op">}</span>
+<span class="op">,</span> queryIdfVector<span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+    <span class="cf">return</span> <span class="kw">this</span>.<span class="at">idfVectors</span>[<span class="dv">0</span>]<span class="op">;</span>
+  <span class="op">}</span>
+<span class="op">,</span> queryTfIdfVector<span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+    <span class="cf">return</span> <span class="kw">this</span>.<span class="va">queryTfVector</span>.<span class="at">map</span>(
+      <span class="kw">function</span> (tf<span class="op">,</span> index) <span class="op">{</span>
+        <span class="cf">return</span> tf <span class="op">*</span> <span class="kw">this</span>.<span class="at">queryIdfVector</span>[index]<span class="op">;</span>
+      <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+    )<span class="op">;</span>
+  <span class="op">}</span></code></pre></div>
+<div class="figure">
+<img src="../images/2016-10-25-tf-idf-vsm-vs-bm25-with-vuejs/query_vectors.png" alt="Query Vectors" class="post-img post-img-fill" />
+<p class="caption">Query Vectors</p>
+</div>
+<h2 id="cosine-similarity">Cosine Similarity</h2>
+<p>Given our tf-idf query vector and our tf-idf document vectors, we can rank each document’s relevance by calculating the cosine similarity between the query tf-idf vector and each tf-idf document vector.</p>
+<p>If the query vector points in the same direction (0 degrees) as a document vector, the cosine similarity will be 1 for an exact or perfect match. However, if a query vector is orthogonal or perpendicular (90 degrees) to a document vector, the cosine similarity with be 0. Finally, if a query vector points in the exact opposite direction (180 degrees) as a document vector, the cosine similarity will be -1.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="op">,</span> cosineSimilarities<span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+    <span class="kw">let</span> mag <span class="op">=</span> <span class="kw">function</span> (vector) <span class="op">{</span>
+      <span class="cf">return</span> <span class="va">Math</span>.<span class="at">sqrt</span>(
+        <span class="va">vector</span>.<span class="at">reduce</span>(
+            <span class="kw">function</span> (acc<span class="op">,</span> el) <span class="op">{</span>
+              <span class="cf">return</span> acc <span class="op">+</span> (el <span class="op">*</span> el)<span class="op">;</span>
+            <span class="op">}</span>
+          <span class="op">,</span> <span class="dv">0</span>
+        )
+      )<span class="op">;</span>
+    <span class="op">};</span>
+    <span class="kw">let</span> queryMag <span class="op">=</span> <span class="at">mag</span>(<span class="kw">this</span>.<span class="at">queryTfIdfVector</span>)<span class="op">;</span>
+    <span class="cf">return</span> <span class="kw">this</span>.<span class="va">tfIdfVectors</span>.<span class="at">map</span>(
+      <span class="kw">function</span> (tfIdfVector) <span class="op">{</span>
+        <span class="kw">let</span> dot <span class="op">=</span> <span class="va">tfIdfVector</span>.<span class="at">reduce</span>(
+            <span class="kw">function</span> (acc<span class="op">,</span> tfIdf<span class="op">,</span> index) <span class="op">{</span>
+              <span class="cf">return</span> acc <span class="op">+</span> (tfIdf <span class="op">*</span> <span class="kw">this</span>.<span class="at">queryTfIdfVector</span>[index])<span class="op">;</span>
+            <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+          <span class="op">,</span> <span class="dv">0</span>
+        )<span class="op">;</span>
+        <span class="kw">let</span> docMag <span class="op">=</span> <span class="at">mag</span>(tfIdfVector)<span class="op">;</span>
+        <span class="kw">let</span> mags <span class="op">=</span> queryMag <span class="op">*</span> docMag<span class="op">;</span>
+        <span class="cf">return</span> mags <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> : dot / mags<span class="op">;</span>
+      <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+    )<span class="op">;</span>
+  <span class="op">}</span></code></pre></div>
+<p>The cosine similarity between a query tf-idf vector and a document tf-idf vector is as follows.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">Q <span class="op">=</span> Query
+d <span class="op">=</span> Document
+<span class="at">cosineSimilarity</span>(Q<span class="op">,</span> d) <span class="op">=</span> <span class="at">dotProduct</span>(Q<span class="op">,</span> d) / (<span class="at">magnitude</span>(Q) <span class="op">*</span> <span class="at">magnitude</span>(d))</code></pre></div>
+<p>Note that the range is <code>[-1, 1]</code>.</p>
+<h2 id="ranking">Ranking</h2>
+<p>Now that we have the cosine similarity scores, we can finally rank all of the documents in our corpus.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="op">,</span> rankScoredDocs<span class="op">:</span> <span class="kw">function</span> (scores) <span class="op">{</span>
+    <span class="cf">return</span> <span class="va">scores</span>.<span class="at">map</span>(
+      <span class="kw">function</span> (score<span class="op">,</span> index) <span class="op">{</span>
+        <span class="kw">let</span> doc <span class="op">=</span> <span class="kw">this</span>.<span class="at">docs</span>[index]<span class="op">;</span>
+        <span class="va">doc</span>.<span class="at">index</span> <span class="op">=</span> index<span class="op">;</span>
+        <span class="cf">return</span> [score<span class="op">,</span> doc]<span class="op">;</span>
+      <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+    ).<span class="at">sort</span>(<span class="kw">function</span> (a<span class="op">,</span> b) <span class="op">{</span> <span class="cf">return</span> <span class="op">-</span>a[<span class="dv">0</span>] <span class="op">+</span> b[<span class="dv">0</span>]<span class="op">;</span> <span class="op">}</span>).<span class="at">map</span>(
+      <span class="kw">function</span> (elem) <span class="op">{</span>
+        <span class="cf">return</span> elem[<span class="dv">1</span>]<span class="op">;</span>
+      <span class="op">}</span>
+    )<span class="op">;</span>
+  <span class="op">}</span>
+<span class="co">// ...</span>
+<span class="op">,</span> tfIdfVsmRankedDocs<span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+    <span class="cf">return</span> <span class="kw">this</span>.<span class="at">rankScoredDocs</span>(<span class="kw">this</span>.<span class="at">cosineSimilarities</span>)<span class="op">;</span>
+  <span class="op">}</span></code></pre></div>
+<h1 id="okapi-bm25">Okapi BM25</h1>
+<p>BM25 is not as involved as our tf-idf VSM approach to ranking documents for information retrieval. Our implementation is one large function that reuses the document and query count vectors.</p>
+<h2 id="scoring">Scoring</h2>
+<p>We start with finding the average or mean document length by summing up each document count vector and dividing that by the number of documents. With the mean document length in hand, we go through each document count vector and for each one of those, we go through each query token. Given a document count vector and a query token, we calculate the following.</p>
+<ul>
+<li>How many times the query token is in the query (<code>qf</code>)</li>
+<li>How many documents have this query token (<code>n</code>)</li>
+<li>The number of documents (<code>N</code>)</li>
+<li>How many times does this query token show up in the current document (<code>f</code>)</li>
+</ul>
+<p>In addition to this, we have the following parameters.</p>
+<ul>
+<li><code>k1</code> set to 1.2</li>
+<li><code>k2</code> set to 100</li>
+<li><code>b</code> set to 0.75</li>
+<li><code>K</code> equals <code>k1 * (1 - b + b * |D| / meanDocLen)</code> where <code>|D|</code> is how many tokens <code>D</code> has</li>
+<li><code>r</code> set to 0</li>
+<li><code>R</code> set to 0</li>
+</ul>
+<blockquote>
+r<sub>i</sub> is the # of relevant documents containing term i. R is the number of relevant documents for this query. k<sub>1</sub> determines how the tf component of the term weight changes as f<sub>i</sub> increases. k<sub>2</sub> has a similar role for the query term weights. K is more complicated. Its role is basically to normalize the tf component by document length. b regulates the impact of length normalization.
+<footer>
+<a href="https://www.cs.cornell.edu/courses/cs4300/2013fa/lectures/retrieval-models-1-4pp.pdf">Information Retrieval, INFO 4300 / CS 4300</a>
+</footer>
+</blockquote>
+<p>The <code>r</code> and <code>R</code> parameters are suspicious. They deal with relevance but the whole reason for using BM25 is to find the relevant documents given a query. We will keep them at zero for the duration of any given query. However, they do allow one to initially set them to zero and then update them with feedback given by the user performing the search query.</p>
+<blockquote>
+The model thus far clearly contains a natural mechanism for relevance feedback — that is, for modifying the query based on relevance information. If we start with no relevance information, then we would weight the terms using the inverse document frequency (IDF) formula. Once the user makes some judgements of relevance, we should clearly reweight the terms according to the RSJ formula.
+<footer>
+<a href="http://www.staff.city.ac.uk/~sb317/papers/foundations_bm25_review.pdf">The Probabilistic Relevance Framework: BM25 and Beyond by By Stephen Robertson and Hugo Zaragoza</a>
+</footer>
+</blockquote>
+<p>To gather the BM25 scores, for the documents in our corpus, we need to compute the following.</p>
+<p>Pseudo code:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">Q <span class="op">=</span> Query
+D <span class="op">=</span> Docs
+<span class="at">BM25</span>(Q<span class="op">,</span> d) <span class="op">=</span>
+  total <span class="op">=</span> <span class="dv">0</span>
+  <span class="cf">for</span> each query token q <span class="kw">in</span> Q
+    x     <span class="op">=</span> <span class="at">log</span>(((r<span class="op">+</span><span class="fl">0.5</span>)/(R<span class="op">-</span>r<span class="op">+</span><span class="fl">0.5</span>))/((n<span class="op">-</span>r<span class="op">+</span><span class="fl">0.5</span>)/(N<span class="op">-</span>n<span class="op">-</span>R<span class="op">+</span>r<span class="op">+</span><span class="fl">0.5</span>)))
+    y     <span class="op">=</span> ((k1<span class="op">+</span><span class="dv">1</span>)<span class="op">*</span>f)/(K<span class="op">+</span>f)
+    z     <span class="op">=</span> ((k2<span class="op">+</span><span class="dv">1</span>)<span class="op">*</span>qf)/(k2<span class="op">+</span>qf)
+    total <span class="op">=</span> total<span class="op">+</span>(x<span class="op">*</span>y<span class="op">*</span>z)
+  <span class="cf">return</span> total
+<span class="cf">for</span> every document d <span class="kw">in</span> D
+  <span class="va">d</span>.<span class="at">score</span> <span class="op">=</span> <span class="at">BM25</span>(Q<span class="op">,</span> d)</code></pre></div>
+<p>The actual code:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="op">,</span> bm25Scores<span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+    <span class="kw">let</span> meanDocLen <span class="op">=</span> <span class="dv">0</span><span class="op">;</span>
+    <span class="cf">if</span> (<span class="kw">this</span>.<span class="at">numberOfDocs</span> <span class="op">&gt;</span> <span class="dv">0</span>) <span class="op">{</span>
+      meanDocLen <span class="op">=</span> <span class="at">sum</span>(
+        <span class="kw">this</span>.<span class="va">countVectors</span>.<span class="at">map</span>(
+          <span class="kw">function</span> (countVector) <span class="op">{</span>
+            <span class="cf">return</span> <span class="at">sum</span>(countVector)<span class="op">;</span>
+          <span class="op">}</span>
+        )
+      ) / <span class="kw">this</span>.<span class="at">numberOfDocs</span><span class="op">;</span>
+    <span class="op">}</span>
+    <span class="kw">let</span> k1 <span class="op">=</span> <span class="fl">1.2</span><span class="op">;</span>
+    <span class="kw">let</span> k2 <span class="op">=</span> <span class="dv">100</span><span class="op">;</span>
+    <span class="kw">let</span> b  <span class="op">=</span> <span class="fl">0.75</span><span class="op">;</span>
+    <span class="cf">return</span> <span class="kw">this</span>.<span class="va">countVectors</span>.<span class="at">map</span>(
+      <span class="kw">function</span> (countVector) <span class="op">{</span>
+        <span class="cf">return</span> <span class="kw">this</span>.<span class="va">queryTokens</span>.<span class="at">reduce</span>(
+            <span class="kw">function</span> (acc<span class="op">,</span> queryToken) <span class="op">{</span>
+              <span class="kw">let</span> dictionaryIndex <span class="op">=</span> <span class="kw">this</span>.<span class="va">dictionary</span>.<span class="at">indexOf</span>(queryToken)<span class="op">;</span>
+
+              <span class="kw">let</span> K  <span class="op">=</span> meanDocLen <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> : k1 <span class="op">*</span> ((<span class="dv">1</span> <span class="op">-</span> b) <span class="op">+</span> (b <span class="op">*</span> (<span class="at">sum</span>(countVector) / meanDocLen)))<span class="op">;</span>
+
+              <span class="kw">let</span> r  <span class="op">=</span> <span class="dv">0</span><span class="op">;</span>
+              <span class="kw">let</span> R  <span class="op">=</span> <span class="dv">0</span><span class="op">;</span>
+
+              <span class="kw">let</span> qf <span class="op">=</span> dictionaryIndex <span class="op">&lt;</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> : <span class="kw">this</span>.<span class="at">queryCountVector</span>[dictionaryIndex]<span class="op">;</span>
+              <span class="kw">let</span> n  <span class="op">=</span> <span class="dv">0</span><span class="op">;</span>
+              <span class="cf">if</span> (dictionaryIndex <span class="op">&gt;=</span> <span class="dv">0</span>) <span class="op">{</span>
+                n <span class="op">=</span> <span class="kw">this</span>.<span class="at">countVectorsT</span>[dictionaryIndex].<span class="at">reduce</span>(
+                    <span class="kw">function</span> (acc<span class="op">,</span> x) <span class="op">{</span> <span class="cf">return</span> acc <span class="op">+</span> (x <span class="op">&gt;</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">1</span> : <span class="dv">0</span>)<span class="op">;</span> <span class="op">}</span>
+                  <span class="op">,</span> <span class="dv">0</span>
+                )<span class="op">;</span>
+              <span class="op">}</span>
+              <span class="kw">let</span> N <span class="op">=</span> <span class="kw">this</span>.<span class="at">numberOfDocs</span><span class="op">;</span>
+              <span class="kw">let</span> f <span class="op">=</span> dictionaryIndex <span class="op">&lt;</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> : countVector[dictionaryIndex]<span class="op">;</span>
+
+              <span class="kw">let</span> ai <span class="op">=</span> r <span class="op">+</span> <span class="fl">0.5</span><span class="op">;</span>
+              <span class="kw">let</span> bi <span class="op">=</span> R <span class="op">-</span> r <span class="op">+</span> <span class="fl">0.5</span><span class="op">;</span>
+              <span class="kw">let</span> ci <span class="op">=</span> n <span class="op">-</span> r <span class="op">+</span> <span class="fl">0.5</span><span class="op">;</span>
+              <span class="kw">let</span> di <span class="op">=</span> N <span class="op">-</span> n <span class="op">-</span> R <span class="op">+</span> r <span class="op">+</span> <span class="fl">0.5</span><span class="op">;</span>
+              <span class="kw">let</span> ei <span class="op">=</span> bi <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> : ai / bi<span class="op">;</span>
+              <span class="kw">let</span> fi <span class="op">=</span> di <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> : ci / di<span class="op">;</span>
+              <span class="kw">let</span> gi <span class="op">=</span> fi <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> : ei / fi<span class="op">;</span>
+
+              <span class="kw">let</span> hi <span class="op">=</span> (k1 <span class="op">+</span> <span class="dv">1</span>) <span class="op">*</span> f<span class="op">;</span>
+              <span class="kw">let</span> ii <span class="op">=</span> K <span class="op">+</span> f<span class="op">;</span>
+              <span class="kw">let</span> ji <span class="op">=</span> ii <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> : hi / ii<span class="op">;</span>
+
+              <span class="kw">let</span> ki <span class="op">=</span> (k2 <span class="op">+</span> <span class="dv">1</span>) <span class="op">*</span> qf<span class="op">;</span>
+              <span class="kw">let</span> li <span class="op">=</span> k2 <span class="op">+</span> qf<span class="op">;</span>
+              <span class="kw">let</span> mi <span class="op">=</span> li <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> : ki / li<span class="op">;</span>
+
+              <span class="cf">return</span> acc <span class="op">+</span> (<span class="va">Math</span>.<span class="at">log</span>(gi) <span class="op">*</span> ji <span class="op">*</span> mi)<span class="op">;</span>
+            <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+          <span class="op">,</span> <span class="dv">0</span>
+        )<span class="op">;</span>
+      <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+    )<span class="op">;</span>
+  <span class="op">}</span></code></pre></div>
+<h2 id="ranking-1">Ranking</h2>
+<p>Similar to what we did with the tf-idf VSM approach, we will rank all of the documents in our corpus. Of course this time the criteria will be their BM25 score.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="op">,</span> rankScoredDocs<span class="op">:</span> <span class="kw">function</span> (scores) <span class="op">{</span>
+    <span class="cf">return</span> <span class="va">scores</span>.<span class="at">map</span>(
+      <span class="kw">function</span> (score<span class="op">,</span> index) <span class="op">{</span>
+        <span class="kw">let</span> doc <span class="op">=</span> <span class="kw">this</span>.<span class="at">docs</span>[index]<span class="op">;</span>
+        <span class="va">doc</span>.<span class="at">index</span> <span class="op">=</span> index<span class="op">;</span>
+        <span class="cf">return</span> [score<span class="op">,</span> doc]<span class="op">;</span>
+      <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+    ).<span class="at">sort</span>(<span class="kw">function</span> (a<span class="op">,</span> b) <span class="op">{</span> <span class="cf">return</span> <span class="op">-</span>a[<span class="dv">0</span>] <span class="op">+</span> b[<span class="dv">0</span>]<span class="op">;</span> <span class="op">}</span>).<span class="at">map</span>(
+      <span class="kw">function</span> (elem) <span class="op">{</span>
+        <span class="cf">return</span> elem[<span class="dv">1</span>]<span class="op">;</span>
+      <span class="op">}</span>
+    )<span class="op">;</span>
+  <span class="op">}</span>
+<span class="co">// ...</span>
+<span class="op">,</span> bm25RankedDocs<span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+    <span class="cf">return</span> <span class="kw">this</span>.<span class="at">rankScoredDocs</span>(<span class="kw">this</span>.<span class="at">bm25Scores</span>)<span class="op">;</span>
+  <span class="op">}</span></code></pre></div>
+<h1 id="comparison">Comparison</h1>
+<p>With our approaches in place, we can now use our search engine. Given a query, we will see—simultaneously—how tf-idf VSM and BM25 rank our corpus.</p>
+<h2 id="documents">Documents</h2>
+<p>As stated above, our corpus consists of the following four documents.</p>
+<ul>
+<li>Little Jack Horner sat in the corner, Eating a Christmas pie; He put in his thumb, and pulled out a plum, And said, oh! what a good boy am I.</li>
+<li>Diddlty, diddlty, dumpty, The cat ran up the plum tree, Give her a plum, and down she’ll come, Diddlty, diddlty, dumpty.</li>
+<li>To market, to market, to buy a plum cake, Home again, home again, market is late; To market, to market, to buy a plum bun, Home again, home again, market is done.</li>
+<li>Jack and Jill Went up the hill, To fetch a pail of water; Jack fell down And broke his crown, And Jill came tumbling after.</li>
+</ul>
+<h2 id="queries">Queries</h2>
+<p>To tease out any differences between the two approaches, we will choose three one word queries that cover the range of cases.</p>
+<h3 id="found-in-all-documents">Found in all Documents</h3>
+<p>The first query will be <code>a</code>. This token is found in all four documents.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">Docs Ranked by TF<span class="op">-</span>IDF VSM
+
+Doc <span class="dv">1</span><span class="op">:</span> Little Jack Horner sat <span class="kw">in</span> the corner<span class="op">,</span> Eating a Christmas pie<span class="op">;</span> He put <span class="kw">in</span> his thumb<span class="op">,</span> and pulled out a plum<span class="op">,</span> And said<span class="op">,</span> oh<span class="op">!</span> what a good boy am <span class="va">I</span>.
+Doc <span class="dv">2</span><span class="op">:</span> Diddlty<span class="op">,</span> diddlty<span class="op">,</span> dumpty<span class="op">,</span> The cat ran up the plum tree<span class="op">,</span> Give her a plum<span class="op">,</span> and down she’ll come<span class="op">,</span> Diddlty<span class="op">,</span> diddlty<span class="op">,</span> <span class="va">dumpty</span>.
+Doc <span class="dv">3</span><span class="op">:</span> To market<span class="op">,</span> to market<span class="op">,</span> to buy a plum cake<span class="op">,</span> Home again<span class="op">,</span> home again<span class="op">,</span> market is late<span class="op">;</span> To market<span class="op">,</span> to market<span class="op">,</span> to buy a plum bun<span class="op">,</span> Home again<span class="op">,</span> home again<span class="op">,</span> market is <span class="va">done</span>.
+Doc <span class="dv">4</span><span class="op">:</span> Jack and Jill Went up the hill<span class="op">,</span> To fetch a pail of water<span class="op">;</span> Jack fell down And broke his crown<span class="op">,</span> And Jill came tumbling <span class="va">after</span>.
+
+Docs Ranked by BM25
+
+Doc <span class="dv">4</span><span class="op">:</span> Jack and Jill Went up the hill<span class="op">,</span> To fetch a pail of water<span class="op">;</span> Jack fell down And broke his crown<span class="op">,</span> And Jill came tumbling <span class="va">after</span>.
+Doc <span class="dv">2</span><span class="op">:</span> Diddlty<span class="op">,</span> diddlty<span class="op">,</span> dumpty<span class="op">,</span> The cat ran up the plum tree<span class="op">,</span> Give her a plum<span class="op">,</span> and down she’ll come<span class="op">,</span> Diddlty<span class="op">,</span> diddlty<span class="op">,</span> <span class="va">dumpty</span>.
+Doc <span class="dv">3</span><span class="op">:</span> To market<span class="op">,</span> to market<span class="op">,</span> to buy a plum cake<span class="op">,</span> Home again<span class="op">,</span> home again<span class="op">,</span> market is late<span class="op">;</span> To market<span class="op">,</span> to market<span class="op">,</span> to buy a plum bun<span class="op">,</span> Home again<span class="op">,</span> home again<span class="op">,</span> market is <span class="va">done</span>.
+Doc <span class="dv">1</span><span class="op">:</span> Little Jack Horner sat <span class="kw">in</span> the corner<span class="op">,</span> Eating a Christmas pie<span class="op">;</span> He put <span class="kw">in</span> his thumb<span class="op">,</span> and pulled out a plum<span class="op">,</span> And said<span class="op">,</span> oh<span class="op">!</span> what a good boy am <span class="va">I</span>.
+
+TF<span class="op">-</span>IDF Cosine Similarity Scores
+
+Doc <span class="dv">1</span><span class="op">:</span> <span class="fl">0.00</span>
+Doc <span class="dv">2</span><span class="op">:</span> <span class="fl">0.00</span>
+Doc <span class="dv">3</span><span class="op">:</span> <span class="fl">0.00</span>
+Doc <span class="dv">4</span><span class="op">:</span> <span class="fl">0.00</span>
+
+BM25 Scores
+
+Doc <span class="dv">1</span><span class="op">:</span> <span class="op">-</span><span class="fl">3.37</span>
+Doc <span class="dv">2</span><span class="op">:</span> <span class="op">-</span><span class="fl">2.42</span>
+Doc <span class="dv">3</span><span class="op">:</span> <span class="op">-</span><span class="fl">2.87</span>
+Doc <span class="dv">4</span><span class="op">:</span> <span class="op">-</span><span class="fl">2.27</span></code></pre></div>
+<p>Since <code>a</code> is present in all documents its idf is zero. Thus its tf-idf is zero and tf-idf VSM essentially ignores the query and returns the documents in the same order as they were inputted.</p>
+<p>The BM25 order is four, two, three, and one. Document four repeats <code>a</code> one time as does document two. Document one and three repeat <code>a</code> three and two times respectively. If you count them up, document two is slightly smaller in length than document four. Document one and three are both longer than document two and four.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">Doc <span class="dv">3</span> length<span class="op">:</span> <span class="dv">32</span>
+Doc <span class="dv">1</span> length<span class="op">:</span> <span class="dv">30</span>
+Doc <span class="dv">4</span> length<span class="op">:</span> <span class="dv">25</span>
+Doc <span class="dv">2</span> length<span class="op">:</span> <span class="dv">21</span></code></pre></div>
+<h3 id="found-in-one-document">Found in one Document</h3>
+<p>The second query will be <code>hill</code> which is only found in one document—document four.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">Docs Ranked by TF<span class="op">-</span>IDF VSM
+
+Doc <span class="dv">4</span><span class="op">:</span> Jack and Jill Went up the hill<span class="op">,</span> To fetch a pail of water<span class="op">;</span> Jack fell down And broke his crown<span class="op">,</span> And Jill came tumbling <span class="va">after</span>.
+Doc <span class="dv">1</span><span class="op">:</span> Little Jack Horner sat <span class="kw">in</span> the corner<span class="op">,</span> Eating a Christmas pie<span class="op">;</span> He put <span class="kw">in</span> his thumb<span class="op">,</span> and pulled out a plum<span class="op">,</span> And said<span class="op">,</span> oh<span class="op">!</span> what a good boy am <span class="va">I</span>.
+Doc <span class="dv">2</span><span class="op">:</span> Diddlty<span class="op">,</span> diddlty<span class="op">,</span> dumpty<span class="op">,</span> The cat ran up the plum tree<span class="op">,</span> Give her a plum<span class="op">,</span> and down she’ll come<span class="op">,</span> Diddlty<span class="op">,</span> diddlty<span class="op">,</span> <span class="va">dumpty</span>.
+Doc <span class="dv">3</span><span class="op">:</span> To market<span class="op">,</span> to market<span class="op">,</span> to buy a plum cake<span class="op">,</span> Home again<span class="op">,</span> home again<span class="op">,</span> market is late<span class="op">;</span> To market<span class="op">,</span> to market<span class="op">,</span> to buy a plum bun<span class="op">,</span> Home again<span class="op">,</span> home again<span class="op">,</span> market is <span class="va">done</span>.
+
+Docs Ranked by BM25
+
+Doc <span class="dv">4</span><span class="op">:</span> Jack and Jill Went up the hill<span class="op">,</span> To fetch a pail of water<span class="op">;</span> Jack fell down And broke his crown<span class="op">,</span> And Jill came tumbling <span class="va">after</span>.
+Doc <span class="dv">1</span><span class="op">:</span> Little Jack Horner sat <span class="kw">in</span> the corner<span class="op">,</span> Eating a Christmas pie<span class="op">;</span> He put <span class="kw">in</span> his thumb<span class="op">,</span> and pulled out a plum<span class="op">,</span> And said<span class="op">,</span> oh<span class="op">!</span> what a good boy am <span class="va">I</span>.
+Doc <span class="dv">2</span><span class="op">:</span> Diddlty<span class="op">,</span> diddlty<span class="op">,</span> dumpty<span class="op">,</span> The cat ran up the plum tree<span class="op">,</span> Give her a plum<span class="op">,</span> and down she’ll come<span class="op">,</span> Diddlty<span class="op">,</span> diddlty<span class="op">,</span> <span class="va">dumpty</span>.
+Doc <span class="dv">3</span><span class="op">:</span> To market<span class="op">,</span> to market<span class="op">,</span> to buy a plum cake<span class="op">,</span> Home again<span class="op">,</span> home again<span class="op">,</span> market is late<span class="op">;</span> To market<span class="op">,</span> to market<span class="op">,</span> to buy a plum bun<span class="op">,</span> Home again<span class="op">,</span> home again<span class="op">,</span> market is <span class="va">done</span>.
+
+TF<span class="op">-</span>IDF Cosine Similarity Scores
+
+Doc <span class="dv">1</span><span class="op">:</span> <span class="fl">0.00</span>
+Doc <span class="dv">2</span><span class="op">:</span> <span class="fl">0.00</span>
+Doc <span class="dv">3</span><span class="op">:</span> <span class="fl">0.00</span>
+Doc <span class="dv">4</span><span class="op">:</span> <span class="fl">0.23</span>
+
+BM25 Scores
+
+Doc <span class="dv">1</span><span class="op">:</span> <span class="fl">0.00</span>
+Doc <span class="dv">2</span><span class="op">:</span> <span class="fl">0.00</span>
+Doc <span class="dv">3</span><span class="op">:</span> <span class="fl">0.00</span>
+Doc <span class="dv">4</span><span class="op">:</span> <span class="fl">0.87</span></code></pre></div>
+<p>In this case, both tf-idf VSM and BM25 ranked the corpus the same. You will notice that document four is indeed the most relevant with all others having the same score no matter the approach.</p>
+<h3 id="found-in-some-documents">Found in some Documents</h3>
+<p>Our final query will be <code>and</code>. Much like <code>a</code>, <code>and</code> is usually considered a stop word and is filtered out during preprocessing. Since we did not filter out <code>and</code>, the token is present in three documents.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">Docs Ranked by TF<span class="op">-</span>IDF VSM
+
+Doc <span class="dv">4</span><span class="op">:</span> Jack and Jill Went up the hill<span class="op">,</span> To fetch a pail of water<span class="op">;</span> Jack fell down And broke his crown<span class="op">,</span> And Jill came tumbling <span class="va">after</span>.
+Doc <span class="dv">1</span><span class="op">:</span> Little Jack Horner sat <span class="kw">in</span> the corner<span class="op">,</span> Eating a Christmas pie<span class="op">;</span> He put <span class="kw">in</span> his thumb<span class="op">,</span> and pulled out a plum<span class="op">,</span> And said<span class="op">,</span> oh<span class="op">!</span> what a good boy am <span class="va">I</span>.
+Doc <span class="dv">2</span><span class="op">:</span> Diddlty<span class="op">,</span> diddlty<span class="op">,</span> dumpty<span class="op">,</span> The cat ran up the plum tree<span class="op">,</span> Give her a plum<span class="op">,</span> and down she’ll come<span class="op">,</span> Diddlty<span class="op">,</span> diddlty<span class="op">,</span> <span class="va">dumpty</span>.
+Doc <span class="dv">3</span><span class="op">:</span> To market<span class="op">,</span> to market<span class="op">,</span> to buy a plum cake<span class="op">,</span> Home again<span class="op">,</span> home again<span class="op">,</span> market is late<span class="op">;</span> To market<span class="op">,</span> to market<span class="op">,</span> to buy a plum bun<span class="op">,</span> Home again<span class="op">,</span> home again<span class="op">,</span> market is <span class="va">done</span>.
+
+Docs Ranked by BM25
+
+Doc <span class="dv">3</span><span class="op">:</span> To market<span class="op">,</span> to market<span class="op">,</span> to buy a plum cake<span class="op">,</span> Home again<span class="op">,</span> home again<span class="op">,</span> market is late<span class="op">;</span> To market<span class="op">,</span> to market<span class="op">,</span> to buy a plum bun<span class="op">,</span> Home again<span class="op">,</span> home again<span class="op">,</span> market is <span class="va">done</span>.
+Doc <span class="dv">2</span><span class="op">:</span> Diddlty<span class="op">,</span> diddlty<span class="op">,</span> dumpty<span class="op">,</span> The cat ran up the plum tree<span class="op">,</span> Give her a plum<span class="op">,</span> and down she’ll come<span class="op">,</span> Diddlty<span class="op">,</span> diddlty<span class="op">,</span> <span class="va">dumpty</span>.
+Doc <span class="dv">1</span><span class="op">:</span> Little Jack Horner sat <span class="kw">in</span> the corner<span class="op">,</span> Eating a Christmas pie<span class="op">;</span> He put <span class="kw">in</span> his thumb<span class="op">,</span> and pulled out a plum<span class="op">,</span> And said<span class="op">,</span> oh<span class="op">!</span> what a good boy am <span class="va">I</span>.
+Doc <span class="dv">4</span><span class="op">:</span> Jack and Jill Went up the hill<span class="op">,</span> To fetch a pail of water<span class="op">;</span> Jack fell down And broke his crown<span class="op">,</span> And Jill came tumbling <span class="va">after</span>.
+
+TF<span class="op">-</span>IDF Cosine Similarity Scores
+
+Doc <span class="dv">1</span><span class="op">:</span> <span class="fl">0.09</span>
+Doc <span class="dv">2</span><span class="op">:</span> <span class="fl">0.04</span>
+Doc <span class="dv">3</span><span class="op">:</span> <span class="fl">0.00</span>
+Doc <span class="dv">4</span><span class="op">:</span> <span class="fl">0.15</span>
+
+BM25 Scores
+
+Doc <span class="dv">1</span><span class="op">:</span> <span class="op">-</span><span class="fl">1.13</span>
+Doc <span class="dv">2</span><span class="op">:</span> <span class="op">-</span><span class="fl">0.93</span>
+Doc <span class="dv">3</span><span class="op">:</span> <span class="fl">0.00</span>
+Doc <span class="dv">4</span><span class="op">:</span> <span class="op">-</span><span class="fl">1.35</span></code></pre></div>
+<p>As stated above, <code>and</code> does not appear in every document. Unlike <code>a</code>, it was not filtered out by tf-idf VSM since it did not have a zero idf. The tf-idf VSM ranking makes sense since document four, one, two, and three repeated <code>and</code> three, two, one, and zero times respectively.</p>
+<p>Looking at the BM25 ranking, you would think there was a bug in the source code. BM25 ranked the corpus in the reverse order—from the document with the least amount of <code>and</code>s to the document with most amount of <code>and</code>s. Document three was zero since</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">y <span class="op">=</span> ((k1<span class="op">+</span><span class="dv">1</span>)<span class="op">*</span>f)/(K<span class="op">+</span>f)</code></pre></div>
+<p>(found in the pseudo code) was zero. Recall that <code>f</code> is the amount of times the query token is found in the document being evaluated. In this case, <code>f</code> equals how many times <code>and</code> appears in document three.</p>
+<p>For the remaining documents, the idf portion</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">x <span class="op">=</span> <span class="at">log</span>(((r<span class="op">+</span><span class="fl">0.5</span>)/(R<span class="op">-</span>r<span class="op">+</span><span class="fl">0.5</span>))/((n<span class="op">-</span>r<span class="op">+</span><span class="fl">0.5</span>)/(N<span class="op">-</span>n<span class="op">-</span>R<span class="op">+</span>r<span class="op">+</span><span class="fl">0.5</span>)))</code></pre></div>
+<p>of the equation was negative since the input into the <code>log</code> function was less than one. For our version of BM25, we have a problem when one of the query terms are found in more than half of the documents in our corpus. Note that adding more <code>and</code>s in the query does not change the BM25 ranking.</p>
+<h1 id="recap">Recap</h1>
+<p>Using <a href="https://vuejs.org/">Vue.js</a>, we built a JavaScript based search engine that uses both tf-idf VSM and Okapi BM25. For every given query, our search engine ran both approaches in tandem, allowing us to explore the similarities and differences between each document ranking method.</p>
+<h1 id="appendix">Appendix</h1>
+<p>Below you will find some supplementary material.</p>
+<h2 id="full-source-code">Full Source Code</h2>
+<p>Listed below are all of the source code files needed to build the project described up above.</p>
+<h3 id="index.js">index.js</h3>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="co">/*</span>
+<span class="co">  David Lettier (C) 2016</span>
+<span class="co">  http://www.lettier.com/</span>
+<span class="co">*/</span>
+
+<span class="co">// jshint esversion: 6</span>
+<span class="co">// jshint laxbreak:  true</span>
+<span class="co">// jshint laxcomma:  true</span>
+
+<span class="kw">var</span> sum <span class="op">=</span> <span class="kw">function</span> (arr) <span class="op">{</span>
+  <span class="cf">return</span> <span class="va">arr</span>.<span class="at">reduce</span>(<span class="kw">function</span> (acc<span class="op">,</span> x) <span class="op">{</span> <span class="cf">return</span> acc <span class="op">+</span> x<span class="op">;</span> <span class="op">},</span> <span class="dv">0</span>)<span class="op">;</span>
+<span class="op">};</span>
+<span class="kw">var</span> makeTokens <span class="op">=</span> <span class="kw">function</span> (text) <span class="op">{</span>
+  <span class="cf">if</span> (text <span class="op">===</span> <span class="kw">null</span>) <span class="op">{</span> <span class="cf">return</span> []<span class="op">;</span> <span class="op">}</span>
+  <span class="cf">if</span> (<span class="va">text</span>.<span class="at">length</span> <span class="op">===</span> <span class="dv">0</span>) <span class="op">{</span> <span class="cf">return</span> []<span class="op">;</span> <span class="op">}</span>
+  <span class="cf">return</span> <span class="va">text</span>.<span class="at">toLowerCase</span>().<span class="at">replace</span>(
+      <span class="ss">/</span><span class="sc">[~`’!@#$%^&amp;*(){}\[\];:&quot;'&lt;,.&gt;?\/\\|_+=-]</span><span class="ss">/g</span>
+    <span class="op">,</span> <span class="st">''</span>
+  ).<span class="at">split</span>(<span class="st">' '</span>).<span class="at">filter</span>(<span class="kw">function</span> (token) <span class="op">{</span> <span class="cf">return</span> <span class="va">token</span>.<span class="at">length</span> <span class="op">&gt;</span> <span class="dv">0</span><span class="op">;</span> <span class="op">}</span>)<span class="op">;</span>
+}<span class="op">;</span>
+<span class="kw">var</span> makeTfVector <span class="op">=</span> <span class="kw">function</span> (countVector) <span class="op">{</span>
+  <span class="kw">let</span> total <span class="op">=</span> <span class="at">sum</span>(countVector)<span class="op">;</span>
+  <span class="cf">return</span> <span class="va">countVector</span>.<span class="at">map</span>(
+    <span class="kw">function</span> (count) <span class="op">{</span>
+      <span class="cf">return</span> total <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> : count / total<span class="op">;</span>
+    <span class="op">}</span>
+  )<span class="op">;</span>
+<span class="op">};</span>
+<span class="kw">var</span> app <span class="op">=</span> <span class="kw">new</span> <span class="at">Vue</span>(<span class="op">{</span>
+    <span class="dt">el</span><span class="op">:</span> <span class="st">&quot;#app&quot;</span>
+  <span class="op">,</span> <span class="dt">data</span><span class="op">:</span> <span class="op">{</span>
+        <span class="dt">docs</span><span class="op">:</span> [
+        ]
+      <span class="op">,</span> <span class="dt">query</span><span class="op">:</span> <span class="kw">null</span>
+    <span class="op">}</span>
+  <span class="op">,</span> <span class="dt">methods</span><span class="op">:</span> <span class="op">{</span>
+        <span class="dt">addDoc</span><span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+          <span class="kw">this</span>.<span class="va">docs</span>.<span class="at">push</span>(<span class="op">{</span><span class="dt">text</span><span class="op">:</span> <span class="st">&quot;&quot;</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="va">Date</span>.<span class="at">now</span>()<span class="op">}</span>)<span class="op">;</span>
+          <span class="kw">this</span>.<span class="at">$nextTick</span>(
+            <span class="kw">this</span>.<span class="at">docsNavSetup</span>
+          )<span class="op">;</span>
+        <span class="op">}</span>
+      <span class="op">,</span>  <span class="dt">removeDoc</span><span class="op">:</span> <span class="kw">function</span> (button) <span class="op">{</span>
+          <span class="kw">let</span> id <span class="op">=</span> <span class="at">parseInt</span>(<span class="va">button</span>.<span class="va">target</span>.<span class="va">attributes</span>.<span class="va">docId</span>.<span class="at">value</span><span class="op">,</span> <span class="dv">10</span>)<span class="op">;</span>
+          <span class="kw">this</span>.<span class="at">docs</span> <span class="op">=</span> <span class="kw">this</span>.<span class="va">docs</span>.<span class="at">filter</span>(
+            <span class="kw">function</span> (doc) <span class="op">{</span>
+              <span class="cf">return</span> (<span class="va">doc</span>.<span class="at">id</span> <span class="op">!==</span> id)<span class="op">;</span>
+            <span class="op">}</span>
+          )<span class="op">;</span>
+        <span class="op">}</span>
+      <span class="op">,</span> <span class="dt">rankScoredDocs</span><span class="op">:</span> <span class="kw">function</span> (scores) <span class="op">{</span>
+          <span class="cf">return</span> <span class="va">scores</span>.<span class="at">map</span>(
+            <span class="kw">function</span> (score<span class="op">,</span> index) <span class="op">{</span>
+              <span class="kw">let</span> doc <span class="op">=</span> <span class="kw">this</span>.<span class="at">docs</span>[index]<span class="op">;</span>
+              <span class="va">doc</span>.<span class="at">index</span> <span class="op">=</span> index<span class="op">;</span>
+              <span class="cf">return</span> [score<span class="op">,</span> doc]<span class="op">;</span>
+            <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+          ).<span class="at">sort</span>(<span class="kw">function</span> (a<span class="op">,</span> b) <span class="op">{</span> <span class="cf">return</span> <span class="op">-</span>a[<span class="dv">0</span>] <span class="op">+</span> b[<span class="dv">0</span>]<span class="op">;</span> <span class="op">}</span>).<span class="at">map</span>(
+            <span class="kw">function</span> (elem) <span class="op">{</span>
+              <span class="cf">return</span> elem[<span class="dv">1</span>]<span class="op">;</span>
+            <span class="op">}</span>
+          )<span class="op">;</span>
+        <span class="op">}</span>
+      <span class="op">,</span> <span class="dt">docsNavSetup</span><span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+          <span class="kw">this</span>.<span class="va">docs</span>.<span class="at">map</span>(
+            <span class="kw">function</span> (doc<span class="op">,</span> index<span class="op">,</span> docs) <span class="op">{</span>
+              <span class="kw">let</span> el <span class="op">=</span> <span class="va">document</span>.<span class="at">getElementById</span>(<span class="va">doc</span>.<span class="va">id</span>.<span class="at">toString</span>())<span class="op">;</span>
+              <span class="cf">if</span> (el <span class="op">===</span> <span class="kw">null</span>) <span class="op">{</span> <span class="cf">return</span><span class="op">;</span> <span class="op">}</span>
+              <span class="va">el</span>.<span class="at">tabIndex</span> <span class="op">=</span> (index <span class="op">+</span> <span class="dv">1</span>).<span class="at">toString</span>()<span class="op">;</span>
+              <span class="cf">if</span> (index <span class="op">===</span> (<span class="va">docs</span>.<span class="at">length</span> <span class="op">-</span> <span class="dv">1</span>)) <span class="op">{</span>
+                <span class="va">el</span>.<span class="at">focus</span>()<span class="op">;</span>
+              <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span>
+                <span class="va">el</span>.<span class="at">blur</span>()<span class="op">;</span>
+              <span class="op">}</span>
+            <span class="op">}</span>
+          )<span class="op">;</span>
+        <span class="op">}</span>
+    <span class="op">}</span>
+  <span class="op">,</span> <span class="dt">computed</span><span class="op">:</span> <span class="op">{</span>
+        <span class="dt">parsedDocs</span><span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+          <span class="cf">return</span> <span class="kw">this</span>.<span class="va">docs</span>.<span class="at">map</span>(
+            <span class="kw">function</span> (doc) <span class="op">{</span>
+              <span class="cf">return</span> <span class="op">{</span>
+                  <span class="dt">tokens</span><span class="op">:</span> <span class="at">makeTokens</span>(<span class="va">doc</span>.<span class="at">text</span>)
+                <span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="va">doc</span>.<span class="at">id</span>
+              <span class="op">};</span>
+            <span class="op">}</span>
+          )<span class="op">;</span>
+        <span class="op">}</span>
+      <span class="op">,</span> <span class="dt">tokens</span><span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+          <span class="cf">return</span> <span class="kw">this</span>.<span class="va">parsedDocs</span>.<span class="at">map</span>(
+              <span class="kw">function</span> (parsedDoc) <span class="op">{</span> <span class="cf">return</span> <span class="va">parsedDoc</span>.<span class="at">tokens</span> <span class="op">||</span> []<span class="op">;</span> <span class="op">}</span>
+          )<span class="op">;</span>
+        <span class="op">}</span>
+      <span class="op">,</span> <span class="dt">dictionary</span><span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+          <span class="cf">return</span> <span class="kw">this</span>.<span class="va">tokens</span>.<span class="at">reduce</span>(
+              <span class="kw">function</span> (acc<span class="op">,</span> tokens) <span class="op">{</span>
+                <span class="cf">return</span> <span class="va">acc</span>.<span class="at">concat</span>(tokens)<span class="op">;</span>
+              <span class="op">}</span>
+            <span class="op">,</span> []
+          ).<span class="at">reduce</span>(
+              <span class="kw">function</span> (acc<span class="op">,</span> word) <span class="op">{</span>
+                <span class="cf">if</span> (<span class="va">acc</span>.<span class="at">indexOf</span>(word) <span class="op">===</span> <span class="op">-</span><span class="dv">1</span>) <span class="op">{</span>
+                  <span class="va">acc</span>.<span class="at">push</span>(word)<span class="op">;</span>
+                  <span class="cf">return</span> acc<span class="op">;</span>
+                <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span>
+                  <span class="cf">return</span> acc<span class="op">;</span>
+                <span class="op">}</span>
+              <span class="op">}</span>
+            <span class="op">,</span> []
+          ).<span class="at">sort</span>()<span class="op">;</span>
+        <span class="op">}</span>
+      <span class="op">,</span> <span class="dt">numberOfDocs</span><span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+          <span class="cf">return</span> <span class="kw">this</span>.<span class="va">countVectors</span>.<span class="at">reduce</span>(
+              <span class="kw">function</span> (acc<span class="op">,</span> x<span class="op">,</span> index) <span class="op">{</span>
+                <span class="cf">return</span> acc <span class="op">+</span> (<span class="kw">this</span>.<span class="at">countVectors</span>[index].<span class="at">length</span> <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> : <span class="dv">1</span>)<span class="op">;</span>
+              <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+            <span class="op">,</span> <span class="dv">0</span>
+          )<span class="op">;</span>
+        <span class="op">}</span>
+      <span class="op">,</span> <span class="dt">countVectors</span><span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+          <span class="cf">return</span> <span class="kw">this</span>.<span class="va">tokens</span>.<span class="at">map</span>(
+            <span class="kw">function</span> (tokens) <span class="op">{</span>
+              <span class="cf">return</span> <span class="kw">this</span>.<span class="va">dictionary</span>.<span class="at">map</span>(
+                <span class="kw">function</span> (word) <span class="op">{</span>
+                  <span class="cf">return</span> <span class="va">tokens</span>.<span class="at">reduce</span>(
+                      <span class="kw">function</span> (acc<span class="op">,</span> token) <span class="op">{</span> <span class="cf">return</span> token <span class="op">===</span> word <span class="op">?</span> acc <span class="op">+</span> <span class="dv">1</span> : acc<span class="op">;</span> <span class="op">}</span>
+                    <span class="op">,</span> <span class="dv">0</span>
+                  )<span class="op">;</span>
+                <span class="op">}</span>
+              )<span class="op">;</span>
+            <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+          )<span class="op">;</span>
+        <span class="op">}</span>
+      <span class="op">,</span> <span class="dt">countVectorsT</span><span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+          <span class="kw">let</span> arr <span class="op">=</span> []<span class="op">;</span>
+          <span class="kw">this</span>.<span class="va">countVectors</span>.<span class="at">map</span>(
+            <span class="kw">function</span> (countVector<span class="op">,</span> row<span class="op">,</span> countVectors) <span class="op">{</span>
+              <span class="va">countVector</span>.<span class="at">map</span>(
+                <span class="kw">function</span> (count<span class="op">,</span> col<span class="op">,</span> countVector) <span class="op">{</span>
+                  <span class="cf">if</span> (row <span class="op">===</span> <span class="dv">0</span>) <span class="op">{</span> <span class="va">arr</span>.<span class="at">push</span>([])<span class="op">;</span> <span class="op">}</span>
+                  arr[col].<span class="at">push</span>(count)<span class="op">;</span>
+                <span class="op">}</span>
+              )<span class="op">;</span>
+            <span class="op">}</span>
+          )<span class="op">;</span>
+          <span class="cf">return</span> arr<span class="op">;</span>
+        <span class="op">}</span>
+      <span class="op">,</span> <span class="dt">tfVectors</span><span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+          <span class="cf">return</span> <span class="kw">this</span>.<span class="va">countVectors</span>.<span class="at">map</span>(
+            <span class="kw">function</span> (countVector) <span class="op">{</span>
+              <span class="cf">return</span> <span class="at">makeTfVector</span>(countVector)<span class="op">;</span>
+            <span class="op">}</span>
+          )<span class="op">;</span>
+        <span class="op">}</span>
+      <span class="op">,</span> <span class="dt">idfVectors</span><span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+          <span class="kw">let</span> total <span class="op">=</span> <span class="kw">this</span>.<span class="at">numberOfDocs</span><span class="op">;</span>
+          <span class="cf">if</span> (total <span class="op">===</span> <span class="dv">0</span>) <span class="op">{</span> <span class="cf">return</span> <span class="kw">this</span>.<span class="va">countVectors</span>.<span class="at">map</span>(<span class="kw">function</span> () <span class="op">{</span> <span class="cf">return</span> []<span class="op">;</span> <span class="op">}</span>)<span class="op">;</span> <span class="op">}</span>
+          <span class="kw">let</span> idfVector <span class="op">=</span> <span class="kw">this</span>.<span class="at">countVectors</span>[<span class="dv">0</span>].<span class="at">map</span>(
+            <span class="kw">function</span> (count<span class="op">,</span> col) <span class="op">{</span>
+              <span class="kw">let</span> inDocCount <span class="op">=</span> <span class="kw">this</span>.<span class="at">countVectorsT</span>[col].<span class="at">reduce</span>(
+                  <span class="kw">function</span> (acc<span class="op">,</span> x) <span class="op">{</span>
+                    <span class="cf">return</span> acc <span class="op">+</span> (x <span class="op">&gt;</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">1</span> : <span class="dv">0</span>)<span class="op">;</span>
+                  <span class="op">}</span>
+                <span class="op">,</span> <span class="dv">0</span>
+              )<span class="op">;</span>
+              <span class="cf">if</span> (total <span class="op">===</span> <span class="dv">0</span>) <span class="op">{</span> <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span> <span class="op">}</span>
+              <span class="cf">if</span> (inDocCount <span class="op">===</span> <span class="dv">0</span>) <span class="op">{</span> <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span> <span class="op">}</span>
+              <span class="cf">return</span> <span class="va">Math</span>.<span class="at">log</span>(total / inDocCount)<span class="op">;</span>
+            <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+          )<span class="op">;</span>
+          <span class="cf">return</span> <span class="kw">this</span>.<span class="va">countVectors</span>.<span class="at">map</span>(<span class="kw">function</span> () <span class="op">{</span> <span class="cf">return</span> idfVector<span class="op">;</span> <span class="op">}</span>)<span class="op">;</span>
+        <span class="op">}</span>
+      <span class="op">,</span> <span class="dt">tfIdfVectors</span><span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+          <span class="cf">return</span> <span class="kw">this</span>.<span class="va">tfVectors</span>.<span class="at">map</span>(
+            <span class="kw">function</span> (tfVector<span class="op">,</span> row) <span class="op">{</span>
+              <span class="cf">return</span> <span class="va">tfVector</span>.<span class="at">map</span>(
+                <span class="kw">function</span> (tf<span class="op">,</span> col) <span class="op">{</span>
+                  <span class="cf">return</span> tf <span class="op">*</span> <span class="kw">this</span>.<span class="at">idfVectors</span>[row][col]<span class="op">;</span>
+                <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+              )<span class="op">;</span>
+            <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+          )<span class="op">;</span>
+        <span class="op">}</span>
+      <span class="op">,</span> <span class="dt">docsVectors</span><span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+          <span class="cf">return</span> <span class="kw">this</span>.<span class="va">countVectors</span>.<span class="at">map</span>(
+            <span class="kw">function</span> (countVector<span class="op">,</span> index) <span class="op">{</span>
+              <span class="cf">return</span> [countVector<span class="op">,</span> <span class="kw">this</span>.<span class="at">tfVectors</span>[index]<span class="op">,</span> <span class="kw">this</span>.<span class="at">idfVectors</span>[index]<span class="op">,</span> <span class="kw">this</span>.<span class="at">tfIdfVectors</span>[index]]<span class="op">;</span>
+            <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+          )<span class="op">;</span>
+        <span class="op">}</span>
+      <span class="op">,</span> <span class="dt">queryTokens</span><span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+          <span class="cf">return</span> <span class="at">makeTokens</span>(<span class="kw">this</span>.<span class="at">query</span>)<span class="op">;</span>
+        <span class="op">}</span>
+      <span class="op">,</span> <span class="dt">queryCountVector</span><span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+          <span class="cf">return</span> <span class="kw">this</span>.<span class="va">dictionary</span>.<span class="at">map</span>(
+            <span class="kw">function</span> (word) <span class="op">{</span>
+              <span class="cf">return</span> <span class="kw">this</span>.<span class="va">queryTokens</span>.<span class="at">reduce</span>(
+                  <span class="kw">function</span> (acc<span class="op">,</span> token) <span class="op">{</span> <span class="cf">return</span> token <span class="op">===</span> word <span class="op">?</span> acc <span class="op">+</span> <span class="dv">1</span> : acc<span class="op">;</span> <span class="op">}</span>
+                <span class="op">,</span> <span class="dv">0</span>
+              )<span class="op">;</span>
+            <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+          )<span class="op">;</span>
+        <span class="op">}</span>
+      <span class="op">,</span> <span class="dt">queryTfVector</span><span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+          <span class="cf">return</span> <span class="at">makeTfVector</span>(<span class="kw">this</span>.<span class="at">queryCountVector</span>)<span class="op">;</span>
+        <span class="op">}</span>
+      <span class="op">,</span> <span class="dt">queryIdfVector</span><span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+          <span class="cf">return</span> <span class="kw">this</span>.<span class="at">idfVectors</span>[<span class="dv">0</span>]<span class="op">;</span>
+        <span class="op">}</span>
+      <span class="op">,</span> <span class="dt">queryTfIdfVector</span><span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+          <span class="cf">return</span> <span class="kw">this</span>.<span class="va">queryTfVector</span>.<span class="at">map</span>(
+            <span class="kw">function</span> (tf<span class="op">,</span> index) <span class="op">{</span>
+              <span class="cf">return</span> tf <span class="op">*</span> <span class="kw">this</span>.<span class="at">queryIdfVector</span>[index]<span class="op">;</span>
+            <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+          )<span class="op">;</span>
+        <span class="op">}</span>
+      <span class="op">,</span> <span class="dt">cosineSimilarities</span><span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+          <span class="kw">let</span> mag <span class="op">=</span> <span class="kw">function</span> (vector) <span class="op">{</span>
+            <span class="cf">return</span> <span class="va">Math</span>.<span class="at">sqrt</span>(
+              <span class="va">vector</span>.<span class="at">reduce</span>(
+                  <span class="kw">function</span> (acc<span class="op">,</span> el) <span class="op">{</span>
+                    <span class="cf">return</span> acc <span class="op">+</span> (el <span class="op">*</span> el)<span class="op">;</span>
+                  <span class="op">}</span>
+                <span class="op">,</span> <span class="dv">0</span>
+              )
+            )<span class="op">;</span>
+          <span class="op">};</span>
+          <span class="kw">let</span> queryMag <span class="op">=</span> <span class="at">mag</span>(<span class="kw">this</span>.<span class="at">queryTfIdfVector</span>)<span class="op">;</span>
+          <span class="cf">return</span> <span class="kw">this</span>.<span class="va">tfIdfVectors</span>.<span class="at">map</span>(
+            <span class="kw">function</span> (tfIdfVector) <span class="op">{</span>
+              <span class="kw">let</span> dot <span class="op">=</span> <span class="va">tfIdfVector</span>.<span class="at">reduce</span>(
+                  <span class="kw">function</span> (acc<span class="op">,</span> tfIdf<span class="op">,</span> index) <span class="op">{</span>
+                    <span class="cf">return</span> acc <span class="op">+</span> (tfIdf <span class="op">*</span> <span class="kw">this</span>.<span class="at">queryTfIdfVector</span>[index])<span class="op">;</span>
+                  <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+                <span class="op">,</span> <span class="dv">0</span>
+              )<span class="op">;</span>
+              <span class="kw">let</span> docMag <span class="op">=</span> <span class="at">mag</span>(tfIdfVector)<span class="op">;</span>
+              <span class="kw">let</span> mags <span class="op">=</span> queryMag <span class="op">*</span> docMag<span class="op">;</span>
+              <span class="cf">return</span> mags <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> : dot / mags<span class="op">;</span>
+            <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+          )<span class="op">;</span>
+        <span class="op">}</span>
+      <span class="op">,</span> <span class="dt">bm25Scores</span><span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+          <span class="kw">let</span> meanDocLen <span class="op">=</span> <span class="dv">0</span><span class="op">;</span>
+          <span class="cf">if</span> (<span class="kw">this</span>.<span class="at">numberOfDocs</span> <span class="op">&gt;</span> <span class="dv">0</span>) <span class="op">{</span>
+            meanDocLen <span class="op">=</span> <span class="at">sum</span>(
+              <span class="kw">this</span>.<span class="va">countVectors</span>.<span class="at">map</span>(
+                <span class="kw">function</span> (countVector) <span class="op">{</span>
+                  <span class="cf">return</span> <span class="at">sum</span>(countVector)<span class="op">;</span>
+                <span class="op">}</span>
+              )
+            ) / <span class="kw">this</span>.<span class="at">numberOfDocs</span><span class="op">;</span>
+          <span class="op">}</span>
+          <span class="kw">let</span> k1 <span class="op">=</span> <span class="fl">1.2</span><span class="op">;</span>
+          <span class="kw">let</span> k2 <span class="op">=</span> <span class="dv">100</span><span class="op">;</span>
+          <span class="kw">let</span> b  <span class="op">=</span> <span class="fl">0.75</span><span class="op">;</span>
+          <span class="cf">return</span> <span class="kw">this</span>.<span class="va">countVectors</span>.<span class="at">map</span>(
+            <span class="kw">function</span> (countVector) <span class="op">{</span>
+              <span class="cf">return</span> <span class="kw">this</span>.<span class="va">queryTokens</span>.<span class="at">reduce</span>(
+                  <span class="kw">function</span> (acc<span class="op">,</span> queryToken) <span class="op">{</span>
+                    <span class="kw">let</span> dictionaryIndex <span class="op">=</span> <span class="kw">this</span>.<span class="va">dictionary</span>.<span class="at">indexOf</span>(queryToken)<span class="op">;</span>
+
+                    <span class="kw">let</span> K  <span class="op">=</span> meanDocLen <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> : k1 <span class="op">*</span> ((<span class="dv">1</span> <span class="op">-</span> b) <span class="op">+</span> (b <span class="op">*</span> (<span class="at">sum</span>(countVector) / meanDocLen)))<span class="op">;</span>
+
+                    <span class="kw">let</span> r  <span class="op">=</span> <span class="dv">0</span><span class="op">;</span>
+                    <span class="kw">let</span> R  <span class="op">=</span> <span class="dv">0</span><span class="op">;</span>
+
+                    <span class="kw">let</span> qf <span class="op">=</span> dictionaryIndex <span class="op">&lt;</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> : <span class="kw">this</span>.<span class="at">queryCountVector</span>[dictionaryIndex]<span class="op">;</span>
+                    <span class="kw">let</span> n  <span class="op">=</span> <span class="dv">0</span><span class="op">;</span>
+                    <span class="cf">if</span> (dictionaryIndex <span class="op">&gt;=</span> <span class="dv">0</span>) <span class="op">{</span>
+                      n <span class="op">=</span> <span class="kw">this</span>.<span class="at">countVectorsT</span>[dictionaryIndex].<span class="at">reduce</span>(
+                          <span class="kw">function</span> (acc<span class="op">,</span> x) <span class="op">{</span> <span class="cf">return</span> acc <span class="op">+</span> (x <span class="op">&gt;</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">1</span> : <span class="dv">0</span>)<span class="op">;</span> <span class="op">}</span>
+                        <span class="op">,</span> <span class="dv">0</span>
+                      )<span class="op">;</span>
+                    <span class="op">}</span>
+                    <span class="kw">let</span> N <span class="op">=</span> <span class="kw">this</span>.<span class="at">numberOfDocs</span><span class="op">;</span>
+                    <span class="kw">let</span> f <span class="op">=</span> dictionaryIndex <span class="op">&lt;</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> : countVector[dictionaryIndex]<span class="op">;</span>
+
+                    <span class="kw">let</span> ai <span class="op">=</span> r <span class="op">+</span> <span class="fl">0.5</span><span class="op">;</span>
+                    <span class="kw">let</span> bi <span class="op">=</span> R <span class="op">-</span> r <span class="op">+</span> <span class="fl">0.5</span><span class="op">;</span>
+                    <span class="kw">let</span> ci <span class="op">=</span> n <span class="op">-</span> r <span class="op">+</span> <span class="fl">0.5</span><span class="op">;</span>
+                    <span class="kw">let</span> di <span class="op">=</span> N <span class="op">-</span> n <span class="op">-</span> R <span class="op">+</span> r <span class="op">+</span> <span class="fl">0.5</span><span class="op">;</span>
+                    <span class="kw">let</span> ei <span class="op">=</span> bi <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> : ai / bi<span class="op">;</span>
+                    <span class="kw">let</span> fi <span class="op">=</span> di <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> : ci / di<span class="op">;</span>
+                    <span class="kw">let</span> gi <span class="op">=</span> fi <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> : ei / fi<span class="op">;</span>
+
+                    <span class="kw">let</span> hi <span class="op">=</span> (k1 <span class="op">+</span> <span class="dv">1</span>) <span class="op">*</span> f<span class="op">;</span>
+                    <span class="kw">let</span> ii <span class="op">=</span> K <span class="op">+</span> f<span class="op">;</span>
+                    <span class="kw">let</span> ji <span class="op">=</span> ii <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> : hi / ii<span class="op">;</span>
+
+                    <span class="kw">let</span> ki <span class="op">=</span> (k2 <span class="op">+</span> <span class="dv">1</span>) <span class="op">*</span> qf<span class="op">;</span>
+                    <span class="kw">let</span> li <span class="op">=</span> k2 <span class="op">+</span> qf<span class="op">;</span>
+                    <span class="kw">let</span> mi <span class="op">=</span> li <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> : ki / li<span class="op">;</span>
+
+                    <span class="cf">return</span> acc <span class="op">+</span> (<span class="va">Math</span>.<span class="at">log</span>(gi) <span class="op">*</span> ji <span class="op">*</span> mi)<span class="op">;</span>
+                  <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+                <span class="op">,</span> <span class="dv">0</span>
+              )<span class="op">;</span>
+            <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
+          )<span class="op">;</span>
+        <span class="op">}</span>
+      <span class="op">,</span> <span class="dt">tfIdfVsmRankedDocs</span><span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+          <span class="cf">return</span> <span class="kw">this</span>.<span class="at">rankScoredDocs</span>(<span class="kw">this</span>.<span class="at">cosineSimilarities</span>)<span class="op">;</span>
+        <span class="op">}</span>
+      <span class="op">,</span> <span class="dt">bm25RankedDocs</span><span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
+          <span class="cf">return</span> <span class="kw">this</span>.<span class="at">rankScoredDocs</span>(<span class="kw">this</span>.<span class="at">bm25Scores</span>)<span class="op">;</span>
+        <span class="op">}</span>
+    <span class="op">}</span>
+<span class="op">}</span>)<span class="op">;</span></code></pre></div>
+<h3 id="index.html">index.html</h3>
+<div class="sourceCode"><pre class="sourceCode html"><code class="sourceCode html"><span class="dt">&lt;!DOCTYPE </span>HTML<span class="dt">&gt;</span>
+<span class="co">&lt;!--</span>
+<span class="co">  David Lettier (C) 2016.</span>
+<span class="co">  http://www.lettier.com</span>
+<span class="co">--&gt;</span>
+<span class="kw">&lt;html</span><span class="ot"> lang=</span><span class="st">&quot;en&quot;</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;head&gt;</span>
+    <span class="kw">&lt;meta</span><span class="ot"> charset=</span><span class="st">&quot;UTF-8&quot;</span><span class="kw">&gt;</span>
+    <span class="kw">&lt;meta</span><span class="ot"> name=</span><span class="st">&quot;description&quot;</span><span class="ot"> content=</span><span class="st">&quot;JavaScript search engine that compares TF-IDF VSM and BM25.&quot;</span><span class="kw">&gt;</span>
+    <span class="kw">&lt;meta</span><span class="ot"> name=</span><span class="st">&quot;keywords&quot;</span><span class="ot"> content=</span><span class="st">&quot;javascript,tf,idf,bm25,okapi,lettier,david&quot;</span><span class="kw">&gt;</span>
+    <span class="kw">&lt;meta</span><span class="ot"> name=</span><span class="st">&quot;author&quot;</span><span class="ot"> content=</span><span class="st">&quot;David Lettier&quot;</span><span class="kw">&gt;</span>
+    <span class="kw">&lt;title&gt;</span>Search Engine: TF-IDF VSM versus BM25 | Lettier.com<span class="kw">&lt;/title&gt;</span>
+    <span class="kw">&lt;link</span><span class="ot"> rel=</span><span class="st">&quot;stylesheet&quot;</span><span class="ot"> type=</span><span class="st">&quot;text/css&quot;</span><span class="ot"> href=</span><span class="st">&quot;index.css&quot;</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;/head&gt;</span>
+  <span class="kw">&lt;body&gt;</span>
+    <span class="kw">&lt;div</span><span class="ot"> id=</span><span class="st">&quot;app&quot;</span><span class="kw">&gt;</span>
+      <span class="kw">&lt;h1&gt;</span>Search Engine: TF-IDF VSM versus BM25<span class="kw">&lt;/h1&gt;</span>
+      <span class="kw">&lt;h2&gt;</span>Docs<span class="kw">&lt;/h2&gt;</span>
+      <span class="kw">&lt;ul&gt;</span>
+        <span class="kw">&lt;li</span><span class="ot"> v-for=</span><span class="st">&quot;(doc, index) in docs&quot;</span><span class="kw">&gt;</span>
+          <span class="kw">&lt;b&gt;</span>Doc {{index + 1}}:<span class="kw">&lt;/b&gt;</span> <span class="kw">&lt;input</span><span class="ot"> placeholder=</span><span class="st">&quot;Input a document.&quot;</span><span class="ot"> v-bind:id=</span><span class="st">&quot;doc.id&quot;</span><span class="ot"> v-model=</span><span class="st">&quot;doc.text&quot;</span><span class="kw">&gt;</span>
+          <span class="kw">&lt;button</span><span class="ot"> class=</span><span class="st">&quot;removeDocButton&quot;</span><span class="ot"> v-on:click=</span><span class="st">&quot;removeDoc&quot;</span><span class="ot"> v-bind:docId=</span><span class="st">&quot;doc.id&quot;</span><span class="ot"> title=</span><span class="st">&quot;Remove Doc&quot;</span><span class="kw">&gt;</span>-<span class="kw">&lt;/button&gt;</span>
+        <span class="kw">&lt;/li&gt;</span>
+        <span class="kw">&lt;button</span><span class="ot"> class=</span><span class="st">&quot;addDocButton&quot;</span><span class="ot"> v-on:click=</span><span class="st">&quot;addDoc&quot;</span><span class="ot"> title=</span><span class="st">&quot;Add Doc&quot;</span><span class="kw">&gt;</span>+<span class="kw">&lt;/button&gt;</span>
+      <span class="kw">&lt;/ul&gt;</span>
+      <span class="kw">&lt;ul&gt;</span>
+        <span class="kw">&lt;li&gt;&lt;b&gt;</span>Query:<span class="kw">&lt;/b&gt;</span> <span class="kw">&lt;input</span><span class="ot"> placeholder=</span><span class="st">&quot;Input a query.&quot;</span><span class="ot"> v-model=</span><span class="st">&quot;query&quot;</span><span class="kw">&gt;&lt;/li&gt;</span>
+      <span class="kw">&lt;/ul&gt;</span>
+      <span class="kw">&lt;template</span><span class="ot"> v-if=</span><span class="st">&quot;docs.length&quot;</span><span class="kw">&gt;</span>
+        <span class="kw">&lt;template</span><span class="ot"> v-if=</span><span class="st">&quot;queryTokens.length&quot;</span><span class="kw">&gt;</span>
+          <span class="kw">&lt;template</span><span class="ot"> v-if=</span><span class="st">&quot;tfIdfVsmRankedDocs.length&quot;</span><span class="kw">&gt;</span>
+            <span class="kw">&lt;h2&gt;</span>Docs Ranked by TF-IDF VSM<span class="kw">&lt;/h2&gt;</span>
+            <span class="kw">&lt;ul&gt;</span>
+              <span class="kw">&lt;template</span><span class="ot"> v-for=</span><span class="st">&quot;tfIdfRankedDoc in tfIdfVsmRankedDocs&quot;</span><span class="kw">&gt;</span>
+                <span class="kw">&lt;li&gt;&lt;b&gt;</span>Doc {{tfIdfRankedDoc.index + 1}}:<span class="kw">&lt;/b&gt;</span> {{tfIdfRankedDoc.text}}<span class="kw">&lt;/li&gt;</span>
+              <span class="kw">&lt;/template&gt;</span>
+            <span class="kw">&lt;/ul&gt;</span>
+          <span class="kw">&lt;/template&gt;</span>
+          <span class="kw">&lt;template</span><span class="ot"> v-if=</span><span class="st">&quot;bm25RankedDocs.length&quot;</span><span class="kw">&gt;</span>
+            <span class="kw">&lt;h2&gt;</span>Docs Ranked by BM25<span class="kw">&lt;/h2&gt;</span>
+            <span class="kw">&lt;ul&gt;</span>
+              <span class="kw">&lt;template</span><span class="ot"> v-for=</span><span class="st">&quot;bm25RankedDoc in bm25RankedDocs&quot;</span><span class="kw">&gt;</span>
+                <span class="kw">&lt;li&gt;&lt;b&gt;</span>Doc {{bm25RankedDoc.index + 1}}:<span class="kw">&lt;/b&gt;</span> {{bm25RankedDoc.text}}<span class="kw">&lt;/li&gt;</span>
+              <span class="kw">&lt;/template&gt;</span>
+            <span class="kw">&lt;/ul&gt;</span>
+          <span class="kw">&lt;/template&gt;</span>
+          <span class="kw">&lt;template</span><span class="ot"> v-if=</span><span class="st">&quot;cosineSimilarities.length&quot;</span><span class="kw">&gt;</span>
+            <span class="kw">&lt;h2&gt;</span>TF-IDF Cosine Similarity Scores<span class="kw">&lt;/h2&gt;</span>
+            <span class="kw">&lt;ul&gt;</span>
+              <span class="kw">&lt;template</span><span class="ot"> v-for=</span><span class="st">&quot;(cosineSimilarity, index) in cosineSimilarities&quot;</span><span class="kw">&gt;</span>
+                <span class="kw">&lt;li&gt;&lt;b&gt;</span>Doc {{index + 1}}:<span class="kw">&lt;/b&gt;</span> {{cosineSimilarity.toFixed(2)}}<span class="kw">&lt;/li&gt;</span>
+              <span class="kw">&lt;/template&gt;</span>
+            <span class="kw">&lt;/ol&gt;</span>
+          <span class="kw">&lt;/template&gt;</span>
+          <span class="kw">&lt;template</span><span class="ot"> v-if=</span><span class="st">&quot;bm25Scores.length&quot;</span><span class="kw">&gt;</span>
+            <span class="kw">&lt;h2&gt;</span>BM25 Scores<span class="kw">&lt;/h2&gt;</span>
+            <span class="kw">&lt;ul&gt;</span>
+              <span class="kw">&lt;template</span><span class="ot"> v-for=</span><span class="st">&quot;(bm25Score, index) in bm25Scores&quot;</span><span class="kw">&gt;</span>
+                <span class="kw">&lt;li&gt;&lt;b&gt;</span>Doc {{index + 1}}:<span class="kw">&lt;/b&gt;</span> {{bm25Score.toFixed(2)}}<span class="kw">&lt;/li&gt;</span>
+              <span class="kw">&lt;/template&gt;</span>
+            <span class="kw">&lt;/ul&gt;</span>
+          <span class="kw">&lt;/template&gt;</span>
+        <span class="kw">&lt;/template&gt;</span>
+        <span class="kw">&lt;template</span><span class="ot"> v-if=</span><span class="st">&quot;docsVectors.length </span><span class="er">&amp;&amp;</span><span class="st"> dictionary.length&quot;</span><span class="kw">&gt;</span>
+          <span class="kw">&lt;h2&gt;</span>Document by Token Matrix<span class="kw">&lt;/h2&gt;</span>
+          <span class="kw">&lt;div</span><span class="ot"> class=</span><span class="st">&quot;matrixContainer&quot;</span><span class="kw">&gt;</span>
+            <span class="kw">&lt;table&gt;</span>
+              <span class="kw">&lt;tr&gt;</span>
+                <span class="kw">&lt;td&gt;&lt;/td&gt;</span>
+                <span class="kw">&lt;td&gt;</span>
+                  <span class="kw">&lt;b&gt;</span>Token<span class="kw">&lt;/b&gt;</span>
+                <span class="kw">&lt;/td&gt;</span>
+                <span class="kw">&lt;template</span><span class="ot"> v-for=</span><span class="st">&quot;word in dictionary&quot;</span><span class="kw">&gt;</span>
+                  <span class="kw">&lt;th</span><span class="ot"> class=</span><span class="st">&quot;token&quot;</span><span class="kw">&gt;</span>{{word}}<span class="kw">&lt;/th&gt;</span>
+                <span class="kw">&lt;/template&gt;</span>
+              <span class="kw">&lt;/tr&gt;</span>
+              <span class="kw">&lt;template</span><span class="ot"> v-for=</span><span class="st">&quot;(docVector, index) in docsVectors&quot;</span><span class="kw">&gt;</span>
+                <span class="kw">&lt;tr&gt;</span>
+                  <span class="kw">&lt;td</span><span class="ot"> rowspan=</span><span class="st">&quot;5&quot;</span><span class="kw">&gt;</span>
+                    <span class="kw">&lt;b&gt;</span>Doc {{index + 1}}<span class="kw">&lt;/b&gt;</span>
+                  <span class="kw">&lt;/td&gt;</span>
+                <span class="kw">&lt;/tr&gt;</span>
+                <span class="kw">&lt;tr&gt;</span>
+                  <span class="kw">&lt;td&gt;&lt;b&gt;</span>Count<span class="kw">&lt;/b&gt;&lt;/td&gt;</span>
+                  <span class="kw">&lt;template</span><span class="ot"> v-for=</span><span class="st">&quot;count in docVector[0]&quot;</span><span class="kw">&gt;</span>
+                    <span class="kw">&lt;td</span><span class="ot"> class=</span><span class="st">&quot;count&quot;</span><span class="kw">&gt;</span>{{count}}<span class="kw">&lt;/td&gt;</span>
+                  <span class="kw">&lt;/template&gt;</span>
+                <span class="kw">&lt;/tr&gt;</span>
+                <span class="kw">&lt;tr&gt;</span>
+                  <span class="kw">&lt;td&gt;&lt;b&gt;</span>TF<span class="kw">&lt;/b&gt;&lt;/td&gt;</span>
+                  <span class="kw">&lt;template</span><span class="ot"> v-for=</span><span class="st">&quot;tf in docVector[1]&quot;</span><span class="kw">&gt;</span>
+                    <span class="kw">&lt;td</span><span class="ot"> class=</span><span class="st">&quot;tf&quot;</span><span class="kw">&gt;</span>{{tf.toFixed(2)}}<span class="kw">&lt;/td&gt;</span>
+                  <span class="kw">&lt;/template&gt;</span>
+                <span class="kw">&lt;/tr&gt;</span>
+                <span class="kw">&lt;tr&gt;</span>
+                  <span class="kw">&lt;td&gt;</span>
+                    <span class="kw">&lt;b&gt;</span>IDF<span class="kw">&lt;/b&gt;</span>
+                  <span class="kw">&lt;/td&gt;</span>
+                  <span class="kw">&lt;template</span><span class="ot"> v-for=</span><span class="st">&quot;idf in docVector[2]&quot;</span><span class="kw">&gt;</span>
+                    <span class="kw">&lt;td</span><span class="ot"> class=</span><span class="st">&quot;idf&quot;</span><span class="kw">&gt;</span>{{idf.toFixed(2)}}<span class="kw">&lt;/td&gt;</span>
+                  <span class="kw">&lt;/template&gt;</span>
+                <span class="kw">&lt;/tr&gt;</span>
+                <span class="kw">&lt;tr&gt;</span>
+                  <span class="kw">&lt;td&gt;</span>
+                    <span class="kw">&lt;b&gt;</span>TF-IDF<span class="kw">&lt;/b&gt;</span>
+                  <span class="kw">&lt;/td&gt;</span>
+                  <span class="kw">&lt;template</span><span class="ot"> v-for=</span><span class="st">&quot;tfIdf in docVector[3]&quot;</span><span class="kw">&gt;</span>
+                    <span class="kw">&lt;td</span><span class="ot"> class=</span><span class="st">&quot;tfIdf&quot;</span><span class="kw">&gt;</span>{{tfIdf.toFixed(2)}}<span class="kw">&lt;/td&gt;</span>
+                  <span class="kw">&lt;/template&gt;</span>
+                <span class="kw">&lt;/tr&gt;</span>
+                <span class="kw">&lt;tr&gt;</span>
+                  <span class="kw">&lt;template</span><span class="ot"> v-for=</span><span class="st">&quot;tfIdf in docVector[3]&quot;</span><span class="kw">&gt;</span>
+                    <span class="kw">&lt;td&gt;&lt;/td&gt;</span>
+                  <span class="kw">&lt;/template&gt;</span>
+                <span class="kw">&lt;/tr&gt;</span>
+                <span class="kw">&lt;tr&gt;</span>
+                  <span class="kw">&lt;template</span><span class="ot"> v-for=</span><span class="st">&quot;tfIdf in docVector[3]&quot;</span><span class="kw">&gt;</span>
+                    <span class="kw">&lt;td&gt;&lt;/td&gt;</span>
+                  <span class="kw">&lt;/template&gt;</span>
+                <span class="kw">&lt;/tr&gt;</span>
+              <span class="kw">&lt;/template&gt;</span>
+              <span class="kw">&lt;template</span><span class="ot"> v-if=</span><span class="st">&quot;queryTokens&quot;</span><span class="kw">&gt;</span>
+                <span class="kw">&lt;tr&gt;</span>
+                  <span class="kw">&lt;td</span><span class="ot"> rowspan=</span><span class="st">&quot;7&quot;</span><span class="kw">&gt;</span>
+                    <span class="kw">&lt;b&gt;</span>Query<span class="kw">&lt;/b&gt;</span><span class="dv">&amp;nbsp;</span>
+                  <span class="kw">&lt;/td&gt;</span>
+                <span class="kw">&lt;/tr&gt;</span>
+                <span class="kw">&lt;tr&gt;</span>
+                  <span class="kw">&lt;template</span><span class="ot"> v-for=</span><span class="st">&quot;count in queryCountVector&quot;</span><span class="kw">&gt;</span>
+                    <span class="kw">&lt;td&gt;&lt;/td&gt;</span>
+                  <span class="kw">&lt;/template&gt;</span>
+                <span class="kw">&lt;/tr&gt;</span>
+                <span class="kw">&lt;tr&gt;</span>
+                  <span class="kw">&lt;template</span><span class="ot"> v-for=</span><span class="st">&quot;count in queryCountVector&quot;</span><span class="kw">&gt;</span>
+                    <span class="kw">&lt;td&gt;&lt;/td&gt;</span>
+                  <span class="kw">&lt;/template&gt;</span>
+                <span class="kw">&lt;/tr&gt;</span>
+                <span class="kw">&lt;tr&gt;</span>
+                  <span class="kw">&lt;td&gt;&lt;b&gt;</span>Count<span class="kw">&lt;/b&gt;&lt;/td&gt;</span>
+                  <span class="kw">&lt;template</span><span class="ot"> v-for=</span><span class="st">&quot;count in queryCountVector&quot;</span><span class="kw">&gt;</span>
+                    <span class="kw">&lt;td</span><span class="ot"> class=</span><span class="st">&quot;count&quot;</span><span class="kw">&gt;</span>{{count}}<span class="kw">&lt;/td&gt;</span>
+                  <span class="kw">&lt;/template&gt;</span>
+                <span class="kw">&lt;/tr&gt;</span>
+                <span class="kw">&lt;tr&gt;</span>
+                  <span class="kw">&lt;td&gt;&lt;b&gt;</span>TF<span class="kw">&lt;/b&gt;&lt;/td&gt;</span>
+                  <span class="kw">&lt;template</span><span class="ot"> v-for=</span><span class="st">&quot;tf in queryTfVector&quot;</span><span class="kw">&gt;</span>
+                    <span class="kw">&lt;td</span><span class="ot"> class=</span><span class="st">&quot;tf&quot;</span><span class="kw">&gt;</span>{{tf.toFixed(2)}}<span class="kw">&lt;/td&gt;</span>
+                  <span class="kw">&lt;/template&gt;</span>
+                <span class="kw">&lt;/tr&gt;</span>
+                <span class="kw">&lt;tr&gt;</span>
+                  <span class="kw">&lt;td&gt;&lt;b&gt;</span>IDF<span class="kw">&lt;/b&gt;&lt;/td&gt;</span>
+                  <span class="kw">&lt;template</span><span class="ot"> v-for=</span><span class="st">&quot;idf in queryIdfVector&quot;</span><span class="kw">&gt;</span>
+                    <span class="kw">&lt;td</span><span class="ot"> class=</span><span class="st">&quot;idf&quot;</span><span class="kw">&gt;</span>{{idf.toFixed(2)}}<span class="kw">&lt;/td&gt;</span>
+                  <span class="kw">&lt;/template&gt;</span>
+                <span class="kw">&lt;/tr&gt;</span>
+                <span class="kw">&lt;tr&gt;</span>
+                  <span class="kw">&lt;td&gt;&lt;b&gt;</span>TF-IDF<span class="kw">&lt;/b&gt;</span><span class="dv">&amp;nbsp;</span><span class="kw">&lt;/td&gt;</span>
+                  <span class="kw">&lt;template</span><span class="ot"> v-for=</span><span class="st">&quot;tfIdf in queryTfIdfVector&quot;</span><span class="kw">&gt;</span>
+                    <span class="kw">&lt;td</span><span class="ot"> class=</span><span class="st">&quot;tfIdf&quot;</span><span class="kw">&gt;</span>{{tfIdf.toFixed(2)}}<span class="kw">&lt;/td&gt;</span>
+                  <span class="kw">&lt;/template&gt;</span>
+                <span class="kw">&lt;/tr&gt;</span>
+              <span class="kw">&lt;/template&gt;</span>
+            <span class="kw">&lt;/table&gt;</span>
+          <span class="kw">&lt;/div&gt;</span>
+          <span class="kw">&lt;div</span><span class="ot"> class=</span><span class="st">&quot;matrixContainerSpacer&quot;</span><span class="kw">&gt;</span><span class="dv">&amp;nbsp;</span><span class="kw">&lt;/div&gt;</span>
+        <span class="kw">&lt;/template&gt;</span>
+      <span class="kw">&lt;/template&gt;</span>
+      <span class="kw">&lt;div</span><span class="ot"> id=</span><span class="st">&quot;logoContainer&quot;</span><span class="kw">&gt;</span>
+        <span class="kw">&lt;a</span><span class="ot"> href=</span><span class="st">&quot;#&quot;</span><span class="ot"> onclick=</span><span class="st">&quot;window.open('http://www.lettier.com/')&quot;</span><span class="ot"> title=</span><span class="st">&quot;Lettier&quot;</span><span class="kw">&gt;</span>
+          <span class="kw">&lt;img</span><span class="ot"> id=</span><span class="st">&quot;logo&quot;</span><span class="ot"> src=</span><span class="st">&quot;logo.png&quot;</span><span class="ot"> width=</span><span class="st">&quot;250&quot;</span><span class="ot"> height=</span><span class="st">&quot;250&quot;</span><span class="ot"> alt=</span><span class="st">&quot;Lettier&quot;</span><span class="kw">&gt;</span>
+        <span class="kw">&lt;/a&gt;</span>
+      <span class="kw">&lt;/div&gt;</span>
+    <span class="kw">&lt;/div&gt;</span>
+    <span class="kw">&lt;script</span><span class="ot"> src=</span><span class="st">&quot;vue.js&quot;</span><span class="kw">&gt;&lt;/script&gt;</span>
+    <span class="kw">&lt;script</span><span class="ot"> src=</span><span class="st">&quot;index.js&quot;</span><span class="kw">&gt;&lt;/script&gt;</span>
+  <span class="kw">&lt;/body&gt;</span>
+<span class="kw">&lt;/html&gt;</span></code></pre></div>
+<h3 id="index.css">index.css</h3>
+<div class="sourceCode"><pre class="sourceCode css"><code class="sourceCode css"><span class="co">/*</span>
+<span class="co">  David Lettier (C) 2016.</span>
+<span class="co">  http://www.lettier.com/</span>
+<span class="co">*/</span>
+html <span class="kw">{</span>
+  <span class="kw">height:</span> <span class="dt">100%</span><span class="kw">;</span>
+  <span class="kw">width:</span> <span class="dt">100%</span><span class="kw">;</span>
+<span class="kw">}</span>
+body <span class="kw">{</span>
+  <span class="kw">font-family:</span> <span class="st">'Open Sans'</span>, Helvetica, Arial, <span class="dt">sans-serif</span><span class="kw">;</span>
+  <span class="kw">background-color:</span> <span class="dt">#596572</span><span class="kw">;</span>
+  <span class="kw">color:</span> whitesmoke<span class="kw">;</span>
+  <span class="kw">height:</span> <span class="dt">100%</span><span class="kw">;</span>
+  <span class="kw">margin:</span> <span class="dt">0px</span><span class="kw">;</span>
+  <span class="kw">margin-left:</span> <span class="dt">5px</span><span class="kw">;</span>
+  <span class="kw">margin-right:</span> <span class="dt">5px</span><span class="kw">;</span>
+  <span class="kw">padding:</span> <span class="dt">0px</span><span class="kw">;</span>
+<span class="kw">}</span>
+h1 <span class="kw">{</span>
+  <span class="kw">margin-top:</span> <span class="dt">0px</span><span class="kw">;</span>
+<span class="kw">}</span>
+table <span class="kw">{</span>
+  <span class="kw">white-space:</span> <span class="dt">nowrap</span><span class="kw">;</span>
+<span class="kw">}</span>
+li <span class="kw">{</span>
+  <span class="kw">list-style:</span> <span class="dt">none</span><span class="kw">;</span>
+<span class="kw">}</span>
+th, td <span class="kw">{</span>
+  <span class="kw">text-align:</span> <span class="dt">center</span><span class="kw">;</span>
+<span class="kw">}</span>
+input <span class="kw">{</span>
+  <span class="kw">width:</span> <span class="dt">400px</span><span class="kw">;</span>
+  <span class="kw">height:</span> <span class="dt">30px</span><span class="kw">;</span>
+  <span class="kw">margin:</span> <span class="dt">1px</span><span class="kw">;</span>
+  <span class="kw">padding-left:</span> <span class="dt">5px</span><span class="kw">;</span>
+  <span class="kw">padding-right:</span> <span class="dt">5px</span><span class="kw">;</span>
+  <span class="kw">background-color:</span> lightslategrey<span class="kw">;</span>
+  <span class="kw">border:</span> <span class="dt">none</span><span class="kw">;</span>
+  <span class="kw">outline:</span> <span class="dt">none</span><span class="kw">;</span>
+  <span class="kw">box-shadow:</span> <span class="dt">0px</span> <span class="dt">1px</span> <span class="dt">1px</span> darkslategrey<span class="kw">;</span>
+  <span class="kw">color:</span> <span class="dt">white</span><span class="kw">;</span>
+<span class="kw">}</span>
+button <span class="kw">{</span>
+  <span class="kw">border:</span> <span class="dt">none</span><span class="kw">;</span>
+  <span class="kw">font-size:</span> <span class="dt">20px</span><span class="kw">;</span>
+  <span class="kw">font-weight:</span> <span class="dt">bold</span><span class="kw">;</span>
+  <span class="kw">width:</span>  <span class="dt">32px</span><span class="kw">;</span>
+  <span class="kw">height:</span> <span class="dt">32px</span><span class="kw">;</span>
+  <span class="kw">margin:</span> <span class="dt">1px</span><span class="kw">;</span>
+  <span class="kw">outline:</span> <span class="dt">none</span><span class="kw">;</span>
+  <span class="kw">box-shadow:</span> <span class="dt">0px</span> <span class="dt">1px</span> <span class="dt">1px</span> darkslategrey<span class="kw">;</span>
+  <span class="kw">vertical-align:</span> <span class="dt">bottom</span><span class="kw">;</span>
+<span class="kw">}</span>
+<span class="fl">.addDocButton</span> <span class="kw">{</span>
+  <span class="kw">background-color:</span> dodgerblue<span class="kw">;</span>
+  <span class="kw">color:</span> whitesmoke<span class="kw">;</span>
+<span class="kw">}</span>
+<span class="fl">.removeDocButton</span> <span class="kw">{</span>
+  <span class="kw">background-color:</span> <span class="dt">#ff5757</span><span class="kw">;</span>
+  <span class="kw">color:</span> whitesmoke<span class="kw">;</span>
+<span class="kw">}</span>
+<span class="fl">.token</span> <span class="kw">{</span>
+  <span class="kw">background-color:</span> lightgrey<span class="kw">;</span>
+  <span class="kw">box-shadow:</span> <span class="dt">0px</span> <span class="dt">1px</span> <span class="dt">1px</span> darkslategrey<span class="kw">;</span>
+  <span class="kw">color:</span> darkslategrey<span class="kw">;</span>
+<span class="kw">}</span>
+<span class="fl">.count</span> <span class="kw">{</span>
+  <span class="kw">background-color:</span> plum<span class="kw">;</span>
+  <span class="kw">box-shadow:</span> <span class="dt">0px</span> <span class="dt">1px</span> <span class="dt">1px</span> darkslategrey<span class="kw">;</span>
+  <span class="kw">color:</span> darkslategrey<span class="kw">;</span>
+<span class="kw">}</span>
+<span class="fl">.tf</span> <span class="kw">{</span>
+  <span class="kw">background-color:</span> lightblue<span class="kw">;</span>
+  <span class="kw">box-shadow:</span> <span class="dt">0px</span> <span class="dt">1px</span> <span class="dt">1px</span> darkslategrey<span class="kw">;</span>
+  <span class="kw">color:</span> darkslategrey<span class="kw">;</span>
+<span class="kw">}</span>
+<span class="fl">.idf</span> <span class="kw">{</span>
+  <span class="kw">background-color:</span> lightgreen<span class="kw">;</span>
+  <span class="kw">box-shadow:</span> <span class="dt">0px</span> <span class="dt">1px</span> <span class="dt">1px</span> darkslategrey<span class="kw">;</span>
+  <span class="kw">color:</span> darkslategrey<span class="kw">;</span>
+<span class="kw">}</span>
+<span class="fl">.tfIdf</span> <span class="kw">{</span>
+  <span class="kw">background-color:</span> lightpink<span class="kw">;</span>
+  <span class="kw">box-shadow:</span> <span class="dt">0px</span> <span class="dt">1px</span> <span class="dt">1px</span> darkslategrey<span class="kw">;</span>
+  <span class="kw">color:</span> darkslategrey<span class="kw">;</span>
+<span class="kw">}</span>
+<span class="fl">.matrixContainer</span> <span class="kw">{</span>
+  <span class="kw">overflow:</span> <span class="dt">auto</span><span class="kw">;</span>
+  <span class="kw">width:</span> <span class="dt">100%</span><span class="kw">;</span>
+<span class="kw">}</span>
+<span class="fl">.matrixContainerSpacer</span> <span class="kw">{</span>
+  <span class="kw">padding-bottom:</span> <span class="dt">100px</span><span class="kw">;</span>
+<span class="kw">}</span>
+<span class="fl">#app</span> <span class="kw">{</span>
+  <span class="kw">position:</span> <span class="dt">relative</span><span class="kw">;</span>
+  <span class="kw">min-height:</span> <span class="dt">100%</span><span class="kw">;</span>
+<span class="kw">}</span>
+<span class="fl">#logoContainer</span> <span class="kw">{</span>
+  <span class="kw">width:</span> <span class="dt">100%</span><span class="kw">;</span>
+  <span class="kw">text-align:</span> <span class="dt">right</span><span class="kw">;</span>
+  <span class="kw">position:</span> <span class="dt">absolute</span><span class="kw">;</span>
+  <span class="kw">bottom:</span> <span class="dt">0px</span><span class="kw">;</span>
+  <span class="kw">padding-right:</span> <span class="dt">5px</span><span class="kw">;</span>
+<span class="kw">}</span>
+<span class="fl">#logo</span> <span class="kw">{</span>
+  <span class="kw">width:</span> <span class="dt">100px</span><span class="kw">;</span>
+  <span class="kw">height:</span> <span class="dt">100px</span><span class="kw">;</span>
+<span class="kw">}</span>
+<span class="dv">::</span>-webkit-input-placeholder <span class="kw">{</span>
+  <span class="kw">color:</span> <span class="dt">#c6e2ff</span><span class="kw">;</span>
+<span class="kw">}</span>
+<span class="dv">::</span>-moz-placeholder <span class="kw">{</span>
+  <span class="kw">color:</span> <span class="dt">#c6e2ff</span><span class="kw">;</span>
+<span class="kw">}</span>
+<span class="dv">:</span>-ms-input-placeholder <span class="kw">{</span>
+  <span class="kw">color:</span> <span class="dt">#c6e2ff</span><span class="kw">;</span>
+<span class="kw">}</span>
+<span class="dv">:</span>-moz-placeholder <span class="kw">{</span>
+  <span class="kw">color:</span> <span class="dt">#c6e2ff</span><span class="kw">;</span>
+<span class="kw">}</span></code></pre></div>
+</div>
+<div class="post-footer">
+  <div class="display-left">
+    <h2 class="post-footer-cta">
+      Hi there!
+      <a href="../" title="Home">Browse</a>
+      and subscribe to the
+      <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
+      for more content.
+    </h2>
+  </div>
+  <div class="display-right text-align-right post-footer-copyright">
+    <h4>
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2017</span> David Lettier
+    </h4>
+  </div>
+</div>
+
+    </div>
+    <div class="share-toolbox addthis_sharing_toolbox"></div>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4fc2bc7a00a9352b"></script>
+    <script>
+      (function(i,s,o,g,r,a,m){
+        i.GoogleAnalyticsObject = r;
+        i[r] = i[r] || function () { (i[r].q = i[r].q || []).push(arguments); };
+        i[r].l=1*new Date();
+        a=s.createElement(o);
+        m=s.getElementsByTagName(o)[0];
+        a.async=1;
+        a.src=g;
+        m.parentNode.insertBefore(a,m);
+      })(
+        window,
+        document,
+        'script',
+        '//www.google-analytics.com/analytics.js',
+        'ga'
+      );
+      ga('create', 'UA-34323684-2', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </body>
+</html>

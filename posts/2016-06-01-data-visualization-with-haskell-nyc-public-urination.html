@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta property="og:site_name" content="Lettier">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="How to Visualize Data with Haskell by David Lettier">
+    <meta property="og:image" content="https://lettier.github.io/images/2016-06-01-data-visualization-with-haskell/jumbotron_image.jpg">
+    <meta property="og:url" content="https://lettier.github.io/posts/2016-06-01-data-visualization-with-haskell-nyc-public-urination.html">
+    <meta property="og:description" content="Using Haskell, we collect, process, and plot NYC 311 complaints.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="David Lettier">
+    <meta name="description" content="Using Haskell, we collect, process, and plot NYC 311 complaints.">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/pandoc.css">
+    <link rel="stylesheet" type="text/css" href="../css/default.css">
+    <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
+    
+      
+        <title>How to Visualize Data with Haskell by David Lettier</title>
+      
+    
+  </head>
+  <body>
+    <div id="top"></div>
+    <div class="nav-bar-container nav-bar-background">
+      <div class="nav-bar-buttons-container">
+        <a href="../" title="Home">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-home nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="../rss.xml" title="RSS" type="application/rss+xml" target="_blank">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-rss nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="http://www.lettier.com/" title="Lettier.com">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <img src="../images/logo.svg" width="30" height="30" alt="Lettier.com" class="lettier-icon-img">
+            </div>
+          </div>
+        </a>
+        <a href="https://www.github.com/lettier" title="GitHub">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-github nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.linkedin.com/in/lettier" title="LinkedIn">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-linkedin nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.hackerrank.com/lettier" title="HackerRank">
+          <div class="nav-bar-button-container nav-button-container-second-last">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-trophy nav-bar-icon nav-bar-icon-second-last"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.behance.net/dlettier" title="Behance">
+          <div class="nav-bar-button-container nav-bar-button-container-last">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-behance nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="jumbotron">
+      <div class="absolute-top jumbotron jumbotron-background-image" style="background-image: url('/images/2016-06-01-data-visualization-with-haskell/jumbotron_image.jpg');">
+      </div>
+    </div>
+    <div class="container jumbotron-text-position-container">
+      <div class="jumbotron-text-width-container">
+        <h1 class="jumbotron-text jumbotron-text-background">
+          
+            How to Visualize Data with Haskell
+          
+          <span class="title-cursor">|</span>
+        </h1>
+      </div>
+    </div>
+    <div class="container content-container">
+      <div class="post-body">
+  <!--https://pixabay.com/en/new-york-map-new-york-city-945240/-->
+<h1 id="complaints">311 Complaints</h1>
+<p>Found among NYC’s <a href="https://nycopendata.socrata.com/">OpenData</a> is the <i>311 service requests from 2010 to present</i> <a href="https://nycopendata.socrata.com/Social-Services/311-Service-Requests-from-2010-to-Present/erm2-nwe9">data set</a>.</p>
+<blockquote>
+In New York City, 311 is used by city officials as one of several sources of measurement and information about the performance of city services. Important dates in the history of New York’s 311 service include December 20, 2005, when it received its record high of 240,000 calls, due to the first day of the 2005 New York City transit strike, and June 20, 2007, when it received its 50 millionth call.
+<footer>
+<a href="https://en.wikipedia.org/wiki/3-1-1">3-1-1, Wikipedia</a>
+</footer>
+</blockquote>
+<p>This data set contains a varied amount of complaint types ranging from <i>Blocked Driveway</i> to <i>Noise - Residential</i>. Using the <a href="https://dev.socrata.com/docs/endpoints.html">SODA API</a> we will collect 2,678 public complaints created between <code>2010-01-01T04:49:33</code> and <code>2016-05-29T18:22:54</code>.</p>
+<h1 id="over-time">Over Time</h1>
+<p>One way to analyze the data is to chart/plot the complaints as they occurred over time. To do this, we will be using the <a href="https://github.com/timbod7/haskell-chart/wiki">Haskell Chart</a> library.</p>
+<h2 id="bucketed-by-the-day">Bucketed by the Day</h2>
+<p>For the first chart we will bucket the <code>created_date</code>s by the day such that if we had <code>2010-01-01T04:49:33</code> and <code>2010-01-01T08:32:12</code> they would both fall into the <code>2010-01-01T00:00:00</code> bucket. With every complaint bucketed, we will count up the amount of complaints in each day bucket. These counts will then be charted over time.</p>
+<h2 id="line-chart">Line Chart</h2>
+<p>We will visualize the day buckets using a line chart.</p>
+<div class="figure">
+<img src="../images/2016-06-01-data-visualization-with-haskell/createdDatesCounts_day.png" class="post-img post-img-small post-img-limit" />
+
+</div>
+<p>Immediately you can see a large spike around September in the late summer of 2015. With the exception of 2011, you can see similar late summer spikes for 2010, 12, 13, and 14. There are also large falloffs occurring at the end and beginning of each year during the winter months.</p>
+<h2 id="bucketed-by-the-month">Bucketed by the Month</h2>
+<p>To add some clarity, we will now bucket the complaints by month. We will bucket them in such a way that if we had <code>2010-01-13T04:49:33</code> and <code>2010-01-18T08:32:12</code> they would both fall into the <code>2010-01-01T00:00:00</code> bucket. In other words, each event per year and month will fall on the first of its month.</p>
+<h3 id="line-chart-1">Line Chart</h3>
+<div class="figure">
+<img src="../images/2016-06-01-data-visualization-with-haskell/createdDatesCounts_month.png" class="post-img post-img-small post-img-limit" />
+
+</div>
+<p>You can see the line follows the same overall shape as the line chart bucketed by day. The counts are higher since all events that occurred in any particular month are now reported in aggregate for that month. By bucketing each complaint by the month it occurred in, we can more clearly see the spikes. Notice that the same late summer spikes are still present. 2011 breaks the pattern with it spiking earlier in the year with a smaller spike occurring later.</p>
+<div class="figure">
+<img src="../images/2016-06-01-data-visualization-with-haskell/createdDatesCounts_month_day.png" class="post-img post-img-small post-img-limit" />
+
+</div>
+<p>Here we see both the bucketed by day and month charted together.</p>
+<h3 id="bar-chart">Bar Chart</h3>
+<p>Alternatively, we can truncate the <code>created_date</code> time stamps to <code>YYYY-MM</code> and bucket each complaint by their truncated dates. For these buckets, we will use a bar chart. Since we will be sorting the buckets numerically by their year-month labels, we can view the bar chart as a histogram (the labels are quantitative vs categorical).</p>
+<div class="figure">
+<img src="../images/2016-06-01-data-visualization-with-haskell/yearMonthCounts.png" class="post-img post-img-small post-img-limit" />
+
+</div>
+<p>Again, we see the same spikes and falloffs.</p>
+<h1 id="by-borough">By Borough</h1>
+<p>Another way to visualize the data is to look at them by borough. New York City is made up of five boroughs.</p>
+<blockquote>
+New York City is often referred to collectively as the five boroughs; the term is used to refer to New York City as a whole unambiguously, avoiding confusion with any particular borough or with the Greater New York metropolitan area.
+<footer>
+<a href="https://en.wikipedia.org/wiki/Borough_(New_York_City)">Borough (New York City), Wikipedia</a>
+</footer>
+</blockquote>
+<h2 id="total-aggregate-count">Total Aggregate Count</h2>
+<p>We will go ahead and plot a bar chart where each category is a borough and its value is how many complaints were reported as belonging to that borough (over the ~6 year span).</p>
+<div class="figure">
+<img src="../images/2016-06-01-data-visualization-with-haskell/boroughsCounts.png" class="post-img post-img-small post-img-limit" />
+
+</div>
+<p>We can see that Manhattan had the most with Brooklyn, Queens, the Bronx, and Staten Island coming in at second, third, and four respectively.</p>
+<h2 id="borough-population-sizes">Borough Population Sizes</h2>
+<p>To make the borough counts more interesting we will also chart their population sizes. The U.S. Census Bureau <a href="http://www1.nyc.gov/site/planning/data-maps/nyc-population/current-future-populations.page">estimated</a> the 2015 population sizes as:</p>
+<ul>
+<li>Bronx <code>1,455,444</code></li>
+<li>Brooklyn <code>2,636,735</code></li>
+<li>Manhattan <code>1,644,518</code></li>
+<li>Queens <code>2,339,150</code></li>
+<li>Staten Island <code>474,558</code></li>
+</ul>
+<div class="figure">
+<img src="../images/2016-06-01-data-visualization-with-haskell/boroughsPopSizes.png" class="post-img post-img-small post-img-limit" />
+
+</div>
+<p>Looking at the bar chart we can see that the population size does not necessarily relate to the complaint count at least for Manhattan. Of course the population sizes are estimated for just 2015 while the complaint count is aggregated over a ~6 year period.</p>
+<h1 id="section">2015</h1>
+<p>With its interesting spike occurring late in the summer, we zero in on 2015.</p>
+<div class="figure">
+<img src="../images/2016-06-01-data-visualization-with-haskell/yearMonthCounts2015.png" class="post-img post-img-small post-img-limit" />
+
+</div>
+<p>We can see the large spike, that we saw before, occurring in September with just over 100 complaints recorded in a single month.</p>
+<div class="figure">
+<img src="../images/2016-06-01-data-visualization-with-haskell/boroughsCounts2015.png" class="post-img post-img-small post-img-limit" />
+
+</div>
+<p>The 2015 borough counts have roughly the same proportion as the borough counts aggregated across the whole six year span.</p>
+<div class="figure">
+<img src="../images/2016-06-01-data-visualization-with-haskell/boroughsPopSizes.png" class="post-img post-img-small post-img-limit" />
+
+</div>
+<p>Comparing the 2015 estimated population sizes against the 2015 complaint borough counts, we see that the relative population and complaint count proportions are not entirely related.</p>
+<h1 id="by-day-of-the-week">By Day of the Week</h1>
+<p>The last visualization is the complaint counts per the day of the week.</p>
+<h2 id="box-plot">Box Plot</h2>
+<p>Haskell Chart does not have an out-of-the-box solution for <a href="http://www.itl.nist.gov/div898/handbook/eda/section3/boxplot.htm">box plots</a>. However, we can re-purpose its candlestick chart interface. We will use the bucketed by day counts and for each day of the week, we will collect the counts–that fell on that day–in a list. Each day of the week will have its own list of counts–the counts found as we scan through the day buckets (Jan 1 2010, Jan 2 2010, …, May 28 2016, May 29, 2016, etc.) With the counts sorted, for each day of the week, we will calculate the min, lower quartile (25%), median (50%), upper quartile (75%), and the max.</p>
+<div class="figure">
+<img src="../images/2016-06-01-data-visualization-with-haskell/complaintCountsPerDayOfWeek.png" class="post-img post-img-small post-img-limit" />
+
+</div>
+<p>Sunday starts at <code>0</code> and the rest of the days of the week follow (Monday at <code>1</code>, Tuesday at <code>2</code>, etc.). We see that Tuesday and Wednesday have the largest “middle 50” ranging from zero to two. Thursday has a max of eight–the same eight seen in the September 2015 spike. All have a min of zero.</p>
+<h1 id="recap">Recap</h1>
+<p>Using Haskell, we queried, processed, and visualized 2,678 311 complaints recorded between 2010 and 2016. A definite cyclic pattern can be seen from year to year. Spikes occur in late summer and falloffs occur during fall and winter months. 2015 saw the largest spike in September with just over 100 recorded complaints. 2011 had a large spike in the early part of the year.</p>
+<h1 id="appendix">Appendix</h1>
+<p>Below you will find some supplementary material.</p>
+<h2 id="full-source-code">Full Source Code</h2>
+<p>The source is written in Haskell but heavily documents itself.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">{-</span>
+<span class="co">  David Lettier (C) 2016.</span>
+<span class="co">  http://www.lettier.com/</span>
+<span class="co">-}</span>
+
+<span class="ot">{-# LANGUAGE OverloadedStrings #-}</span>
+<span class="ot">{-# LANGUAGE DeriveGeneric #-}</span>
+
+<span class="kw">module</span> <span class="dt">Main</span> <span class="kw">where</span>
+
+<span class="kw">import </span><span class="dt">GHC.Generics</span>
+<span class="kw">import </span><span class="dt">System.Directory</span>
+<span class="kw">import </span><span class="dt">Network.Wreq</span>
+<span class="kw">import </span><span class="dt">Control.Lens</span>
+<span class="kw">import </span><span class="dt">Data.Fixed</span>
+<span class="kw">import </span><span class="dt">Data.Time</span>
+<span class="kw">import </span><span class="dt">Data.Dates</span>
+<span class="kw">import </span><span class="dt">Data.Hashable</span>
+<span class="kw">import </span><span class="dt">Data.Hashable.Time</span>
+<span class="kw">import qualified</span> <span class="dt">Data.List</span> <span class="kw">as</span> <span class="dt">DL</span>
+<span class="kw">import qualified</span> <span class="dt">Data.HashMap</span> <span class="kw">as</span> <span class="dt">DHM</span>
+<span class="kw">import qualified</span> <span class="dt">Data.ByteString.Lazy</span> <span class="kw">as</span> <span class="dt">DBSL</span>
+<span class="kw">import qualified</span> <span class="dt">Data.Sequence</span> <span class="kw">as</span> <span class="dt">DSeq</span>
+<span class="kw">import </span><span class="dt">Data.Aeson</span>
+<span class="kw">import </span><span class="dt">Data.Default.Class</span>
+<span class="kw">import </span><span class="dt">Data.Colour</span>
+<span class="kw">import </span><span class="dt">Data.Colour.Names</span>
+<span class="kw">import </span><span class="dt">Graphics.Rendering.Chart</span>
+<span class="kw">import </span><span class="dt">Graphics.Rendering.Chart.Backend.Cairo</span>
+
+<span class="co">-------------------------------------------------------------------------------</span>
+
+<span class="kw">data</span> <span class="dt">ComplaintEntry</span> <span class="fu">=</span>
+  <span class="dt">ComplaintEntry</span> {
+<span class="ot">      unique_key ::</span> <span class="dt">String</span>
+    ,<span class="ot"> created_date ::</span> <span class="dt">String</span>
+    ,<span class="ot"> complaint_type ::</span> <span class="dt">String</span>
+    ,<span class="ot"> borough ::</span> <span class="dt">String</span>
+    ,<span class="ot"> location_type ::</span> <span class="dt">Maybe</span> <span class="dt">String</span>
+    ,<span class="ot"> incident_address ::</span> <span class="dt">Maybe</span> <span class="dt">String</span>
+    ,<span class="ot"> incident_zip ::</span> <span class="dt">String</span>
+  } <span class="kw">deriving</span> (<span class="dt">Show</span>, <span class="dt">Generic</span>)
+
+<span class="kw">instance</span> <span class="dt">FromJSON</span> <span class="dt">ComplaintEntry</span> <span class="kw">where</span>
+  parseJSON (<span class="dt">Object</span> v) <span class="fu">=</span>
+    <span class="dt">ComplaintEntry</span>  <span class="fu">&lt;$&gt;</span> v <span class="fu">.:</span>  <span class="st">&quot;unique_key&quot;</span>
+                    <span class="fu">&lt;*&gt;</span> v <span class="fu">.:</span>  <span class="st">&quot;created_date&quot;</span>
+                    <span class="fu">&lt;*&gt;</span> v <span class="fu">.:</span>  <span class="st">&quot;complaint_type&quot;</span>
+                    <span class="fu">&lt;*&gt;</span> v <span class="fu">.:</span>  <span class="st">&quot;borough&quot;</span>
+                    <span class="fu">&lt;*&gt;</span> v <span class="fu">.:?</span> <span class="st">&quot;location_type&quot;</span>
+                    <span class="fu">&lt;*&gt;</span> v <span class="fu">.:?</span> <span class="st">&quot;incident_address&quot;</span>
+                    <span class="fu">&lt;*&gt;</span> v <span class="fu">.:</span>  <span class="st">&quot;incident_zip&quot;</span>
+
+<span class="kw">instance</span> <span class="dt">ToJSON</span> <span class="dt">ComplaintEntry</span>
+
+<span class="co">-------------------------------------------------------------------------------</span>
+
+<span class="ot">main ::</span> <span class="dt">IO</span> ()
+main <span class="fu">=</span> <span class="kw">do</span>
+  complaints <span class="ot">&lt;-</span> getComplaints
+  print <span class="fu">$</span> length complaints
+  print <span class="fu">$</span> minCreatedDate complaints
+  print <span class="fu">$</span> maxCreatedDate complaints
+  renderableToFile def <span class="st">&quot;./charts/complaintCountsPerDayOfWeek.png&quot;</span>  (chartDaysOfWeekComplaintCounts complaints)
+  renderableToFile def <span class="st">&quot;./charts/boroughsPopSizes.png&quot;</span>             (chartBoroughsPopSizes complaints)
+  renderableToFile def <span class="st">&quot;./charts/yearMonthCounts.png&quot;</span>              (chartComplaintsCountByYearMonth complaints)
+  renderableToFile def <span class="st">&quot;./charts/yearMonthCounts2015.png&quot;</span>          (chartComplaintsCountByYearMonth2015 complaints)
+  renderableToFile def <span class="st">&quot;./charts/boroughsCounts.png&quot;</span>               (chartComplaintsCountByBoroughs complaints)
+  renderableToFile def <span class="st">&quot;./charts/boroughsCounts2015.png&quot;</span>           (chartComplaintsCountByBoroughs2015 complaints)
+  renderableToFile def <span class="st">&quot;./charts/createdDatesCounts_month.png&quot;</span>     (chartComplaintsCountByCreatedDatesAtMonth complaints)
+  renderableToFile def <span class="st">&quot;./charts/createdDatesCounts_day.png&quot;</span>       (chartComplaintsCountByCreatedDatesAtDay complaints)
+  renderableToFile def <span class="st">&quot;./charts/createdDatesCounts_month_day.png&quot;</span> (chartComplaintsCountByCreatedDatesAtMonthDay complaints)
+  return ()
+
+<span class="co">-------------------------------------------------------------------------------</span>
+
+<span class="ot">complaintEntryMaybeValue ::</span> (<span class="dt">ComplaintEntry</span> <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">String</span>) <span class="ot">-&gt;</span> <span class="dt">ComplaintEntry</span> <span class="ot">-&gt;</span> <span class="dt">String</span>
+complaintEntryMaybeValue f complaint <span class="fu">=</span> <span class="kw">case</span> f complaint <span class="kw">of</span>
+                                        <span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="st">&quot;&quot;</span>
+                                        <span class="dt">Just</span> s  <span class="ot">-&gt;</span> s
+
+<span class="ot">locationType ::</span> <span class="dt">ComplaintEntry</span> <span class="ot">-&gt;</span> <span class="dt">String</span>
+locationType <span class="fu">=</span> complaintEntryMaybeValue location_type
+
+<span class="ot">incidentAddress ::</span> <span class="dt">ComplaintEntry</span> <span class="ot">-&gt;</span> <span class="dt">String</span>
+incidentAddress <span class="fu">=</span> complaintEntryMaybeValue incident_address
+
+<span class="ot">complaintEntryValuesWFilter ::</span> ([<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [<span class="dt">ComplaintEntry</span>]) <span class="ot">-&gt;</span> (<span class="dt">ComplaintEntry</span> <span class="ot">-&gt;</span> <span class="dt">String</span>) <span class="ot">-&gt;</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [<span class="dt">String</span>]
+complaintEntryValuesWFilter _ _ []    <span class="fu">=</span> []
+complaintEntryValuesWFilter f g (x<span class="fu">:</span>y) <span class="fu">=</span> map g <span class="fu">$</span> f (x<span class="fu">:</span>y)
+
+<span class="ot">complaintEntryValues ::</span> (<span class="dt">ComplaintEntry</span> <span class="ot">-&gt;</span> <span class="dt">String</span>) <span class="ot">-&gt;</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [<span class="dt">String</span>]
+complaintEntryValues <span class="fu">=</span> complaintEntryValuesWFilter (filter (\x <span class="ot">-&gt;</span> <span class="dt">True</span>))
+
+<span class="ot">filterCreatedDateYear ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [<span class="dt">ComplaintEntry</span>]
+filterCreatedDateYear year <span class="fu">=</span> filter ((DL.isInfixOf year) <span class="fu">.</span> created_date)
+
+<span class="ot">filterCreatedDate2015 ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [<span class="dt">ComplaintEntry</span>]
+filterCreatedDate2015 <span class="fu">=</span> filterCreatedDateYear <span class="st">&quot;2015&quot;</span>
+
+<span class="ot">boroughs ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [<span class="dt">String</span>]
+boroughs <span class="fu">=</span> complaintEntryValues borough
+
+<span class="ot">boroughs2015 ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [<span class="dt">String</span>]
+boroughs2015 <span class="fu">=</span> complaintEntryValuesWFilter filterCreatedDate2015 borough
+
+<span class="ot">createdDates ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [<span class="dt">String</span>]
+createdDates <span class="fu">=</span> complaintEntryValues created_date
+
+<span class="ot">createdDates2015 ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [<span class="dt">String</span>]
+createdDates2015 <span class="fu">=</span> complaintEntryValuesWFilter filterCreatedDate2015 created_date
+
+<span class="ot">yearMonths ::</span> [<span class="dt">String</span>] <span class="ot">-&gt;</span> [<span class="dt">String</span>]
+yearMonths <span class="fu">=</span> map (take <span class="dv">7</span>)
+
+<span class="ot">daysOfWeek ::</span> [<span class="dt">String</span>]
+daysOfWeek <span class="fu">=</span> [<span class="st">&quot;Sunday&quot;</span>, <span class="st">&quot;Monday&quot;</span>, <span class="st">&quot;Tuesday&quot;</span>, <span class="st">&quot;Wednesday&quot;</span>, <span class="st">&quot;Thursday&quot;</span>, <span class="st">&quot;Friday&quot;</span>, <span class="st">&quot;Saturday&quot;</span>]
+
+<span class="ot">createdDatesYearMonths ::</span> ([<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [<span class="dt">String</span>]) <span class="ot">-&gt;</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [<span class="dt">String</span>]
+createdDatesYearMonths _ [] <span class="fu">=</span> []
+createdDatesYearMonths f (x<span class="fu">:</span>y)<span class="fu">=</span> yearMonths <span class="fu">$</span> f (x<span class="fu">:</span>y)
+
+<span class="ot">createdDatesYearMonthsAll ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [<span class="dt">String</span>]
+createdDatesYearMonthsAll <span class="fu">=</span> createdDatesYearMonths createdDates
+
+<span class="ot">createdDatesYearMonths2015 ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [<span class="dt">String</span>]
+createdDatesYearMonths2015 <span class="fu">=</span> createdDatesYearMonths createdDates2015
+
+<span class="co">-------------------------------------------------------------------------------</span>
+
+<span class="ot">minMaxCreatedDate ::</span> ([<span class="dt">String</span>] <span class="ot">-&gt;</span> <span class="dt">String</span>) <span class="ot">-&gt;</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> <span class="dt">String</span>
+minMaxCreatedDate _ [] <span class="fu">=</span> <span class="st">&quot;&quot;</span>
+minMaxCreatedDate f (x<span class="fu">:</span>y) <span class="fu">=</span> f <span class="fu">$</span> createdDates (x<span class="fu">:</span>y)
+
+<span class="ot">minCreatedDate ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> <span class="dt">String</span>
+minCreatedDate []    <span class="fu">=</span> <span class="st">&quot;&quot;</span>
+minCreatedDate (x<span class="fu">:</span>y) <span class="fu">=</span> minMaxCreatedDate minimum (x<span class="fu">:</span>y)
+
+<span class="ot">maxCreatedDate ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> <span class="dt">String</span>
+maxCreatedDate []    <span class="fu">=</span> <span class="st">&quot;&quot;</span>
+maxCreatedDate (x<span class="fu">:</span>y) <span class="fu">=</span> minMaxCreatedDate maximum (x<span class="fu">:</span>y)
+
+<span class="ot">complaintsCountByHashable ::</span> (<span class="dt">Hashable</span> k, <span class="dt">Ord</span> k) <span class="ot">=&gt;</span> ([<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [k]) <span class="ot">-&gt;</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [(k, <span class="dt">Int</span>)]
+complaintsCountByHashable f <span class="fu">=</span> DL.sortOn fst <span class="fu">.</span> DHM.assocs <span class="fu">.</span> hashableCounts <span class="fu">.</span> f
+
+<span class="ot">complaintsCountByBoroughs ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [(<span class="dt">String</span>, <span class="dt">Int</span>)]
+complaintsCountByBoroughs <span class="fu">=</span> complaintsCountByHashable boroughs
+
+<span class="ot">complaintsCountByBoroughs2015 ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [(<span class="dt">String</span>, <span class="dt">Int</span>)]
+complaintsCountByBoroughs2015 <span class="fu">=</span> complaintsCountByHashable boroughs2015
+
+<span class="ot">complaintsCountByYearMonth ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [(<span class="dt">String</span>, <span class="dt">Int</span>)]
+complaintsCountByYearMonth <span class="fu">=</span> complaintsCountByHashable createdDatesYearMonthsAll
+
+<span class="ot">complaintsCountByYearMonth2015 ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [(<span class="dt">String</span>, <span class="dt">Int</span>)]
+complaintsCountByYearMonth2015 <span class="fu">=</span> complaintsCountByHashable createdDatesYearMonths2015
+
+<span class="ot">complaintsCountByCreatedDatesAtTrunc ::</span> <span class="dt">DTFmtTrunc</span> <span class="ot">-&gt;</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [(<span class="dt">LocalTime</span>, <span class="dt">Int</span>)]
+complaintsCountByCreatedDatesAtTrunc trunc <span class="fu">=</span> complaintsCountByHashable createdDates'
+  <span class="kw">where</span>
+<span class="ot">    createdDates' ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [<span class="dt">LocalTime</span>]
+    createdDates' <span class="fu">=</span> map (dateTimeStringToLocalTime trunc) <span class="fu">.</span> createdDates
+
+<span class="ot">complaintsCountByCreatedDatesAtMonth ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [(<span class="dt">LocalTime</span>, <span class="dt">Int</span>)]
+complaintsCountByCreatedDatesAtMonth <span class="fu">=</span> complaintsCountByCreatedDatesAtTrunc <span class="dt">AtMonth</span>
+
+<span class="ot">complaintsCountByCreatedDatesAtDay ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [(<span class="dt">LocalTime</span>, <span class="dt">Int</span>)]
+complaintsCountByCreatedDatesAtDay <span class="fu">=</span> complaintsCountByCreatedDatesAtTrunc <span class="dt">AtDay</span>
+
+<span class="ot">complaintsCountsPerDayOfWeek ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [(<span class="dt">String</span>, [<span class="dt">Int</span>])]
+complaintsCountsPerDayOfWeek (x<span class="fu">:</span>y) <span class="fu">=</span> daysOfWeekCounts
+  <span class="kw">where</span>
+    complaints <span class="fu">=</span> (x<span class="fu">:</span>y)
+    dayCounts <span class="fu">=</span> complaintsCountByCreatedDatesAtDay complaints
+
+<span class="ot">    localTimeToDayOfWeek ::</span> <span class="dt">LocalTime</span> <span class="ot">-&gt;</span> <span class="dt">String</span>
+    localTimeToDayOfWeek lt <span class="fu">=</span> show <span class="fu">$</span> dateWeekDay <span class="fu">$</span> dayToDateTime <span class="fu">$</span> localDay lt
+
+<span class="ot">    filterDayOfWeek ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> [(<span class="dt">LocalTime</span>, <span class="dt">Int</span>)] <span class="ot">-&gt;</span> [(<span class="dt">LocalTime</span>, <span class="dt">Int</span>)]
+    filterDayOfWeek s <span class="fu">=</span> filter (\ x <span class="ot">-&gt;</span> localTimeToDayOfWeek (fst x) <span class="fu">==</span> s)
+
+<span class="ot">    dayOfWeekCount ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> [<span class="dt">Int</span>]
+    dayOfWeekCount s <span class="fu">=</span> map snd <span class="fu">$</span> filterDayOfWeek s dayCounts
+
+    daysOfWeekCounts <span class="fu">=</span> map (\ x <span class="ot">-&gt;</span> (x, dayOfWeekCount x)) daysOfWeek
+
+<span class="co">-------------------------------------------------------------------------------</span>
+
+<span class="ot">boroughsPopSizes ::</span> [(<span class="dt">String</span>, <span class="dt">Int</span>)]
+boroughsPopSizes <span class="fu">=</span> zip boroughNames popSizes2015
+  <span class="kw">where</span>
+    boroughNames <span class="fu">=</span> [<span class="st">&quot;BRONX&quot;</span>, <span class="st">&quot;BROOKLYN&quot;</span>, <span class="st">&quot;MANHATTAN&quot;</span>, <span class="st">&quot;QUEENS&quot;</span>, <span class="st">&quot;STATEN ISLAND&quot;</span>]
+    <span class="co">--              Bronx    Brookly  Manhatt  Queens   SI</span>
+    popSizes2014 <span class="fu">=</span> [<span class="dv">1438159</span>, <span class="dv">2621793</span>, <span class="dv">1636268</span>, <span class="dv">2321580</span>, <span class="dv">473279</span>]
+    popSizes2015 <span class="fu">=</span> [<span class="dv">1455444</span>, <span class="dv">2636735</span>, <span class="dv">1644518</span>, <span class="dv">2399150</span>, <span class="dv">474588</span>]
+
+<span class="co">-------------------------------------------------------------------------------</span>
+
+<span class="ot">threeOneOneLayoutTitle ::</span> <span class="dt">String</span>
+threeOneOneLayoutTitle <span class="fu">=</span> <span class="st">&quot;NYC 311 Complaints&quot;</span>
+
+<span class="co">-------------------------------------------------------------------------------</span>
+
+<span class="ot">barChart ::</span> [<span class="dt">String</span>] <span class="ot">-&gt;</span> <span class="dt">String</span> <span class="ot">-&gt;</span> [(<span class="dt">String</span>, <span class="dt">Int</span>)] <span class="ot">-&gt;</span> <span class="dt">Colour</span> <span class="dt">Double</span> <span class="ot">-&gt;</span> <span class="dt">Renderable</span> ()
+barChart titles layoutTitle counts color <span class="fu">=</span> toRenderable layout
+  <span class="kw">where</span>
+    x_axis_labels <span class="fu">=</span> map fst counts
+    y_axis_values <span class="fu">=</span> map (\ x <span class="ot">-&gt;</span> [snd x]) counts
+
+    barChart <span class="fu">=</span>
+                  plot_bars_titles  <span class="fu">.~</span> titles
+                <span class="fu">$</span> plot_bars_values  <span class="fu">.~</span> addIndexes y_axis_values
+                <span class="fu">$</span> plot_bars_style   <span class="fu">.~</span> <span class="dt">BarsClustered</span>
+                <span class="fu">$</span> plot_bars_spacing <span class="fu">.~</span> <span class="dt">BarsFixGap</span> <span class="dv">10</span> <span class="dv">5</span>
+                <span class="fu">$</span> plot_bars_item_styles <span class="fu">.~</span> repeat (solidFillStyle <span class="fu">$</span> opaque color, <span class="dt">Nothing</span>)
+                <span class="fu">$</span> def
+
+    layout <span class="fu">=</span>
+                layout_title <span class="fu">.~</span> layoutTitle
+              <span class="fu">$</span> layout_x_axis <span class="fu">.</span> laxis_generate <span class="fu">.~</span> autoIndexAxis x_axis_labels
+              <span class="fu">$</span> layout_left_axis_visibility <span class="fu">.</span> axis_show_ticks <span class="fu">.~</span> <span class="dt">False</span>
+              <span class="fu">$</span> layout_plots <span class="fu">.~</span> [plotBars barChart]
+              <span class="fu">$</span><span class="ot"> def ::</span> <span class="dt">Layout</span> <span class="dt">PlotIndex</span> <span class="dt">Int</span>
+
+<span class="co">-------------------------------------------------------------------------------</span>
+
+<span class="ot">chartBoroughsPopSizes ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> <span class="dt">Renderable</span> ()
+chartBoroughsPopSizes complaints <span class="fu">=</span> barChart titles layoutTitle counts color
+  <span class="kw">where</span>
+    counts <span class="fu">=</span> boroughsPopSizes
+    titles <span class="fu">=</span> [<span class="st">&quot;Borough Population Size&quot;</span>]
+    layoutTitle <span class="fu">=</span> <span class="st">&quot;2015 Estimated NYC Borough Population Sizes&quot;</span>
+    color  <span class="fu">=</span> blueviolet
+
+<span class="ot">chartComplaintsCountByBoroughs ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> <span class="dt">Renderable</span> ()
+chartComplaintsCountByBoroughs complaints <span class="fu">=</span> barChart titles threeOneOneLayoutTitle counts color
+  <span class="kw">where</span>
+    titles <span class="fu">=</span> [
+          <span class="st">&quot;Complaint Count by Borough from &quot;</span>
+        <span class="fu">++</span> (take <span class="dv">10</span> <span class="fu">$</span> minCreatedDate complaints)
+        <span class="fu">++</span> <span class="st">&quot; to &quot;</span>
+        <span class="fu">++</span> (take <span class="dv">10</span> <span class="fu">$</span> maxCreatedDate complaints)
+      ]
+    counts <span class="fu">=</span> complaintsCountByBoroughs complaints
+    color  <span class="fu">=</span> plum
+
+<span class="ot">chartComplaintsCountByBoroughs2015 ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> <span class="dt">Renderable</span> ()
+chartComplaintsCountByBoroughs2015 complaints <span class="fu">=</span> barChart titles threeOneOneLayoutTitle counts color
+  <span class="kw">where</span>
+    titles <span class="fu">=</span> [<span class="st">&quot;Complaint Count by Borough for 2015&quot;</span>]
+    counts <span class="fu">=</span> complaintsCountByBoroughs2015 complaints
+    color  <span class="fu">=</span> plum
+
+<span class="ot">chartComplaintsCountByYearMonth ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> <span class="dt">Renderable</span> ()
+chartComplaintsCountByYearMonth complaints <span class="fu">=</span> barChart titles threeOneOneLayoutTitle counts color
+  <span class="kw">where</span>
+    titles <span class="fu">=</span> [<span class="st">&quot;Complaint Count per Year and Month&quot;</span>]
+    counts <span class="fu">=</span> complaintsCountByYearMonth complaints
+    color  <span class="fu">=</span> turquoise
+
+<span class="ot">chartComplaintsCountByYearMonth2015 ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> <span class="dt">Renderable</span> ()
+chartComplaintsCountByYearMonth2015 complaints <span class="fu">=</span> barChart titles threeOneOneLayoutTitle counts color
+  <span class="kw">where</span>
+    titles <span class="fu">=</span> [<span class="st">&quot;Complaint Count per Year and Month for 2015&quot;</span>]
+    counts <span class="fu">=</span> complaintsCountByYearMonth2015 complaints
+    color  <span class="fu">=</span> turquoise
+
+<span class="co">-------------------------------------------------------------------------------</span>
+
+<span class="ot">lineChart ::</span> (<span class="dt">Ord</span> x0, <span class="dt">Ord</span> y0, <span class="dt">PlotValue</span> x0, <span class="dt">PlotValue</span> y0) <span class="ot">=&gt;</span> [<span class="dt">Plot</span> x0 y0] <span class="ot">-&gt;</span> <span class="dt">Renderable</span> ()
+lineChart linePlots <span class="fu">=</span> toRenderable layout
+  <span class="kw">where</span>
+    layout <span class="fu">=</span>
+              layout_title <span class="fu">.~</span> threeOneOneLayoutTitle
+            <span class="fu">$</span> layout_x_axis <span class="fu">.</span> laxis_override <span class="fu">.~</span> axisGridHide
+            <span class="fu">$</span> layout_plots <span class="fu">.~</span> linePlots
+            <span class="fu">$</span> layout_grid_last <span class="fu">.~</span> <span class="dt">False</span>
+            <span class="fu">$</span> def
+
+<span class="ot">linePlotAtMonth ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> <span class="dt">PlotLines</span> <span class="dt">LocalTime</span> <span class="dt">Int</span>
+linePlotAtMonth complaints <span class="fu">=</span>
+    plot_lines_style <span class="fu">.~</span> (solidLine <span class="fl">3.0</span> <span class="fu">$</span> opaque skyblue)
+  <span class="fu">$</span> plot_lines_values <span class="fu">.~</span> [complaintsCountByCreatedDatesAtMonth complaints]
+  <span class="fu">$</span> plot_lines_title <span class="fu">.~</span> <span class="st">&quot;Complaint Count Over Time (Bucketed by Month)&quot;</span>
+  <span class="fu">$</span> def
+
+<span class="ot">linePlotAtDay ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> <span class="dt">PlotLines</span> <span class="dt">LocalTime</span> <span class="dt">Int</span>
+linePlotAtDay complaints <span class="fu">=</span>
+    plot_lines_style <span class="fu">.~</span> (solidLine <span class="fl">3.0</span> <span class="fu">$</span> opaque tomato)
+  <span class="fu">$</span> plot_lines_values <span class="fu">.~</span> [complaintsCountByCreatedDatesAtDay complaints]
+  <span class="fu">$</span> plot_lines_title <span class="fu">.~</span> <span class="st">&quot;Complaint Count Over Time (Bucketed by Day)&quot;</span>
+  <span class="fu">$</span> def
+
+<span class="ot">chartComplaintsCountByCreatedDatesAtMonth ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> <span class="dt">Renderable</span> ()
+chartComplaintsCountByCreatedDatesAtMonth complaints <span class="fu">=</span> lineChart plots
+  <span class="kw">where</span>
+    plots <span class="fu">=</span> [toPlot <span class="fu">$</span> linePlotAtMonth complaints]
+
+<span class="ot">chartComplaintsCountByCreatedDatesAtDay ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> <span class="dt">Renderable</span> ()
+chartComplaintsCountByCreatedDatesAtDay complaints <span class="fu">=</span> lineChart plots
+  <span class="kw">where</span>
+    plots <span class="fu">=</span> [toPlot <span class="fu">$</span> linePlotAtDay complaints]
+
+<span class="ot">chartComplaintsCountByCreatedDatesAtMonthDay ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> <span class="dt">Renderable</span> ()
+chartComplaintsCountByCreatedDatesAtMonthDay complaints <span class="fu">=</span> lineChart plots
+  <span class="kw">where</span>
+    plots <span class="fu">=</span> map toPlot [linePlotAtDay complaints, linePlotAtMonth complaints]
+
+<span class="co">-------------------------------------------------------------------------------</span>
+
+<span class="ot">chartDaysOfWeekComplaintCounts ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> <span class="dt">Renderable</span> ()
+chartDaysOfWeekComplaintCounts complaints <span class="fu">=</span> toRenderable layout
+  <span class="kw">where</span>
+    layout <span class="fu">=</span>    layout_title <span class="fu">.~</span> threeOneOneLayoutTitle
+              <span class="fu">$</span> layout_plots <span class="fu">.~</span> [toPlot candleChart]
+              <span class="fu">$</span> def
+
+    daysOfWeekCounts <span class="fu">=</span> complaintsCountsPerDayOfWeek complaints
+
+<span class="ot">    makeCandle ::</span> (<span class="dt">String</span>, [<span class="dt">Int</span>]) <span class="ot">-&gt;</span> <span class="dt">Candle</span> <span class="dt">Int</span> <span class="dt">Int</span>
+    makeCandle dayOfWeekcounts <span class="fu">=</span> <span class="dt">Candle</span> xIndex low open med close high
+      <span class="kw">where</span>
+        dayOfWeek   <span class="fu">=</span> fst dayOfWeekcounts
+        counts      <span class="fu">=</span> DL.sort <span class="fu">$</span> snd dayOfWeekcounts
+        xIndex      <span class="fu">=</span> <span class="kw">case</span> DL.elemIndex dayOfWeek daysOfWeek <span class="kw">of</span>
+                        <span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="dv">0</span>
+                        <span class="dt">Just</span> i  <span class="ot">-&gt;</span> i
+        low         <span class="fu">=</span> minimum counts
+
+        open        <span class="fu">=</span> <span class="kw">case</span> median <span class="fu">$</span> take index counts <span class="kw">of</span>
+                        <span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="dv">0</span>
+                        <span class="dt">Just</span> m  <span class="ot">-&gt;</span> fst m
+
+        medianIndex <span class="fu">=</span> <span class="kw">case</span> median counts <span class="kw">of</span>
+                        <span class="dt">Nothing</span> <span class="ot">-&gt;</span> (<span class="dv">0</span>, <span class="dv">0</span>)
+                        <span class="dt">Just</span> m  <span class="ot">-&gt;</span> m
+        med         <span class="fu">=</span> fst medianIndex
+        index       <span class="fu">=</span> snd medianIndex
+
+        close       <span class="fu">=</span> <span class="kw">case</span> median <span class="fu">$</span> drop (index <span class="fu">+</span> <span class="dv">1</span>) counts <span class="kw">of</span>
+                        <span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="dv">0</span>
+                        <span class="dt">Just</span> m  <span class="ot">-&gt;</span> fst m
+
+        high        <span class="fu">=</span> maximum counts
+
+    candles <span class="fu">=</span> map makeCandle daysOfWeekCounts
+
+    candleChart <span class="fu">=</span>   plot_candle_line_style      <span class="fu">.~</span> (    line_width <span class="fu">.~</span> <span class="dv">7</span>
+                                                      <span class="fu">$</span> line_color <span class="fu">.~</span> opaque mediumaquamarine
+                                                      <span class="fu">$</span> def
+                                                   )
+                  <span class="fu">$</span> plot_candle_fill            <span class="fu">.~</span> <span class="dt">True</span>
+                  <span class="fu">$</span> plot_candle_rise_fill_style <span class="fu">.~</span> (fill_color <span class="fu">.~</span> opaque mediumaquamarine <span class="fu">$</span> def)
+                  <span class="fu">$</span> plot_candle_tick_length     <span class="fu">.~</span> <span class="dv">1</span>
+                  <span class="fu">$</span> plot_candle_width           <span class="fu">.~</span> <span class="dv">10</span>
+                  <span class="fu">$</span> plot_candle_values          <span class="fu">.~</span> candles
+                  <span class="fu">$</span> plot_candle_title           <span class="fu">.~</span> <span class="st">&quot;Complaint Counts per Day of Week (Sunday = 0)&quot;</span>
+                  <span class="fu">$</span> def
+
+<span class="co">-------------------------------------------------------------------------------</span>
+
+<span class="ot">complaintsURL ::</span> <span class="dt">String</span>
+complaintsURL <span class="fu">=</span> <span class="st">&quot;https://data.cityofnewyork.us/resource/fhrw-4uyv.json&quot;</span>
+
+<span class="ot">complaintsFile ::</span> <span class="dt">String</span>
+complaintsFile <span class="fu">=</span> <span class="st">&quot;./data/complaints.json&quot;</span>
+
+<span class="ot">getComplaints ::</span> <span class="dt">IO</span> [<span class="dt">ComplaintEntry</span>]
+getComplaints <span class="fu">=</span> <span class="kw">do</span>
+  fileExists <span class="ot">&lt;-</span> doesFileExist complaintsFile
+  <span class="kw">if</span> fileExists
+    <span class="kw">then</span> getComplaintsFromFile
+    <span class="kw">else</span> <span class="kw">do</span>
+      complaints <span class="ot">&lt;-</span> getComplaintsFromURL
+      DBSL.writeFile complaintsFile <span class="fu">$</span> encode (DSeq.fromList complaints)
+      return complaints
+
+<span class="ot">getComplaintsFromFile ::</span> <span class="dt">IO</span> [<span class="dt">ComplaintEntry</span>]
+getComplaintsFromFile <span class="fu">=</span> <span class="kw">do</span>
+  complaintsRaw <span class="ot">&lt;-</span> DBSL.readFile complaintsFile
+  <span class="kw">let</span> complaints <span class="fu">=</span>  <span class="kw">case</span> decode<span class="ot"> complaintsRaw ::</span> <span class="dt">Maybe</span> [<span class="dt">ComplaintEntry</span>] <span class="kw">of</span>
+                      <span class="dt">Nothing</span> <span class="ot">-&gt;</span> []
+                      <span class="dt">Just</span> c  <span class="ot">-&gt;</span> c
+  return complaints
+
+<span class="ot">getComplaintsFromURL ::</span> <span class="dt">IO</span> [<span class="dt">ComplaintEntry</span>]
+getComplaintsFromURL <span class="fu">=</span> <span class="kw">do</span>
+  <span class="kw">let</span> opts <span class="fu">=</span>  defaults
+                <span class="fu">&amp;</span> param <span class="st">&quot;$where&quot;</span> <span class="fu">.~</span> [<span class="st">&quot;complaint_type like 'Uri%in Public'&quot;</span>]
+                <span class="fu">&amp;</span> param <span class="st">&quot;$order&quot;</span> <span class="fu">.~</span> [<span class="st">&quot;created_date DESC&quot;</span>]
+                <span class="fu">&amp;</span> param <span class="st">&quot;$limit&quot;</span> <span class="fu">.~</span> [<span class="st">&quot;50000&quot;</span>]
+  r <span class="ot">&lt;-</span> asJSON <span class="fu">=&lt;&lt;</span> getWith opts<span class="ot"> complaintsURL ::</span> <span class="dt">IO</span> (<span class="dt">Response</span> [<span class="dt">ComplaintEntry</span>])
+  print <span class="fu">$</span> r <span class="fu">^.</span> responseStatus
+  <span class="kw">let</span> complaints <span class="fu">=</span>  <span class="kw">case</span> (r <span class="fu">^?</span> responseBody) <span class="kw">of</span>
+                      <span class="dt">Nothing</span> <span class="ot">-&gt;</span> []
+                      <span class="dt">Just</span> c  <span class="ot">-&gt;</span> c
+  return complaints
+
+<span class="co">-------------------------------------------------------------------------------</span>
+
+<span class="ot">hashableCounts' ::</span> (<span class="dt">Hashable</span> k, <span class="dt">Ord</span> k) <span class="ot">=&gt;</span> [k] <span class="ot">-&gt;</span> <span class="dt">DHM.Map</span> k <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">DHM.Map</span> k <span class="dt">Int</span>
+hashableCounts' []    mpIn <span class="fu">=</span> mpIn
+hashableCounts' (x<span class="fu">:</span>y) mpIn <span class="fu">=</span> hashableCounts' y mpOut
+  <span class="kw">where</span>
+    value <span class="fu">=</span> <span class="kw">case</span> DHM.lookup x mpIn <span class="kw">of</span>
+              <span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="dv">0</span>
+              <span class="dt">Just</span> v  <span class="ot">-&gt;</span> v <span class="fu">+</span> <span class="dv">1</span>
+    mpOut <span class="fu">=</span> DHM.insert x value mpIn
+
+<span class="ot">hashableCounts ::</span> (<span class="dt">Hashable</span> k, <span class="dt">Ord</span> k) <span class="ot">=&gt;</span> [k] <span class="ot">-&gt;</span> <span class="dt">DHM.Map</span> k <span class="dt">Int</span>
+hashableCounts []    <span class="fu">=</span> DHM.empty
+hashableCounts (x<span class="fu">:</span>y) <span class="fu">=</span> hashableCounts' (x<span class="fu">:</span>y) DHM.empty
+
+<span class="kw">data</span> <span class="dt">DTFmtTrunc</span> <span class="fu">=</span> <span class="dt">AtMonth</span> <span class="fu">|</span> <span class="dt">AtDay</span> <span class="fu">|</span> <span class="dt">AtSecond</span> <span class="kw">deriving</span> (<span class="dt">Enum</span>)
+
+<span class="ot">dateTimeStringToLocalTime ::</span> <span class="dt">DTFmtTrunc</span> <span class="ot">-&gt;</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">LocalTime</span>
+dateTimeStringToLocalTime trunc s <span class="fu">=</span> <span class="kw">case</span> trunc <span class="kw">of</span>
+                                      <span class="dt">AtMonth</span>  <span class="ot">-&gt;</span> <span class="dt">LocalTime</span> fg' midnight
+                                      <span class="dt">AtDay</span>    <span class="ot">-&gt;</span> <span class="dt">LocalTime</span> fg  midnight
+                                      <span class="dt">AtSecond</span> <span class="ot">-&gt;</span> <span class="dt">LocalTime</span> fg  tod
+  <span class="kw">where</span>
+        <span class="co">--  1234567890123456789</span>
+        <span class="co">-- &quot;2016-04-18T19:42:20.000&quot;</span>
+        year   <span class="fu">=</span> read (take <span class="dv">4</span> s)<span class="ot"> ::</span> <span class="dt">Integer</span>
+        month  <span class="fu">=</span> read (take <span class="dv">2</span> <span class="fu">$</span> drop <span class="dv">5</span> s)<span class="ot"> ::</span> <span class="dt">Int</span>
+        day    <span class="fu">=</span> read (take <span class="dv">2</span> <span class="fu">$</span> drop <span class="dv">8</span> s)<span class="ot"> ::</span> <span class="dt">Int</span>
+        hour   <span class="fu">=</span> read (take <span class="dv">2</span> <span class="fu">$</span> drop <span class="dv">11</span> s)<span class="ot"> ::</span> <span class="dt">Int</span>
+        minute <span class="fu">=</span> read (take <span class="dv">2</span> <span class="fu">$</span> drop <span class="dv">14</span> s)<span class="ot"> ::</span> <span class="dt">Int</span>
+        second <span class="fu">=</span> read (take <span class="dv">2</span> <span class="fu">$</span> drop <span class="dv">17</span> s)<span class="ot"> ::</span> <span class="dt">Pico</span>
+        fg  <span class="fu">=</span> fromGregorian year month day
+        fg' <span class="fu">=</span> fromGregorian year month <span class="dv">01</span>
+        tod <span class="fu">=</span> <span class="dt">TimeOfDay</span> hour minute second
+
+<span class="ot">median ::</span> (<span class="dt">Ord</span> a) <span class="ot">=&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Maybe</span> (a, <span class="dt">Int</span>)
+median []    <span class="fu">=</span>  <span class="dt">Nothing</span>
+median (x<span class="fu">:</span>y) <span class="fu">=</span> quickSelect midEven (x<span class="fu">:</span>y) <span class="fu">&gt;&gt;=</span> (\x <span class="ot">-&gt;</span> <span class="dt">Just</span> (x, midEven))
+  <span class="kw">where</span>
+    midEven <span class="fu">=</span> length (x<span class="fu">:</span>y) <span class="ot">`div`</span> <span class="dv">2</span>
+
+<span class="ot">quickSelect ::</span> (<span class="dt">Ord</span> a) <span class="ot">=&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Maybe</span> a
+quickSelect _ []        <span class="fu">=</span> <span class="dt">Nothing</span>
+quickSelect n _
+  <span class="fu">|</span> n <span class="fu">&lt;</span> <span class="dv">0</span>               <span class="fu">=</span> <span class="dt">Nothing</span>
+quickSelect n (pivot<span class="fu">:</span>y) <span class="fu">=</span> <span class="kw">case</span> found <span class="kw">of</span>
+                            <span class="dt">True</span>  <span class="ot">-&gt;</span>  <span class="dt">Just</span> pivot
+                            <span class="dt">False</span> <span class="ot">-&gt;</span>  <span class="kw">case</span> goHigher <span class="kw">of</span>
+                                        <span class="dt">True</span>  <span class="ot">-&gt;</span> quickSelect (n <span class="fu">-</span> (length (pivot<span class="fu">:</span>lower))) higher
+                                        <span class="dt">False</span> <span class="ot">-&gt;</span> quickSelect n lower
+  <span class="kw">where</span>
+    lower       <span class="fu">=</span> filter (<span class="fu">&lt;=</span> pivot) y
+    higher      <span class="fu">=</span> filter (<span class="fu">&gt;</span> pivot) y
+    partitioned <span class="fu">=</span> lower <span class="fu">++</span> (pivot<span class="fu">:</span>higher)
+    found       <span class="fu">=</span> partitioned <span class="fu">!!</span> n <span class="fu">==</span> pivot
+    pivotIndex  <span class="fu">=</span> <span class="kw">case</span> DL.elemIndex pivot partitioned <span class="kw">of</span>
+                    <span class="dt">Nothing</span> <span class="ot">-&gt;</span> error <span class="st">&quot;Pivot not found.&quot;</span>
+                    <span class="dt">Just</span> a  <span class="ot">-&gt;</span> a
+    goHigher    <span class="fu">=</span> n <span class="fu">&gt;</span> pivotIndex</code></pre></div>
+</div>
+<div class="post-footer">
+  <div class="display-left">
+    <h2 class="post-footer-cta">
+      Hi there!
+      <a href="../" title="Home">Browse</a>
+      and subscribe to the
+      <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
+      for more content.
+    </h2>
+  </div>
+  <div class="display-right text-align-right post-footer-copyright">
+    <h4>
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2017</span> David Lettier
+    </h4>
+  </div>
+</div>
+
+    </div>
+    <div class="share-toolbox addthis_sharing_toolbox"></div>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4fc2bc7a00a9352b"></script>
+    <script>
+      (function(i,s,o,g,r,a,m){
+        i.GoogleAnalyticsObject = r;
+        i[r] = i[r] || function () { (i[r].q = i[r].q || []).push(arguments); };
+        i[r].l=1*new Date();
+        a=s.createElement(o);
+        m=s.getElementsByTagName(o)[0];
+        a.async=1;
+        a.src=g;
+        m.parentNode.insertBefore(a,m);
+      })(
+        window,
+        document,
+        'script',
+        '//www.google-analytics.com/analytics.js',
+        'ga'
+      );
+      ga('create', 'UA-34323684-2', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </body>
+</html>

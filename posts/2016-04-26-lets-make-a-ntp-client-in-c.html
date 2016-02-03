@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta property="og:site_name" content="Lettier">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Let's make a NTP Client in C by David Lettier">
+    <meta property="og:image" content="https://lettier.github.io/images/2016-04-26-lets-make-a-ntp-client-in-c/jumbotron_image.jpg">
+    <meta property="og:url" content="https://lettier.github.io/posts/2016-04-26-lets-make-a-ntp-client-in-c.html">
+    <meta property="og:description" content="Using C, we build a Network Time Protocol client capable of getting the current time from a remote NTP server.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="David Lettier">
+    <meta name="description" content="Using C, we build a Network Time Protocol client capable of getting the current time from a remote NTP server.">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/pandoc.css">
+    <link rel="stylesheet" type="text/css" href="../css/default.css">
+    <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
+    
+      
+        <title>Let's make a NTP Client in C by David Lettier</title>
+      
+    
+  </head>
+  <body>
+    <div id="top"></div>
+    <div class="nav-bar-container nav-bar-background">
+      <div class="nav-bar-buttons-container">
+        <a href="../" title="Home">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-home nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="../rss.xml" title="RSS" type="application/rss+xml" target="_blank">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-rss nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="http://www.lettier.com/" title="Lettier.com">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <img src="../images/logo.svg" width="30" height="30" alt="Lettier.com" class="lettier-icon-img">
+            </div>
+          </div>
+        </a>
+        <a href="https://www.github.com/lettier" title="GitHub">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-github nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.linkedin.com/in/lettier" title="LinkedIn">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-linkedin nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.hackerrank.com/lettier" title="HackerRank">
+          <div class="nav-bar-button-container nav-button-container-second-last">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-trophy nav-bar-icon nav-bar-icon-second-last"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.behance.net/dlettier" title="Behance">
+          <div class="nav-bar-button-container nav-bar-button-container-last">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-behance nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="jumbotron">
+      <div class="absolute-top jumbotron jumbotron-background-image" style="background-image: url('/images/2016-04-26-lets-make-a-ntp-client-in-c/jumbotron_image.jpg');">
+      </div>
+    </div>
+    <div class="container jumbotron-text-position-container">
+      <div class="jumbotron-text-width-container">
+        <h1 class="jumbotron-text jumbotron-text-background">
+          
+            Let's make a NTP Client in C
+          
+          <span class="title-cursor">|</span>
+        </h1>
+      </div>
+    </div>
+    <div class="container content-container">
+      <div class="post-body">
+  <!--https://pixabay.com/en/clock-railway-station-station-clock-1314411/-->
+<p>The source file for this project is hosted on <a href="https://github.com/lettier/ntpclient/blob/master/source/c/main.c">GitHub</a>. There is also an identical version but in <a href="https://github.com/lettier/ntpclient/blob/master/source/python/ntpclient.py">Python</a>. The Python version is much shorter.</p>
+<h2 id="network-time-protocol">Network Time Protocol</h2>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="kw">typedef</span> <span class="kw">struct</span>
+{
+
+  <span class="dt">uint8_t</span> li_vn_mode;      <span class="co">// Eight bits. li, vn, and mode.</span>
+                           <span class="co">// li.   Two bits.   Leap indicator.</span>
+                           <span class="co">// vn.   Three bits. Version number of the protocol.</span>
+                           <span class="co">// mode. Three bits. Client will pick mode 3 for client.</span>
+
+  <span class="dt">uint8_t</span> stratum;         <span class="co">// Eight bits. Stratum level of the local clock.</span>
+  <span class="dt">uint8_t</span> poll;            <span class="co">// Eight bits. Maximum interval between successive messages.</span>
+  <span class="dt">uint8_t</span> precision;       <span class="co">// Eight bits. Precision of the local clock.</span>
+
+  <span class="dt">uint32_t</span> rootDelay;      <span class="co">// 32 bits. Total round trip delay time.</span>
+  <span class="dt">uint32_t</span> rootDispersion; <span class="co">// 32 bits. Max error aloud from primary clock source.</span>
+  <span class="dt">uint32_t</span> refId;          <span class="co">// 32 bits. Reference clock identifier.</span>
+
+  <span class="dt">uint32_t</span> refTm_s;        <span class="co">// 32 bits. Reference time-stamp seconds.</span>
+  <span class="dt">uint32_t</span> refTm_f;        <span class="co">// 32 bits. Reference time-stamp fraction of a second.</span>
+
+  <span class="dt">uint32_t</span> origTm_s;       <span class="co">// 32 bits. Originate time-stamp seconds.</span>
+  <span class="dt">uint32_t</span> origTm_f;       <span class="co">// 32 bits. Originate time-stamp fraction of a second.</span>
+
+  <span class="dt">uint32_t</span> rxTm_s;         <span class="co">// 32 bits. Received time-stamp seconds.</span>
+  <span class="dt">uint32_t</span> rxTm_f;         <span class="co">// 32 bits. Received time-stamp fraction of a second.</span>
+
+  <span class="dt">uint32_t</span> txTm_s;         <span class="co">// 32 bits and the most important field the client cares about. Transmit time-stamp seconds.</span>
+  <span class="dt">uint32_t</span> txTm_f;         <span class="co">// 32 bits. Transmit time-stamp fraction of a second.</span>
+
+} ntp_packet;              <span class="co">// Total: 384 bits or 48 bytes.</span></code></pre></div>
+<p>The NTP message consists of a 384 bit or 48 byte data structure containing 17 fields.</p>
+<p>Note that the order of <code>li</code>, <code>vn</code>, and <code>mode</code> is important. We could use three bit fields but instead we’ll combine them into a single byte to avoid any implementation-defined issues involving endianness, LSB, and/or MSB.</p>
+<h2 id="populate-our-message">Populate our Message</h2>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">// Create and zero out the packet. All 48 bytes worth.</span>
+
+ntp_packet packet = { <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span> };
+
+memset( &amp;packet, <span class="dv">0</span>, <span class="kw">sizeof</span>( ntp_packet ) );
+
+<span class="co">// Set the first byte's bits to 00,011,011 for li = 0, vn = 3, and mode = 3. The rest will be left set to zero.</span>
+
+*( ( <span class="dt">char</span> * ) &amp;packet + <span class="dv">0</span> ) = <span class="bn">0x1b</span>; <span class="co">// Represents 27 in base 10 or 00011011 in base 2.</span></code></pre></div>
+<p>First we zero-out or clear out the memory of our structure and then fill it in with leap indicator zero, version number three, and mode 3. The rest we can leave blank and still get back the time from the server.</p>
+<h2 id="setup-our-socket-and-server-data-structure">Setup our Socket and Server Data Structure</h2>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">// Create a UDP socket, convert the host-name to an IP address, set the port number,</span>
+<span class="co">// connect to the server, send the packet, and then read in the return packet.</span>
+
+<span class="kw">struct</span> sockaddr_in serv_addr; <span class="co">// Server address data structure.</span>
+<span class="kw">struct</span> hostent *server;      <span class="co">// Server data structure.</span>
+
+sockfd = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP ); <span class="co">// Create a UDP socket.</span>
+
+<span class="cf">if</span> ( sockfd &lt; <span class="dv">0</span> )
+  error( <span class="st">&quot;ERROR opening socket&quot;</span> );
+
+server = gethostbyname( host_name ); <span class="co">// Convert URL to IP.</span>
+
+<span class="cf">if</span> ( server == NULL )
+  error( <span class="st">&quot;ERROR, no such host&quot;</span> );
+
+<span class="co">// Zero out the server address structure.</span>
+
+bzero( ( <span class="dt">char</span>* ) &amp;serv_addr, <span class="kw">sizeof</span>( serv_addr ) );
+
+serv_addr.sin_family = AF_INET;
+
+<span class="co">// Copy the server's IP address to the server address structure.</span>
+
+bcopy( ( <span class="dt">char</span>* )server-&gt;h_addr, ( <span class="dt">char</span>* ) &amp;serv_addr.sin_addr.s_addr, server-&gt;h_length );
+
+<span class="co">// Convert the port number integer to network big-endian style and save it to the server address structure.</span>
+
+serv_addr.sin_port = htons( portno );</code></pre></div>
+<p>Before we can start communicating we have to setup our <a href="https://en.wikipedia.org/wiki/Network_socket">socket</a>, server and server address structures. We will be using the <a href="https://en.wikipedia.org/wiki/User_Datagram_Protocol">User Datagram Protocol</a> (versus TCP) for our socket since the server we are sending our message to is listening on port number <code>123</code> using UDP.</p>
+<h2 id="send-our-message-to-the-server">Send our Message to the Server</h2>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c">
+<span class="co">// Call up the server using its IP address and port number.</span>
+
+<span class="cf">if</span> ( connect( sockfd, ( <span class="kw">struct</span> sockaddr * ) &amp;serv_addr, <span class="kw">sizeof</span>( serv_addr) ) &lt; <span class="dv">0</span> )
+  error( <span class="st">&quot;ERROR connecting&quot;</span> );
+
+<span class="co">// Send it the NTP packet it wants. If n == -1, it failed.</span>
+
+n = write( sockfd, ( <span class="dt">char</span>* ) &amp;packet, <span class="kw">sizeof</span>( ntp_packet ) );
+
+<span class="cf">if</span> ( n &lt; <span class="dv">0</span> )
+  error( <span class="st">&quot;ERROR writing to socket&quot;</span> );</code></pre></div>
+<p>With our message payload, socket, server and address setup, we can now send our message to the server. To do this, we write our 48 byte <code>struct</code> to the socket.</p>
+<h2 id="read-in-the-return-message">Read in the Return Message</h2>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">// Wait and receive the packet back from the server. If n == -1, it failed.</span>
+
+n = read( sockfd, ( <span class="dt">char</span>* ) &amp;packet, <span class="kw">sizeof</span>( ntp_packet ) );
+
+<span class="cf">if</span> ( n &lt; <span class="dv">0</span> )
+  error( <span class="st">&quot;ERROR reading from socket&quot;</span> );</code></pre></div>
+<p>Now that our message is sent, we block or wait for the response by reading from the socket. The message we get back should be the same size as the message we sent. We will store the incoming message in <code>packet</code> just like we stored our outgoing message.</p>
+<h2 id="parse-the-return-message">Parse the Return Message</h2>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">// These two fields contain the time-stamp seconds as the packet left the NTP server.</span>
+<span class="co">// The number of seconds correspond to the seconds passed since 1900.</span>
+<span class="co">// ntohl() converts the bit/byte order from the network's to host's &quot;endianness&quot;.</span>
+
+packet.txTm_s = ntohl( packet.txTm_s ); <span class="co">// Time-stamp seconds.</span>
+packet.txTm_f = ntohl( packet.txTm_f ); <span class="co">// Time-stamp fraction of a second.</span>
+
+<span class="co">// Extract the 32 bits that represent the time-stamp seconds (since NTP epoch) from when the packet left the server.</span>
+<span class="co">// Subtract 70 years worth of seconds from the seconds since 1900.</span>
+<span class="co">// This leaves the seconds since the UNIX epoch of 1970.</span>
+<span class="co">// (1900)------------------(1970)**************************************(Time Packet Left the Server)</span>
+
+time_t txTm = ( time_t ) ( packet.txTm_s - NTP_TIMESTAMP_DELTA );</code></pre></div>
+<p>The message we get back is in network order or big-endian form. Depending on the machine you run this on, <code>ntohl</code> will transform the bits from either big to little or big to big-endian. You can think of big or little-endian as reading from left to right or tfel ot thgir respectively.</p>
+<p>With the data in the order we need it, we can now subtract the delta and cast the resulting number to a time-stamp number. Note that <code>NTP_TIMESTAMP_DELTA</code> <code>= 2208988800ull</code> which is the NTP time-stamp of <code>1 Jan 1970</code> or put another way <code>2,208,988,800</code> <code>unsigned long long</code> seconds.</p>
+<blockquote>
+While the Unix timescale is not shown directly in the table, the correspondence between the NTP and Unix timescales is determined only by the constant 2,208,988,800. This is the number of Gregorian seconds from the NTP prime epoch 0h, 1 January 1900 to the Unix prime epoch 0h, 1 January 1970.
+<footer>
+<a href="https://www.eecis.udel.edu/~mills/y2k.html">The NTP Era and Era Numbering</a>
+</footer>
+</blockquote>
+<h2 id="print-out-the-results">Print out the Results</h2>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">// Print the time we got from the server, accounting for local timezone and conversion from UTC time.</span>
+
+printf( <span class="st">&quot;Time: %s&quot;</span>, ctime( ( <span class="dt">const</span> time_t* ) &amp;txTm ) );</code></pre></div>
+<p>With the time-stamp in hand, we can now print it out in its more natural textual form.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">~/ntpclient</span> git:master ❯❯❯ ./a.out
+<span class="ex">Time</span>: Tue Apr 26 02:22:46 2016</code></pre></div>
+<h2 id="recap">Recap</h2>
+<p>Using the C programming language, we built a NTP client. This client can communicate with a remote NTP server using UDP on port 123. The message format was a 48 byte structure that we partially filled out and sent off to the server. The server replied with a same sized message and we parsed the response to extract the current time-stamp.</p>
+</div>
+<div class="post-footer">
+  <div class="display-left">
+    <h2 class="post-footer-cta">
+      Hi there!
+      <a href="../" title="Home">Browse</a>
+      and subscribe to the
+      <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
+      for more content.
+    </h2>
+  </div>
+  <div class="display-right text-align-right post-footer-copyright">
+    <h4>
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2017</span> David Lettier
+    </h4>
+  </div>
+</div>
+
+    </div>
+    <div class="share-toolbox addthis_sharing_toolbox"></div>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4fc2bc7a00a9352b"></script>
+    <script>
+      (function(i,s,o,g,r,a,m){
+        i.GoogleAnalyticsObject = r;
+        i[r] = i[r] || function () { (i[r].q = i[r].q || []).push(arguments); };
+        i[r].l=1*new Date();
+        a=s.createElement(o);
+        m=s.getElementsByTagName(o)[0];
+        a.async=1;
+        a.src=g;
+        m.parentNode.insertBefore(a,m);
+      })(
+        window,
+        document,
+        'script',
+        '//www.google-analytics.com/analytics.js',
+        'ga'
+      );
+      ga('create', 'UA-34323684-2', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </body>
+</html>

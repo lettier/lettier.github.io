@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta property="og:site_name" content="Lettier">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Building a Haskell Web API by David Lettier">
+    <meta property="og:image" content="https://lettier.github.io/images/2016-07-15-building-a-haskell-web-api/jumbotron_image.jpg">
+    <meta property="og:url" content="https://lettier.github.io/posts/2016-07-15-building-a-haskell-web-api.html">
+    <meta property="og:description" content="Using the Snap framework, we build a web server API that creates, reads, updates, and deletes web bookmarks.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="David Lettier">
+    <meta name="description" content="Using the Snap framework, we build a web server API that creates, reads, updates, and deletes web bookmarks.">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/pandoc.css">
+    <link rel="stylesheet" type="text/css" href="../css/default.css">
+    <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
+    
+      
+        <title>Building a Haskell Web API by David Lettier</title>
+      
+    
+  </head>
+  <body>
+    <div id="top"></div>
+    <div class="nav-bar-container nav-bar-background">
+      <div class="nav-bar-buttons-container">
+        <a href="../" title="Home">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-home nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="../rss.xml" title="RSS" type="application/rss+xml" target="_blank">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-rss nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="http://www.lettier.com/" title="Lettier.com">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <img src="../images/logo.svg" width="30" height="30" alt="Lettier.com" class="lettier-icon-img">
+            </div>
+          </div>
+        </a>
+        <a href="https://www.github.com/lettier" title="GitHub">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-github nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.linkedin.com/in/lettier" title="LinkedIn">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-linkedin nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.hackerrank.com/lettier" title="HackerRank">
+          <div class="nav-bar-button-container nav-button-container-second-last">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-trophy nav-bar-icon nav-bar-icon-second-last"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.behance.net/dlettier" title="Behance">
+          <div class="nav-bar-button-container nav-bar-button-container-last">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-behance nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="jumbotron">
+      <div class="absolute-top jumbotron jumbotron-background-image" style="background-image: url('/images/2016-07-15-building-a-haskell-web-api/jumbotron_image.jpg');">
+      </div>
+    </div>
+    <div class="container jumbotron-text-position-container">
+      <div class="jumbotron-text-width-container">
+        <h1 class="jumbotron-text jumbotron-text-background">
+          
+            Building a Haskell Web API
+          
+          <span class="title-cursor">|</span>
+        </h1>
+      </div>
+    </div>
+    <div class="container content-container">
+      <div class="post-body">
+  <!--https://www.flickr.com/photos/fccdotgov/4808162555/in/photolist-o3uW7b-ohXHeC-nEoPvx-jD9Atv-8jT5MT-8jT5iv-8jT5a2-ojZfig-8S5DNp-8jWfTy-8jT5S8-8jWeUf-8jWf3q-o3uAV7-cEE7gE-8jT4DK-8jT6dp-8jWgyu-pi65gm-8jT6tM-8jT6Be-8jT4HD-8jWgBA-G99zCa-rYU1km-rGrNS7-r31SxA-rGsaoY-rYTXqJ-rZ1Vdg-rGsnVS-rGrYXs-rYWKW4-rGrL7C-rYX7yM-rGrXcU-fz5gkM-ojGFLa-o3uM4n-8P2mKm-9XWM9Z-rGqMWu-rYXsTp-rYTtiG-rYWDie-rGqptU-rGrEt3-r31Jao-r31XUC-rWHRqJ-->
+<!--https://flic.kr/p/8jT6dp-->
+<h1 id="overview">Overview</h1>
+<p>In <a href="../posts/2016-07-04-haskell-to-javascript.html">Haskell to JavaScript</a> we focused our sights on building front-end software that runs in the browser. We will now turn our gaze towards the back end where we will build a <a href="https://en.wikipedia.org/wiki/Representational_state_transfer">RESTful</a>, <a href="https://en.wikipedia.org/wiki/Create,_read,_update_and_delete">CRUD</a> <a href="https://en.wikipedia.org/wiki/Application_programming_interface">API</a> for web bookmarks.</p>
+<blockquote>
+In software engineering, front end and back end distinguish between the separation of concerns between the presentation layer (the front end)–which is the interface between the user–and the data access layer (the back end). The front and back ends may be distributed among one or more systems.
+<footer>
+<a href="https://en.wikipedia.org/wiki/Front_and_back_ends">Front and back ends, Wikipedia</a>
+</footer>
+</blockquote>
+<h1 id="setup">Setup</h1>
+<p>In order to establish our build pipeline, we will need to setup our environment with a few tools, directories, and project files.</p>
+<p>Feel free to jump down to the <a href="#source_code">source code</a> portion if you are familiar with setting up a project such as this one.</p>
+<h2 id="stack">Stack</h2>
+<p><a href="https://github.com/commercialhaskell/stack">Stack</a> will handle all of our Haskell environment needs from installing the compiler to managing our Haskell dependencies. The instructions contain all of the <a href="http://docs.haskellstack.org/en/stable/install_and_upgrade/#installupgrade">installation</a> information you will need.</p>
+<p>For a general Linux installation you could do:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> Downloads
+<span class="fu">wget</span> https://www.stackage.org/stack/linux-x86_64
+<span class="fu">tar</span> xvzf stack-1.1.2-linux-x86_64.tar.gz
+<span class="bu">cd</span> ~
+<span class="bu">echo</span> <span class="st">'export PATH=&quot;$HOME/Downloads/stack-1.1.2-linux-x86_64/:$PATH&quot;'</span> <span class="op">&gt;&gt;</span> .bashrc
+<span class="bu">source</span> .bashrc
+<span class="co"># Or if you use ZSH.</span>
+<span class="bu">echo</span> <span class="st">'export PATH=&quot;$HOME/Downloads/stack-1.1.2-linux-x86_64/:$PATH&quot;'</span> <span class="op">&gt;&gt;</span> .zshrc
+<span class="bu">source</span> .zshrc
+<span class="ex">stack</span></code></pre></div>
+<h3 id="project-directory">Project Directory</h3>
+<p>With Stack installed, we will need to create our project directory.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~
+<span class="fu">mkdir</span> -p webBookmarks</code></pre></div>
+<p>We will also need to define some additional directories for our project.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/webBookmarks
+<span class="fu">mkdir</span> -p app src</code></pre></div>
+<p>With the directories in place, create the empty project files.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/webBookmarks
+<span class="fu">touch</span> app/Main.hs src/Database.hs src/Model.hs src/View.hs src/Controller.hs Setup.hs</code></pre></div>
+<h3 id="yaml">YAML</h3>
+<p>To use Stack, you will need to define a <code>stack.yaml</code> file in the root of the directory.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/webBookmarks
+<span class="fu">touch</span> stack.yaml</code></pre></div>
+<p>Go ahead and open this file with your favorite text editor and copy this information into the <code>stack.yaml</code> file.</p>
+<div class="sourceCode"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="fu">resolver:</span><span class="at"> lts-6.7</span>
+<span class="fu">packages:</span>
+<span class="kw">-</span> <span class="st">'.'</span>
+<span class="fu">extra-deps:</span>
+<span class="kw">-</span> aeson-0.8.1.1
+<span class="kw">-</span> digestive-functors-heist-0.8.6.2
+<span class="kw">-</span> digestive-functors-snap-0.6.1.3
+<span class="kw">-</span> hashmap-1.3.1.1
+<span class="fu">flags:</span><span class="at"> </span><span class="kw">{}</span>
+<span class="fu">extra-package-dbs:</span><span class="at"> </span><span class="kw">[]</span></code></pre></div>
+<h2 id="cabal">Cabal</h2>
+<p>We will also need an <code>webBookmarks.cabal</code> file which Stack will use to build our project. Make sure this file is located in the root of the project.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/webBookmarks
+<span class="fu">touch</span> webBookmarks.cabal</code></pre></div>
+<p>Go ahead and open this file with your favorite text editor and copy this information into the <code>webBookmarks.cabal</code> file.</p>
+<div class="sourceCode"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="fu">name:</span><span class="at">                webBookmarks</span>
+<span class="fu">version:</span><span class="at">             0.0.0.0</span>
+<span class="fu">author:</span><span class="at">              David Lettier</span>
+<span class="fu">copyright:</span><span class="at">           2016 David Lettier</span>
+<span class="fu">category:</span><span class="at">            Web</span>
+<span class="fu">build-type:</span><span class="at">          Simple</span>
+<span class="kw">-</span>- <span class="fu">extra-source-files:</span>
+<span class="fu">cabal-version:</span><span class="at">       &gt;=1.10</span>
+
+library
+  <span class="fu">hs-source-dirs:</span><span class="at">      src</span>
+  <span class="fu">exposed-modules:</span><span class="at">     Database</span>
+                     , Model
+                     , View
+                     , Controller
+  <span class="fu">ghc-options:</span><span class="at">         -ddump-minimal-imports -fwarn-unused-imports</span>
+  <span class="fu">build-depends:</span><span class="at">       base &gt;= 4.7 &amp;&amp; &lt; 5</span>
+                     , snap == 0.14.*
+                     , text
+                     , hashmap
+                     , aeson == 0.8.1.1
+                     , data-default-class
+                     , monad-control
+                     , monad-logger
+                     , resourcet
+                     , bytestring
+                     , transformers
+                     , persistent
+                     , persistent-sqlite
+                     , persistent-template
+  <span class="fu">default-language:</span><span class="at">    Haskell2010</span>
+
+executable webBookmarks-exe
+  <span class="fu">hs-source-dirs:</span><span class="at">      app</span>
+  <span class="fu">main-is:</span><span class="at">             Main.hs</span>
+  <span class="fu">ghc-options:</span><span class="at">         -threaded -rtsopts -with-rtsopts=-N -ddump-minimal-imports -fwarn-unused-imports</span>
+  <span class="fu">build-depends:</span><span class="at">       base</span>
+                     , webBookmarks
+                     , snap == 0.14.*
+  <span class="fu">default-language:</span><span class="at">    Haskell2010</span></code></pre></div>
+<p>With the <code>webBookmarks.cabal</code> in place, you can finalize the Stack setup.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/webBookmarks
+<span class="ex">stack</span> setup</code></pre></div>
+<h2 id="project-structure">Project Structure</h2>
+<p>With all of the files and directories in place you should end up with:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">webBookmarks/</span>
+  <span class="ex">app/Main.hs</span>
+
+  <span class="ex">src/Database.hs</span>
+  <span class="ex">src/Model.hs</span>
+  <span class="ex">src/View.hs</span>
+  <span class="ex">src/Controller.hs</span>
+
+  <span class="ex">stack.yaml</span>
+  <span class="ex">webBookmarks.cabal</span>
+  <span class="ex">Setup.hs</span></code></pre></div>
+<p><a href="#" name="source_code"></a></p>
+<h1 id="source-code">Source Code</h1>
+<p>Below are the main source code files for the web API software. Be sure to read the source code comments as you follow along.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Comments look like this in Haskell.</span></code></pre></div>
+<h2 id="setup.hs">Setup.hs</h2>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Distribution.Simple</span>
+main <span class="fu">=</span> defaultMain</code></pre></div>
+<p><code>Setup.hs</code> is the simplest and boilerplate for this Cabal based project.</p>
+<h2 id="database.hs">Database.hs</h2>
+<p>The first major module is <code>Database.hs</code> located in <code>src/</code>. It is here that we connect to the <a href="https://www.sqlite.org/about.html">SQLite</a> database, create our web bookmarks table, and provide functions for inserting, retrieving and deleting persisted web bookmarks.</p>
+<p>Out of convenience we will use SQLite but the <a href="http://www.yesodweb.com/book/persistent">Persistent</a> library allows one to use other databases such as MongoDB or PostgreSQL for example. The resulting database will be located in the <code>webBookmarks_default.db</code> file unless the environment variable <code>$WEB_BOOKMARKS_DB_CONN</code> is set.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">{-</span>
+<span class="co">  David Lettier (C) 2016.</span>
+<span class="co">  http://www.lettier.com/</span>
+<span class="co">-}</span>
+
+<span class="ot">{-# LANGUAGE OverloadedStrings #-}</span> <span class="co">-- Language Extensions</span>
+
+<span class="co">-- We will export the following functions</span>
+<span class="co">-- These will be used in Main.hs and Controller.hs</span>
+
+<span class="kw">module</span> <span class="dt">Database</span> (
+    dbMigration
+  , getBookmarks
+  , getBookmarkById
+  , insertBookmark
+  , updateBookmarkById
+  , deleteBookmarkById
+) <span class="kw">where</span>
+
+<span class="co">-- Here we import our custom modules: Model and View</span>
+<span class="co">-- These are defined in src/Model.hs and src/View.hs</span>
+
+<span class="kw">import </span><span class="dt">Model</span>
+<span class="kw">import </span><span class="dt">View</span>
+
+<span class="co">-- These are our build dependencies</span>
+
+<span class="kw">import </span><span class="dt">System.Environment</span> <span class="co">-- To ge the DB connection string</span>
+
+<span class="co">-- Deals with strings and integers</span>
+
+<span class="kw">import </span><span class="dt">Data.Int</span>
+<span class="kw">import </span><span class="dt">Data.Text</span>
+<span class="kw">import </span><span class="dt">Data.ByteString</span>
+<span class="kw">import </span><span class="dt">Data.ByteString.Char8</span>
+<span class="kw">import </span><span class="dt">Data.ByteString.Lazy</span>
+
+<span class="co">-- Needed for `fromMaybe`</span>
+
+<span class="kw">import </span><span class="dt">Data.Maybe</span>
+
+<span class="co">-- For dealing with JSON</span>
+
+<span class="kw">import </span><span class="dt">Data.Aeson</span>
+
+<span class="co">-- Used in the `withDbRun` type signature</span>
+
+<span class="kw">import </span><span class="dt">Control.Monad.Trans.Resource</span>
+<span class="kw">import </span><span class="dt">Control.Monad.Trans.Control</span>
+<span class="kw">import </span><span class="dt">Control.Monad.Logger</span>
+
+<span class="co">-- Needed for interfacing with SQLite</span>
+
+<span class="kw">import </span><span class="dt">Database.Persist</span>
+<span class="kw">import </span><span class="dt">Database.Persist.Class</span>
+<span class="kw">import </span><span class="dt">Database.Persist.Sqlite</span> <span class="kw">as</span> <span class="dt">DbSql</span>
+
+<span class="co">-- Gather the database connection string from the environment</span>
+<span class="co">-- If not set use the default</span>
+
+<span class="ot">sqliteConnString ::</span> <span class="dt">IO</span> <span class="dt">Data.Text.Text</span>
+sqliteConnString <span class="fu">=</span> <span class="kw">do</span>
+  maybeDbConnString <span class="ot">&lt;-</span> lookupEnv <span class="st">&quot;WEB_BOOKMARKS_DB_CONN&quot;</span>
+  return <span class="fu">$</span> Data.Text.pack <span class="fu">$</span> fromMaybe <span class="st">&quot;webBookmarks_default.db&quot;</span> maybeDbConnString
+
+<span class="co">-- Needed for each database transaction (inserting, updating, retrieval, deleting)</span>
+
+<span class="ot">withDbRun ::</span> <span class="dt">SqlPersistT</span> (<span class="dt">NoLoggingT</span> (<span class="dt">ResourceT</span> <span class="dt">IO</span>)) b <span class="ot">-&gt;</span> <span class="dt">IO</span> b
+withDbRun command <span class="fu">=</span> <span class="kw">do</span>
+  connString <span class="ot">&lt;-</span> sqliteConnString
+  runSqlite connString command
+
+<span class="co">-- This will create our web bookmarks table if it does not already exist</span>
+<span class="co">-- Persistent will assist with update our table schema should our model change</span>
+
+<span class="ot">dbMigration ::</span> <span class="dt">IO</span> ()
+dbMigration <span class="fu">=</span> withDbRun <span class="fu">$</span> runMigration <span class="fu">$</span> migrate entityDefs <span class="fu">$</span> entityDef (<span class="dt">Nothing</span><span class="ot"> ::</span> <span class="dt">Maybe</span> <span class="dt">Bookmark</span>)
+
+<span class="co">-- Helper function to convert the URL ID string to the needed 64 bit integer primary key</span>
+
+<span class="ot">getBookmarkIdKey ::</span> <span class="dt">Maybe</span> <span class="dt">Data.ByteString.ByteString</span> <span class="ot">-&gt;</span> <span class="dt">Key</span> <span class="dt">Bookmark</span>
+getBookmarkIdKey maybeIdBS <span class="fu">=</span> toSqlKey bookmarkIdInt64
+  <span class="kw">where</span>
+    <span class="co">-- If we receive `Nothing` for the ID, we will return an invalid ID of `-1`</span>
+    bookmarkIdBS <span class="fu">=</span> fromMaybe (<span class="st">&quot;-1&quot;</span><span class="ot"> ::</span> <span class="dt">Data.ByteString.ByteString</span>) maybeIdBS
+    <span class="co">-- Convert the string the needed 64 bit integer</span>
+    bookmarkIdInt64 <span class="fu">=</span> read (Data.ByteString.Char8.unpack bookmarkIdBS)<span class="ot"> ::</span> <span class="dt">Int64</span>
+
+<span class="co">-- Retrieves multiple bookmark rows from our table starting at `start` and up to the `limit`</span>
+
+<span class="ot">getBookmarks ::</span> <span class="dt">Maybe</span> <span class="dt">Data.ByteString.ByteString</span> <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">Data.ByteString.ByteString</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> [<span class="dt">Entity</span> <span class="dt">Bookmark</span>]
+getBookmarks maybeLimitTo maybeOffsetBy <span class="fu">=</span> <span class="kw">do</span>
+  <span class="co">-- If the limit and offset are `Nothing`, we will use the defaults 10 for the limit and 0 for the offset</span>
+  <span class="kw">let</span> limitToBS  <span class="fu">=</span> fromMaybe (<span class="st">&quot;10&quot;</span><span class="ot"> ::</span> <span class="dt">Data.ByteString.ByteString</span>) maybeLimitTo
+  <span class="kw">let</span> offsetByBS <span class="fu">=</span> fromMaybe (<span class="st">&quot;0&quot;</span><span class="ot"> ::</span> <span class="dt">Data.ByteString.ByteString</span>) maybeOffsetBy
+  <span class="co">-- Converts the strings to integers</span>
+  <span class="kw">let</span> limitToInt  <span class="fu">=</span> read (Data.ByteString.Char8.unpack limitToBS)<span class="ot"> ::</span> <span class="dt">Int</span>
+  <span class="kw">let</span> offsetByInt <span class="fu">=</span> read (Data.ByteString.Char8.unpack offsetByBS)<span class="ot"> ::</span> <span class="dt">Int</span>
+  <span class="co">-- The actual database call</span>
+  withDbRun <span class="fu">$</span> DbSql.selectList ([]<span class="ot"> ::</span> [<span class="dt">Filter</span> <span class="dt">Bookmark</span>]) [<span class="dt">LimitTo</span> limitToInt, <span class="dt">OffsetBy</span> offsetByInt]
+
+<span class="ot">getBookmarkById ::</span> <span class="dt">Maybe</span> <span class="dt">Data.ByteString.ByteString</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Key</span> <span class="dt">Bookmark</span>, <span class="dt">Maybe</span> <span class="dt">Bookmark</span>)
+getBookmarkById maybeIdBS <span class="fu">=</span> <span class="kw">do</span>
+  <span class="co">-- Get the bookmark primary key</span>
+  <span class="kw">let</span> bookmarkIdKey <span class="fu">=</span> getBookmarkIdKey maybeIdBS
+  <span class="co">-- Retrieve the bookmark from the database</span>
+  maybeBookmark <span class="ot">&lt;-</span> withDbRun <span class="fu">$</span> DbSql.get bookmarkIdKey
+  <span class="co">-- Return both the primary key and maybe the bookmark (if it actually exists in the database)</span>
+  return (bookmarkIdKey, maybeBookmark)
+
+<span class="ot">insertBookmark ::</span> <span class="dt">Bookmark</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Key</span> <span class="dt">Bookmark</span>)
+<span class="co">-- Create a new bookmark row in the database</span>
+insertBookmark bookmark <span class="fu">=</span> withDbRun <span class="fu">$</span> DbSql.insert bookmark
+
+<span class="ot">updateBookmarkById ::</span> <span class="dt">Maybe</span> <span class="dt">Data.ByteString.ByteString</span> <span class="ot">-&gt;</span> <span class="dt">BookmarkJSON</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Key</span> <span class="dt">Bookmark</span>, <span class="dt">Maybe</span> <span class="dt">Bookmark</span>)
+updateBookmarkById maybeIdBS bookmarkJSON <span class="fu">=</span> <span class="kw">do</span>
+  <span class="kw">let</span> bookmarkIdKey <span class="fu">=</span> getBookmarkIdKey maybeIdBS
+  <span class="co">-- Look up the bookmark in the database</span>
+  (bookmarkKeyId, maybeBookmark) <span class="ot">&lt;-</span> getBookmarkById maybeIdBS
+  <span class="kw">case</span> maybeBookmark <span class="kw">of</span>
+    <span class="co">-- If the book mark does not exist, return `Nothing`</span>
+    <span class="dt">Nothing</span> <span class="ot">-&gt;</span> return (bookmarkKeyId, <span class="dt">Nothing</span>)
+    <span class="co">-- If the book mark does exist</span>
+    <span class="dt">Just</span> bookmark <span class="ot">-&gt;</span> <span class="kw">do</span>
+      <span class="co">-- Create an updated bookmark record</span>
+      <span class="kw">let</span> bookmarkUpdated <span class="fu">=</span> <span class="dt">Bookmark</span> {
+          <span class="co">-- The JSON maybe not have the title so use the bookmark's current title</span>
+          bookmarkTitle <span class="fu">=</span> fromMaybe (bookmarkTitle bookmark) (bookmarkJSONTitle bookmarkJSON)
+          <span class="co">-- The JSON maybe not have the URL so use the bookmark's current URL</span>
+        , bookmarkUrl <span class="fu">=</span> fromMaybe (bookmarkUrl bookmark) (bookmarkJSONUrl bookmarkJSON)
+      }
+      <span class="co">-- Update the bookmark's title and URL in the database</span>
+      withDbRun <span class="fu">$</span> DbSql.update bookmarkKeyId [
+            <span class="dt">BookmarkTitle</span> <span class="fu">=.</span> bookmarkTitle bookmarkUpdated
+          , <span class="dt">BookmarkUrl</span> <span class="fu">=.</span> bookmarkUrl bookmarkUpdated
+        ]
+      return (bookmarkKeyId, <span class="dt">Just</span> bookmarkUpdated)
+
+<span class="ot">deleteBookmarkById ::</span> <span class="dt">Maybe</span> <span class="dt">Data.ByteString.ByteString</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Key</span> <span class="dt">Bookmark</span>, <span class="dt">Maybe</span> <span class="dt">Bookmark</span>)
+deleteBookmarkById maybeIdBS <span class="fu">=</span> <span class="kw">do</span>
+  <span class="kw">let</span> bookmarkIdKey <span class="fu">=</span> getBookmarkIdKey maybeIdBS
+  <span class="co">-- Look up the bookmark in the database</span>
+  (bookmarkKeyId, maybeBookmark) <span class="ot">&lt;-</span> getBookmarkById maybeIdBS
+  <span class="kw">case</span> maybeBookmark <span class="kw">of</span>
+    <span class="co">-- No bookmark?</span>
+    <span class="dt">Nothing</span> <span class="ot">-&gt;</span> return (bookmarkKeyId, <span class="dt">Nothing</span>)
+    <span class="co">-- Bookmark?</span>
+    <span class="dt">Just</span> bookmark <span class="ot">-&gt;</span> <span class="kw">do</span>
+      <span class="co">-- Delete the bookmark from the database</span>
+      withDbRun <span class="fu">$</span> DbSql.delete bookmarkKeyId
+      return (bookmarkKeyId, <span class="dt">Just</span> bookmark)</code></pre></div>
+<h2 id="model.hs">Model.hs</h2>
+<p>The second major module is <code>Model.hs</code> located in <code>src/</code>. It is here that we define what exactly is a bookmark according to our system.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">{-</span>
+<span class="co">  David Lettier (C) 2016.</span>
+<span class="co">  http://www.lettier.com/</span>
+<span class="co">-}</span>
+
+<span class="co">-- Various language extensions needed to compile Model.hs</span>
+<span class="co">-- Feel free to lookup each one</span>
+
+<span class="co">{-# LANGUAGE</span>
+<span class="co">    OverloadedStrings</span>
+<span class="co">  , EmptyDataDecls</span>
+<span class="co">  , GeneralizedNewtypeDeriving</span>
+<span class="co">  , MultiParamTypeClasses</span>
+<span class="co">  , DeriveGeneric</span>
+<span class="co">  , GADTs</span>
+<span class="co">  , TypeFamilies</span>
+<span class="co">  , TemplateHaskell</span>
+<span class="co">  , QuasiQuotes</span>
+<span class="co">  , FlexibleInstances</span>
+<span class="co">  , FlexibleContexts</span>
+<span class="co">  , StandaloneDeriving #-}</span>
+
+<span class="co">-- Export our `Bookmark` record (model),</span>
+<span class="co">-- the entity (bookmark) definition,</span>
+<span class="co">-- and the entity fields' setters and getters</span>
+
+<span class="kw">module</span> <span class="dt">Model</span> (
+    <span class="dt">Bookmark</span>(<span class="fu">..</span>)
+  , entityDefs
+  , <span class="dt">EntityField</span>(<span class="fu">..</span>)
+) <span class="kw">where</span>
+
+<span class="co">-- Needed for encoding and decoding to/from JSON</span>
+
+<span class="kw">import </span><span class="dt">GHC.Generics</span>
+<span class="kw">import </span><span class="dt">Data.Aeson</span>
+<span class="kw">import </span><span class="dt">Data.Default.Class</span>
+
+<span class="co">-- Needed for generating our bookmark entity</span>
+
+<span class="kw">import </span><span class="dt">Database.Persist</span>
+<span class="kw">import </span><span class="dt">Database.Persist.Class</span>
+<span class="kw">import </span><span class="dt">Database.Persist.TH</span>
+
+<span class="co">-- Generates our `BookmarkEntity` instance and `Bookmark` record</span>
+
+share [mkPersist sqlSettings, mkSave <span class="st">&quot;entityDefs&quot;</span>][persistLowerCase|
+  Bookmark
+    -- Two fields
+    title String
+    url   String
+    deriving Show Generic
+|]
+
+<span class="co">-- Defines the ToJSON interface for our `Bookmark` record</span>
+<span class="co">-- This will take a `Bookmark` record and convert it to JSON</span>
+<span class="co">-- For example:</span>
+<span class="co">-- &gt; let x = Bookmark {bookmarkTitle = &quot;one&quot;, bookmarkUrl = &quot;two&quot;}</span>
+<span class="co">-- &gt; toJSON x</span>
+<span class="co">-- Object (fromList [(&quot;url&quot;,String &quot;two&quot;),(&quot;title&quot;,String &quot;one&quot;)])</span>
+<span class="co">-- &gt; encode $ toJSON x</span>
+<span class="co">-- &quot;{\&quot;url\&quot;:\&quot;two\&quot;,\&quot;title\&quot;:\&quot;one\&quot;}&quot;</span>
+
+<span class="kw">instance</span> <span class="dt">ToJSON</span> <span class="dt">Bookmark</span> <span class="kw">where</span>
+  toJSON (<span class="dt">Bookmark</span> title url) <span class="fu">=</span> object [<span class="st">&quot;title&quot;</span> <span class="fu">.=</span> title, <span class="st">&quot;url&quot;</span> <span class="fu">.=</span> url]</code></pre></div>
+<h2 id="view.hs">View.hs</h2>
+<p>The <a href="http://www.json.org/">JSON</a> format will act as our view. All API endpoints will respond with a JSON string.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">{-</span>
+<span class="co">  David Lettier (C) 2016.</span>
+<span class="co">  http://www.lettier.com/</span>
+<span class="co">-}</span>
+
+<span class="co">{-# LANGUAGE</span>
+<span class="co">    OverloadedStrings</span>
+<span class="co">  , DeriveGeneric #-}</span>
+
+<span class="co">-- Export our view (`BookmarkJSON`) and two helper functions for</span>
+<span class="co">-- turning some JSON into a `Bookmark` record or</span>
+<span class="co">-- turning a `Bookmark` record into a JSON string</span>
+
+<span class="kw">module</span> <span class="dt">View</span> (
+    <span class="dt">BookmarkJSON</span>(<span class="fu">..</span>)
+  , bookmarkJSONToBookmark
+  , bookmarkAsJSONLBS <span class="co">-- LBS stands for Lazy Byte String</span>
+) <span class="kw">where</span>
+
+<span class="co">-- Our custom Model module</span>
+
+<span class="kw">import </span><span class="dt">Model</span>
+
+<span class="co">-- Build dependencies</span>
+
+<span class="kw">import </span><span class="dt">GHC.Generics</span>
+<span class="kw">import </span><span class="dt">Data.Int</span>
+<span class="kw">import </span><span class="dt">Data.Text</span>
+<span class="kw">import </span><span class="dt">Data.ByteString</span>
+<span class="kw">import </span><span class="dt">Data.ByteString.Char8</span>
+<span class="kw">import </span><span class="dt">Data.ByteString.Lazy</span>
+<span class="kw">import </span><span class="dt">Data.Maybe</span>
+<span class="kw">import </span><span class="dt">Data.Aeson</span>
+<span class="kw">import </span><span class="dt">Data.Default.Class</span>
+<span class="kw">import </span><span class="dt">Database.Persist</span>
+<span class="kw">import </span><span class="dt">Database.Persist.Class</span>
+
+<span class="co">-- Our &quot;view&quot; or `BookmarkJSON` record</span>
+
+<span class="kw">data</span> <span class="dt">BookmarkJSON</span> <span class="fu">=</span> <span class="dt">BookmarkJSON</span> {
+<span class="ot">    bookmarkJSONTitle ::</span> <span class="dt">Maybe</span> <span class="dt">String</span>
+  ,<span class="ot"> bookmarkJSONUrl ::</span> <span class="dt">Maybe</span> <span class="dt">String</span>
+} <span class="kw">deriving</span> (<span class="dt">Show</span>, <span class="dt">Generic</span>)
+
+<span class="co">-- Here we defined how to parse a JSON string &quot;{\&quot;title\&quot;: \&quot;...\&quot;, \&quot;url\&quot;: \&quot;...\&quot;}&quot;</span>
+<span class="co">-- into a `BookmarkJSON` record</span>
+
+<span class="kw">instance</span> <span class="dt">FromJSON</span> <span class="dt">BookmarkJSON</span> <span class="kw">where</span>
+  parseJSON (<span class="dt">Object</span> v) <span class="fu">=</span>
+    <span class="dt">BookmarkJSON</span> <span class="fu">&lt;$&gt;</span> v <span class="fu">.:?</span>  <span class="st">&quot;title&quot;</span> <span class="co">-- .:? is syntax for parsing a JSON string field into Maybe String</span>
+                 <span class="fu">&lt;*&gt;</span> v <span class="fu">.:?</span>  <span class="st">&quot;url&quot;</span>   <span class="co">-- The JSON string may not have &quot;{\&quot;url\&quot;: \&quot;...\&quot;}&quot;</span>
+                                    <span class="co">-- If that is the case, `bookmarkJSONURL` will be `Nothing`</span>
+
+<span class="co">-- Here we define how to take a `BookmarkJSON` record</span>
+<span class="co">-- and turn it into JSON {&quot;title&quot;: &quot;...&quot;, &quot;url&quot;: &quot;...&quot;}</span>
+<span class="co">-- For example:</span>
+<span class="co">-- &gt; let x = BookmarkJSON {bookmarkJSONTitle = Just &quot;one&quot;, bookmarkJSONUrl = Just &quot;two&quot;}</span>
+<span class="co">-- &gt; toJSON x</span>
+<span class="co">-- Object (fromList [(&quot;url&quot;,String &quot;two&quot;),(&quot;title&quot;,String &quot;one&quot;)])</span>
+<span class="co">-- &gt; encode $ toJSON x</span>
+<span class="co">-- &quot;{\&quot;url\&quot;:\&quot;two\&quot;,\&quot;title\&quot;:\&quot;one\&quot;}&quot;</span>
+
+<span class="kw">instance</span> <span class="dt">ToJSON</span> <span class="dt">BookmarkJSON</span>
+  toJSON (<span class="dt">BookmarkJSON</span> title url) <span class="fu">=</span> object [<span class="st">&quot;title&quot;</span> <span class="fu">.=</span> title, <span class="st">&quot;url&quot;</span> <span class="fu">.=</span> url]
+
+<span class="ot">bookmarkJSONToBookmark ::</span> <span class="dt">BookmarkJSON</span> <span class="ot">-&gt;</span> <span class="dt">Bookmark</span>
+bookmarkJSONToBookmark bookmarkJSON <span class="fu">=</span> <span class="dt">Bookmark</span> titleJSONToTitle urlJSONToUrl
+  <span class="kw">where</span>
+    <span class="co">-- If the JSON didn't have a title, just set the title to an empty string</span>
+    titleJSONToTitle <span class="fu">=</span> fromMaybe <span class="st">&quot;&quot;</span> <span class="fu">$</span> bookmarkJSONTitle bookmarkJSON
+    <span class="co">-- If the JSON didn't have a URL, just set the title to an empty string</span>
+    urlJSONToUrl <span class="fu">=</span> fromMaybe <span class="st">&quot;&quot;</span> <span class="fu">$</span> bookmarkJSONUrl bookmarkJSON
+
+<span class="ot">bookmarkAsJSONLBS ::</span> <span class="dt">Key</span> <span class="dt">Bookmark</span> <span class="ot">-&gt;</span> <span class="dt">Bookmark</span> <span class="ot">-&gt;</span> <span class="dt">Data.ByteString.Lazy.ByteString</span>
+<span class="co">-- Convert a bookmark primary key and `Bookmark` record to a JSON lazy byte string</span>
+<span class="co">-- &quot;{\&quot;id\&quot;: 1, \&quot;title\&quot;: \&quot;...\&quot;, \&quot;url\&quot;: \&quot;...\&quot;}&quot;</span>
+bookmarkAsJSONLBS k b <span class="fu">=</span> encode <span class="fu">.</span> entityIdToJSON <span class="fu">$</span> <span class="dt">Entity</span> k b</code></pre></div>
+<h2 id="controller.hs">Controller.hs</h2>
+<p><code>Controller.hs</code> is the heart and soul of our web API application. This is where we define all of the URL routes for creating, reading, updating, and deleting our web bookmarks.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">{-</span>
+<span class="co">  David Lettier (C) 2016.</span>
+<span class="co">  http://www.lettier.com/</span>
+<span class="co">-}</span>
+
+<span class="ot">{-# LANGUAGE OverloadedStrings #-}</span>
+
+<span class="kw">module</span> <span class="dt">Controller</span> (
+  mainRouter <span class="co">-- We only need to export the `mainRouter` function</span>
+             <span class="co">-- This is used in Main.hs</span>
+) <span class="kw">where</span>
+
+<span class="kw">import </span><span class="dt">Database</span>
+<span class="kw">import </span><span class="dt">Model</span>
+<span class="kw">import </span><span class="dt">View</span>
+<span class="kw">import </span><span class="dt">Snap</span>
+<span class="kw">import </span><span class="dt">Data.Int</span>
+<span class="kw">import </span><span class="dt">Data.Text</span>
+<span class="kw">import </span><span class="dt">Data.ByteString</span>
+<span class="kw">import </span><span class="dt">Data.ByteString.Char8</span>
+<span class="kw">import </span><span class="dt">Data.ByteString.Lazy</span>
+<span class="kw">import </span><span class="dt">Data.Maybe</span>
+<span class="kw">import </span><span class="dt">Data.Aeson</span>
+<span class="kw">import </span><span class="dt">Control.Monad.IO.Class</span> (liftIO, <span class="dt">MonadIO</span>)
+<span class="kw">import </span><span class="dt">Database.Persist</span>
+<span class="kw">import </span><span class="dt">Database.Persist.Class</span>
+
+<span class="co">-- Here is a top level router</span>
+<span class="co">-- This will define the base and bookmarks routes</span>
+
+<span class="ot">mainRouter ::</span> <span class="dt">Snap</span> ()
+mainRouter <span class="fu">=</span>  route [
+                  (    <span class="st">&quot;&quot;</span>, writeBS <span class="st">&quot;&quot;</span>) <span class="co">-- Base / route</span>
+                , (<span class="st">&quot;bookmarks&quot;</span>, bookmarksRouter) <span class="co">-- /bookmarks route</span>
+              ]
+
+<span class="ot">bookmarksRouter ::</span> <span class="dt">Snap</span> ()
+bookmarksRouter <span class="fu">=</span>  route [
+                  (    <span class="st">&quot;&quot;</span>, method <span class="dt">GET</span>    bookmarksRouteIndex)  <span class="co">-- Gets a list of bookmarks</span>
+                , (    <span class="st">&quot;&quot;</span>, method <span class="dt">POST</span>   bookmarksRouteCreate) <span class="co">-- Creates a new bookmark</span>
+                , (<span class="st">&quot;/:id&quot;</span>, method <span class="dt">GET</span>    bookmarksRouteShow)   <span class="co">-- Gets a single bookmark by /:id</span>
+                , (<span class="st">&quot;/:id&quot;</span>, method <span class="dt">PUT</span>    bookmarksRouteUpdate) <span class="co">-- Updates a single bookmark by /:id</span>
+                , (<span class="st">&quot;/:id&quot;</span>, method <span class="dt">DELETE</span> bookmarksRouteDelete) <span class="co">-- Deletes a single bookmark by /:id</span>
+              ]
+
+<span class="ot">bookmarksRouteIndex ::</span> <span class="dt">Snap</span> ()
+bookmarksRouteIndex <span class="fu">=</span> <span class="kw">do</span>
+  <span class="co">-- Get the limit and start paramters (?limit=:limit&amp;start=:start) if sent</span>
+  maybeLimitTo  <span class="ot">&lt;-</span> getParam <span class="st">&quot;limit&quot;</span>
+  maybeOffsetBy <span class="ot">&lt;-</span> getParam <span class="st">&quot;start&quot;</span>
+  <span class="co">-- Get a list or array of bookmarks from the database</span>
+  bookmarks <span class="ot">&lt;-</span> liftIO <span class="fu">$</span> getBookmarks maybeLimitTo maybeOffsetBy
+  <span class="co">-- Set the content type to JSON</span>
+  <span class="co">-- We will be responding with JSON</span>
+  modifyResponse <span class="fu">$</span> setHeader <span class="st">&quot;Content-Type&quot;</span> <span class="st">&quot;application/json&quot;</span>
+  <span class="co">-- Write out the JSON response</span>
+  writeLBS <span class="fu">$</span> encode <span class="fu">$</span> Prelude.map entityIdToJSON bookmarks
+
+<span class="ot">bookmarksRouteShow ::</span> <span class="dt">Snap</span> ()
+bookmarksRouteShow <span class="fu">=</span> <span class="kw">do</span>
+  <span class="co">-- We will start off assuming the bookmark could not be found</span>
+  <span class="co">-- This sets the HTTP status code to 404 (not found)</span>
+  set404AndContentType
+  <span class="co">-- Get the ID parameter</span>
+  maybeBookmarkId <span class="ot">&lt;-</span> getParam <span class="st">&quot;id&quot;</span>
+  <span class="co">-- Get the bookmark primary key and record</span>
+  (bookmarkIdKey, maybeBookmark) <span class="ot">&lt;-</span> liftIO <span class="fu">$</span> getBookmarkById maybeBookmarkId
+  <span class="co">-- Respond with 200 if the bookmark with ID actually exists</span>
+  <span class="co">-- This will write out our JSON response</span>
+  resposndWithMaybeBookmark <span class="dv">200</span> bookmarkIdKey maybeBookmark
+
+<span class="ot">bookmarksRouteCreate ::</span> <span class="dt">Snap</span> ()
+bookmarksRouteCreate <span class="fu">=</span> <span class="kw">do</span>
+  <span class="co">-- Read in the request HTTP body</span>
+  body <span class="ot">&lt;-</span> readRequestBody <span class="dv">50000</span>
+  <span class="co">-- Parse the JSON request body into a `Bookmark` model (record)</span>
+  <span class="kw">let</span> bookmark <span class="fu">=</span> bookmarkJSONToBookmark <span class="fu">$</span> parseBodyToBookmarkJSON body
+  <span class="co">-- Insert the bookmark into the database</span>
+  bookmarkIdKey <span class="ot">&lt;-</span> liftIO <span class="fu">$</span> insertBookmark bookmark
+  <span class="co">-- Set the content type to JSON</span>
+  modifyResponse <span class="fu">$</span> setHeader <span class="st">&quot;Content-Type&quot;</span> <span class="st">&quot;application/json&quot;</span>
+  <span class="co">-- Let the client know that we created a new record (201)</span>
+  <span class="co">-- Respond with the newly created bookmark in JSON format</span>
+  respondWithBookmark <span class="dv">201</span> bookmarkIdKey bookmark
+
+<span class="ot">bookmarksRouteUpdate ::</span> <span class="dt">Snap</span> ()
+bookmarksRouteUpdate <span class="fu">=</span> <span class="kw">do</span>
+  set404AndContentType
+  maybeBookmarkId <span class="ot">&lt;-</span> getParam <span class="st">&quot;id&quot;</span>
+  body <span class="ot">&lt;-</span> readRequestBody <span class="dv">50000</span>
+  <span class="co">-- Parse the request body into `BookmarkJSON`</span>
+  <span class="kw">let</span> bookmarkJSON <span class="fu">=</span> parseBodyToBookmarkJSON body
+  <span class="co">-- Update the bookmark if it exists</span>
+  (bookmarkIdKey, maybeBookmark) <span class="ot">&lt;-</span> liftIO <span class="fu">$</span> updateBookmarkById maybeBookmarkId bookmarkJSON
+  <span class="co">-- If the bookmark exists, tell the client OK (200)</span>
+  <span class="co">-- Respond with the bookmark JSON or an error message in JSON</span>
+  resposndWithMaybeBookmark <span class="dv">200</span> bookmarkIdKey maybeBookmark
+
+<span class="ot">bookmarksRouteDelete ::</span> <span class="dt">Snap</span> ()
+bookmarksRouteDelete <span class="fu">=</span> <span class="kw">do</span>
+  set404AndContentType
+  maybeBookmarkId <span class="ot">&lt;-</span> getParam <span class="st">&quot;id&quot;</span>
+  <span class="co">-- Delete the bookmark in the database if it exists</span>
+  (bookmarkIdKey, maybeBookmark) <span class="ot">&lt;-</span> liftIO <span class="fu">$</span> deleteBookmarkById maybeBookmarkId
+  <span class="co">-- If the bookmark exists, resond with 200 and the bookmark in JSON form</span>
+  <span class="co">-- Otherwise respond with 404 (not found) and an error message in JSON format</span>
+  resposndWithMaybeBookmark <span class="dv">200</span> bookmarkIdKey maybeBookmark
+
+<span class="ot">set404AndContentType ::</span> <span class="dt">Snap</span> ()
+set404AndContentType <span class="fu">=</span> <span class="kw">do</span>
+  <span class="co">-- Set the HTTP status code to 404 (not found)</span>
+  modifyResponse <span class="fu">$</span> setResponseCode <span class="dv">404</span>
+  <span class="co">-- Set the content type as JSON</span>
+  <span class="co">-- This will let the client know what kind of data is being returned</span>
+  <span class="co">-- in the HTTP response body</span>
+  modifyResponse <span class="fu">$</span> setHeader <span class="st">&quot;Content-Type&quot;</span> <span class="st">&quot;application/json&quot;</span>
+
+<span class="ot">parseBodyToBookmarkJSON ::</span> <span class="dt">Data.ByteString.Lazy.ByteString</span> <span class="ot">-&gt;</span> <span class="dt">BookmarkJSON</span>
+<span class="co">-- Parse a raw HTTP body into a `BookmarkJSON` record</span>
+parseBodyToBookmarkJSON body <span class="fu">=</span> fromMaybe (<span class="dt">BookmarkJSON</span> (<span class="dt">Just</span> <span class="st">&quot;&quot;</span>) (<span class="dt">Just</span> <span class="st">&quot;&quot;</span>)) (decode<span class="ot"> body ::</span> <span class="dt">Maybe</span> <span class="dt">BookmarkJSON</span>)
+
+<span class="ot">resposndWithMaybeBookmark ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Key</span> <span class="dt">Bookmark</span> <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">Bookmark</span> <span class="ot">-&gt;</span> <span class="dt">Snap</span>()
+resposndWithMaybeBookmark code bookmarkIdKey maybeBookmark <span class="fu">=</span> <span class="kw">case</span> maybeBookmark <span class="kw">of</span>
+    <span class="co">-- Bookmark not found?</span>
+    <span class="dt">Nothing</span> <span class="ot">-&gt;</span> writeBS (<span class="st">&quot;{\&quot;error\&quot;: \&quot;Not found.\&quot;}&quot;</span><span class="ot"> ::</span> <span class="dt">Data.ByteString.ByteString</span>)
+    <span class="co">-- Bookmark found?</span>
+    <span class="co">-- The code is the HTTP status code</span>
+    <span class="dt">Just</span> bookmark <span class="ot">-&gt;</span> respondWithBookmark code bookmarkIdKey bookmark
+
+<span class="ot">respondWithBookmark ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Key</span> <span class="dt">Bookmark</span> <span class="ot">-&gt;</span> <span class="dt">Bookmark</span> <span class="ot">-&gt;</span> <span class="dt">Snap</span>()
+respondWithBookmark code bookmarkIdKey bookmark <span class="fu">=</span> <span class="kw">do</span>
+  <span class="co">-- Set the HTTP status code</span>
+  modifyResponse <span class="fu">$</span> setResponseCode code
+  <span class="co">-- Write out the bookmark in JSON format into the response body</span>
+  writeLBS <span class="fu">$</span> bookmarkAsJSONLBS bookmarkIdKey bookmark</code></pre></div>
+<h2 id="main.hs">Main.hs</h2>
+<p>At long last we arrive at the starting point for our web server API application. It is here that we run the database migration and initialize the Snap server.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">{-</span>
+<span class="co">  David Lettier (C) 2016.</span>
+<span class="co">  http://www.lettier.com/</span>
+<span class="co">-}</span>
+
+<span class="kw">module</span> <span class="dt">Main</span> <span class="kw">where</span>
+
+<span class="kw">import </span><span class="dt">Database</span>
+<span class="kw">import </span><span class="dt">Controller</span>
+<span class="kw">import </span><span class="dt">Snap</span>
+
+<span class="ot">main ::</span> <span class="dt">IO</span> ()
+main <span class="fu">=</span> <span class="kw">do</span>
+  <span class="co">-- Create or modify the bookmark database table</span>
+  dbMigration
+  <span class="co">-- Begin serving all HTTP requests</span>
+  quickHttpServe mainRouter</code></pre></div>
+<h1 id="build-and-run">Build and Run</h1>
+<p>With the source code in place, we can finally build and run our project.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/webBookmarks
+<span class="ex">stack</span> build
+<span class="ex">.stack-work/dist/x86_64-linux/Cabal-1.22.5.0/build/webBookmarks-exe/webBookmarks-exe</span> -p 55555
+<span class="ex">Listening</span> on http://0.0.0.0:55555/
+
+[<span class="ex">15/Jul</span>/2016:<span class="ex">00</span>:00:0 -0000] Server.httpServe: START, binding to [http://0.0.0.0:55555/]</code></pre></div>
+<h1 id="manual-testing">Manual Testing</h1>
+<p>Normally you would write automated tests to ensure the correctness of the API but for now we will manually test it using <a href="https://curl.haxx.se/docs/manpage.html">cURL</a> or if you like, the <a href="https://www.getpostman.com/">Postman</a> application.</p>
+<h2 id="post-bookmarks">POST /bookmarks</h2>
+<div class="figure">
+<img src="../images/2016-07-15-building-a-haskell-web-api/post.png" class="post-img post-img-small post-img-limit" />
+
+</div>
+<h2 id="get-bookmarks">GET /bookmarks</h2>
+<div class="figure">
+<img src="../images/2016-07-15-building-a-haskell-web-api/get_index.png" class="post-img post-img-small post-img-limit" />
+
+</div>
+<h2 id="put-bookmarks1">PUT /bookmarks/1</h2>
+<div class="figure">
+<img src="../images/2016-07-15-building-a-haskell-web-api/put.png" class="post-img post-img-small post-img-limit" />
+
+</div>
+<h2 id="get-bookmarks1">GET /bookmarks/1</h2>
+<div class="figure">
+<img src="../images/2016-07-15-building-a-haskell-web-api/get_show.png" class="post-img post-img-small post-img-limit" />
+
+</div>
+<h2 id="delete-bookmarks1">DELETE /bookmarks/1</h2>
+<div class="figure">
+<img src="../images/2016-07-15-building-a-haskell-web-api/delete.png" class="post-img post-img-small post-img-limit" />
+
+</div>
+<h2 id="get-bookmarks-1">GET /bookmarks</h2>
+<div class="figure">
+<img src="../images/2016-07-15-building-a-haskell-web-api/get_index_empty.png" class="post-img post-img-small post-img-limit" />
+
+</div>
+<h1 id="recap">Recap</h1>
+<p>Using Persistent and the <a href="http://snapframework.com/">Snap Haskell web framework</a> , we built a RESTful CRUD API for creating, reading, updating, and deleting web bookmarks. We followed the <a href="https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller">MVC architecture pattern</a> and split our application into <code>Main.hs</code>, <code>Database.hs</code>, <code>Model.hs</code>, <code>View.hs</code>, and <code>Controller.hs</code>.</p>
+</div>
+<div class="post-footer">
+  <div class="display-left">
+    <h2 class="post-footer-cta">
+      Hi there!
+      <a href="../" title="Home">Browse</a>
+      and subscribe to the
+      <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
+      for more content.
+    </h2>
+  </div>
+  <div class="display-right text-align-right post-footer-copyright">
+    <h4>
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2017</span> David Lettier
+    </h4>
+  </div>
+</div>
+
+    </div>
+    <div class="share-toolbox addthis_sharing_toolbox"></div>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4fc2bc7a00a9352b"></script>
+    <script>
+      (function(i,s,o,g,r,a,m){
+        i.GoogleAnalyticsObject = r;
+        i[r] = i[r] || function () { (i[r].q = i[r].q || []).push(arguments); };
+        i[r].l=1*new Date();
+        a=s.createElement(o);
+        m=s.getElementsByTagName(o)[0];
+        a.async=1;
+        a.src=g;
+        m.parentNode.insertBefore(a,m);
+      })(
+        window,
+        document,
+        'script',
+        '//www.google-analytics.com/analytics.js',
+        'ga'
+      );
+      ga('create', 'UA-34323684-2', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </body>
+</html>

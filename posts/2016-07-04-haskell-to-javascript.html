@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta property="og:site_name" content="Lettier">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Haskell to JavaScript by David Lettier">
+    <meta property="og:image" content="https://lettier.github.io/images/2016-07-04-haskell-to-javascript/jumbotron_image.jpg">
+    <meta property="og:url" content="https://lettier.github.io/posts/2016-07-04-haskell-to-javascript.html">
+    <meta property="og:description" content="Using Reflex-FRP, we generate a stylized push button interface widget written in Haskell and playable in a web browser.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="David Lettier">
+    <meta name="description" content="Using Reflex-FRP, we generate a stylized push button interface widget written in Haskell and playable in a web browser.">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/pandoc.css">
+    <link rel="stylesheet" type="text/css" href="../css/default.css">
+    <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
+    
+      
+        <title>Haskell to JavaScript by David Lettier</title>
+      
+    
+  </head>
+  <body>
+    <div id="top"></div>
+    <div class="nav-bar-container nav-bar-background">
+      <div class="nav-bar-buttons-container">
+        <a href="../" title="Home">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-home nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="../rss.xml" title="RSS" type="application/rss+xml" target="_blank">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-rss nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="http://www.lettier.com/" title="Lettier.com">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <img src="../images/logo.svg" width="30" height="30" alt="Lettier.com" class="lettier-icon-img">
+            </div>
+          </div>
+        </a>
+        <a href="https://www.github.com/lettier" title="GitHub">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-github nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.linkedin.com/in/lettier" title="LinkedIn">
+          <div class="nav-bar-button-container">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-linkedin nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.hackerrank.com/lettier" title="HackerRank">
+          <div class="nav-bar-button-container nav-button-container-second-last">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-trophy nav-bar-icon nav-bar-icon-second-last"></i>
+            </div>
+          </div>
+        </a>
+        <a href="https://www.behance.net/dlettier" title="Behance">
+          <div class="nav-bar-button-container nav-bar-button-container-last">
+            <div class="nav-bar-icon-container">
+              <i class="fa fa-behance nav-bar-icon"></i>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="jumbotron">
+      <div class="absolute-top jumbotron jumbotron-background-image" style="background-image: url('/images/2016-07-04-haskell-to-javascript/jumbotron_image.jpg');">
+      </div>
+    </div>
+    <div class="container jumbotron-text-position-container">
+      <div class="jumbotron-text-width-container">
+        <h1 class="jumbotron-text jumbotron-text-background">
+          
+            Haskell to JavaScript
+          
+          <span class="title-cursor">|</span>
+        </h1>
+      </div>
+    </div>
+    <div class="container content-container">
+      <div class="post-body">
+  <!--https://pixabay.com/en/black-button-communication-control-21166/-->
+<h1 id="preview">Preview</h1>
+<p>Below you see the stylized push button we will create with Haskell.</p>
+<div class="figure">
+<img src="../images/2016-07-04-haskell-to-javascript/demo.gif" class="post-img post-img-limit post-img-small" />
+
+</div>
+<p>Notice how the button class and its inner contents change with every mouse click.</p>
+<h1 id="setup">Setup</h1>
+<p>In order to establish our build pipeline, we will need to setup our environment with a few tools, directories, and project files.</p>
+<h2 id="stack">Stack</h2>
+<p><a href="https://github.com/commercialhaskell/stack">Stack</a> will handle all of our Haskell environment needs from installing the compiler to managing our Haskell dependencies. The instructions contain all of the <a href="http://docs.haskellstack.org/en/stable/install_and_upgrade/#installupgrade">installation</a> information you will need.</p>
+<p>For a general Linux installation you could do:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> Downloads
+<span class="fu">wget</span> https://www.stackage.org/stack/linux-x86_64
+<span class="fu">tar</span> xvzf stack-1.1.2-linux-x86_64.tar.gz
+<span class="bu">cd</span> ~
+<span class="bu">echo</span> <span class="st">'export PATH=&quot;$HOME/Downloads/stack-1.1.2-linux-x86_64/:$PATH&quot;'</span> <span class="op">&gt;&gt;</span> .bashrc
+<span class="bu">source</span> .bashrc
+<span class="co"># Or if you use ZSH.</span>
+<span class="bu">echo</span> <span class="st">'export PATH=&quot;$HOME/Downloads/stack-1.1.2-linux-x86_64/:$PATH&quot;'</span> <span class="op">&gt;&gt;</span> .zshrc
+<span class="bu">source</span> .zshrc
+<span class="ex">stack</span></code></pre></div>
+<h3 id="project-directory">Project Directory</h3>
+<p>With Stack installed, we will need to create our project directory.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~
+<span class="fu">mkdir</span> -p onOffButton</code></pre></div>
+<p>We will also need to define some additional directories for our project.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/onOffButton
+<span class="fu">mkdir</span> -p app dist src static/scss</code></pre></div>
+<p>With the directories in place, create the empty project files.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/onOffButton
+<span class="fu">touch</span> app/Main.hs src/Lib.hs static/scss/style.scss</code></pre></div>
+<h3 id="yaml">YAML</h3>
+<p>To use Stack, you will need to define a <code>stack.yaml</code> file in the root of the directory.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/onOffButton
+<span class="fu">touch</span> stack.yaml</code></pre></div>
+<p>Go ahead and open this file with your favorite text editor and copy this information into the <code>stack.yaml</code> file.</p>
+<div class="sourceCode"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="fu">resolver:</span><span class="at"> lts-6.4</span>
+<span class="fu">packages:</span>
+<span class="kw">-</span> <span class="st">'.'</span>
+<span class="fu">extra-deps:</span>
+  <span class="kw">-</span> haskell-src-exts-1.16.0.1
+  <span class="kw">-</span> ref-tf-0.4
+  <span class="kw">-</span> reflex-0.4.0
+  <span class="kw">-</span> reflex-dom-0.3
+  <span class="kw">-</span> hlint-1.9.35
+<span class="fu">flags:</span><span class="at"> </span><span class="kw">{}</span>
+<span class="fu">extra-package-dbs:</span><span class="at"> </span><span class="kw">[]</span>
+<span class="fu">compiler:</span><span class="at"> ghcjs-0.2.0.20160414_ghc-7.10.3</span>
+<span class="fu">compiler-check:</span><span class="at"> match-exact</span>
+<span class="fu">setup-info:</span>
+  <span class="fu">ghcjs:</span>
+    <span class="fu">source:</span>
+      <span class="fu">ghcjs-0.2.0.20160414_ghc-7.10.3:</span>
+        <span class="fu">url:</span><span class="at"> https://s3.amazonaws.com/ghcjs/ghcjs-0.2.0.20160414_ghc-7.10.3.tar.gz</span>
+        <span class="fu">sha1:</span><span class="at"> 6d6f307503be9e94e0c96ef1308c7cf224d06be3</span></code></pre></div>
+<h2 id="cabal">Cabal</h2>
+<p>We will also need an <code>onOffButton.cabal</code> file which Stack will use to build our project. Make sure this file is located in the root of the project.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/onOffButton
+<span class="fu">touch</span> onOffButton.cabal</code></pre></div>
+<p>Go ahead and open this file with your favorite text editor and copy this information into the <code>onOffButton.cabal</code> file.</p>
+<div class="sourceCode"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="fu">name:</span><span class="at">                onOffButton</span>
+<span class="fu">author:</span><span class="at">              David Lettier</span>
+<span class="fu">version:</span><span class="at">             0.0.0.1</span>
+<span class="fu">build-type:</span><span class="at">          Simple</span>
+<span class="fu">cabal-version:</span><span class="at">       &gt;=1.10</span>
+
+library
+  <span class="fu">hs-source-dirs:</span><span class="at">      src</span>
+  <span class="fu">exposed-modules:</span><span class="at">     Lib</span>
+  <span class="fu">build-depends:</span><span class="at">       base</span>
+                     , haskell-src-exts &gt;= 1.16 &amp;&amp; &lt; 1.18
+                     , reflex == 0.4.0
+                     , reflex-dom
+                     , containers == 0.5.*
+                     , safe == 0.3.*
+  <span class="fu">default-language:</span><span class="at">    Haskell2010</span>
+
+executable onOffButton-exe
+  <span class="fu">hs-source-dirs:</span><span class="at">      app</span>
+  <span class="fu">main-is:</span><span class="at">             Main.hs</span>
+  <span class="fu">ghc-options:</span><span class="at">         -threaded -rtsopts -with-rtsopts=-N</span>
+  <span class="fu">build-depends:</span><span class="at">       base</span>
+                     , onOffButton
+                     , haskell-src-exts &gt;= 1.16 &amp;&amp; &lt; 1.18
+                     , reflex == 0.4.0
+                     , reflex-dom
+                     , containers == 0.5.*
+                     , safe == 0.3.*
+  <span class="fu">default-language:</span><span class="at">    Haskell2010</span></code></pre></div>
+<h2 id="ghcjs">GHCJS</h2>
+<p><a href="https://github.com/ghcjs/ghcjs">GHCJS</a> will be our main dependency. This is the dependency that will help transpile our Haskell source code to JavaScript.</p>
+<p>At this point we can finish the Stack setup.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/onOffButton
+<span class="ex">stack</span> setup <span class="co"># This will take awhile.</span></code></pre></div>
+<h2 id="nvm">NVM</h2>
+<p>To make building the project easier, we will use some NPM scripts but first we need to install <a href="https://nodejs.org/en/">Node.js</a> using <a href="https://github.com/creationix/nvm">NVM</a>.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/Downloads
+<span class="fu">wget</span> -qO- https://raw.githubusercontent.com/creationix/nvm/v0.31.2/install.sh <span class="kw">|</span> <span class="fu">bash</span>
+<span class="bu">cd</span> ~/onOffButton
+<span class="bu">echo</span> <span class="st">'v4.0.0'</span> <span class="op">&gt;</span> .nvmrc
+<span class="ex">nvm</span> use</code></pre></div>
+<h2 id="npm-package">NPM Package</h2>
+<p>Our build scripts will be defined in a <a href="https://www.npmjs.com/">NPM</a> <code>package.json</code> file.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/onOffButton
+<span class="fu">touch</span> package.json</code></pre></div>
+<p>Open up your favorite text editor and copy this into the <code>package.json</code> file.</p>
+<div class="sourceCode"><pre class="sourceCode json"><code class="sourceCode json"><span class="fu">{</span>
+  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;onOffButton&quot;</span><span class="fu">,</span>
+  <span class="dt">&quot;author&quot;</span><span class="fu">:</span> <span class="st">&quot;David Lettier&quot;</span><span class="fu">,</span>
+  <span class="dt">&quot;scripts&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+    <span class="dt">&quot;scss&quot;</span><span class="fu">:</span> <span class="st">&quot;mkdir -p dist/ &amp;&amp; node-sass --output-style compressed static/scss/style.scss dist/css/style.css&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;autoprefixer&quot;</span><span class="fu">:</span> <span class="st">&quot;postcss -u autoprefixer -r dist/css/style.css dist/css/style.css&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;uglify&quot;</span><span class="fu">:</span> <span class="st">&quot;mkdir -p dist/ &amp;&amp; uglifyjs dist/lib.js -o dist/lib.js -c -m &amp;&amp; uglifyjs dist/rts.js -o dist/rts.js -c -m &amp;&amp; uglifyjs dist/out.js -o dist/out.js -c -m&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;copy:stackbuild&quot;</span><span class="fu">:</span> <span class="st">&quot;mkdir -p dist/ &amp;&amp; cp -R ./.stack-work/install/x86_64-linux/lts-6.4/ghcjs-0.2.0_ghc-7.10.3/bin/onOffButton-exe.jsexe/. dist&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;clean:haskell:full&quot;</span><span class="fu">:</span> <span class="st">&quot;stack clean --full&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;clean:haskell&quot;</span><span class="fu">:</span> <span class="st">&quot;stack clean&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;clean:dist&quot;</span><span class="fu">:</span> <span class="st">&quot;rm -rf dist &amp;&amp; mkdir -p dist/&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;clean:all&quot;</span><span class="fu">:</span> <span class="st">&quot;npm run clean:haskell &amp;&amp; npm run clean:dist&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;build:js&quot;</span><span class="fu">:</span> <span class="st">&quot;stack build &amp;&amp; npm run copy:stackbuild &amp;&amp; npm run uglify&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;build:css&quot;</span><span class="fu">:</span> <span class="st">&quot;npm run scss &amp;&amp; npm run autoprefixer&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;build:dist&quot;</span><span class="fu">:</span> <span class="st">&quot;mkdir -p dist/ &amp;&amp; npm run build:js &amp;&amp; npm run build:css&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;serve&quot;</span><span class="fu">:</span> <span class="st">&quot;browser-sync start --server 'dist/' --files 'dist/css/*.css, dist/*.js, **/*.html, !node_modules/**/*.html'&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;watch:index&quot;</span><span class="fu">:</span> <span class="st">&quot;onchange 'app/Main.hs' -- npm run build:js&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;watch:css&quot;</span><span class="fu">:</span> <span class="st">&quot;onchange 'static/scss/*.scss' -- npm run build:css&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;watch:all&quot;</span><span class="fu">:</span> <span class="st">&quot;npm-run-all -p serve watch:index watch:css&quot;</span>
+  <span class="fu">},</span>
+  <span class="dt">&quot;devDependencies&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+    <span class="dt">&quot;autoprefixer&quot;</span><span class="fu">:</span> <span class="st">&quot;^6.3.1&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;browser-sync&quot;</span><span class="fu">:</span> <span class="st">&quot;^2.11.1&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;node-sass&quot;</span><span class="fu">:</span> <span class="st">&quot;^3.4.2&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;npm-run-all&quot;</span><span class="fu">:</span> <span class="st">&quot;^1.5.1&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;onchange&quot;</span><span class="fu">:</span> <span class="st">&quot;^2.0.0&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;postcss-cli&quot;</span><span class="fu">:</span> <span class="st">&quot;^2.4.0&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;uglify-js&quot;</span><span class="fu">:</span> <span class="st">&quot;^2.6.1&quot;</span>
+  <span class="fu">}</span>
+<span class="fu">}</span></code></pre></div>
+<p>This will allows us to perform commands like <code>npm run build:js</code> and have our transpiled JavaScript files located in <code>dist/</code>.</p>
+<p>Before we can run any NPM scripts, we must install all of our Node.js build dependencies.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/onOffButton
+<span class="ex">npm</span> install</code></pre></div>
+<h1 id="source-code">Source Code</h1>
+<p>Now that our development environment is setup, we can begin coding our project.</p>
+<h2 id="haskell">Haskell</h2>
+<p>The majority of the source code will be written in <a href="https://www.haskell.org/">Haskell</a>. If you have never programmed in Haskell before do not worry as we will cover each part line by line.</p>
+<h3 id="setup-1">Setup</h3>
+<p>The first file we will create is the simplest.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/onOffButton
+<span class="fu">touch</span> Setup.hs</code></pre></div>
+<p>The <code>Setup.hs</code> file is located below.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Distribution.Simple</span>
+main <span class="fu">=</span> defaultMain</code></pre></div>
+<p>Here we import the distribution simple package and define the main entry point as <code>defaultMain</code>.</p>
+<blockquote>
+This is the command line front end to the Simple build system. When given the parsed command-line args and package information, is able to perform basic commands like configure, build, install, register, etc.
+<footer>
+<a href="https://hackage.haskell.org/package/Cabal-1.24.0.0/docs/Distribution-Simple.html">Distribution.Simple, Hackage</a>
+</footer>
+</blockquote>
+<h3 id="main">Main</h3>
+<p>The next file we need to write is the <code>app/Main.hs</code> file which is the starting point of our Haskell to JavaScript project.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/onOffButton
+<span class="fu">touch</span> app/Main.hs</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE OverloadedStrings #-}</span></code></pre></div>
+<p>This language extension allows us to take a string literal such as <code>&quot;Some text.&quot;</code> and use it for arguments that require type <code>ByteString</code>, <code>Text</code>, or <code>String/[Char]</code> (a <code>['l','i','s','t']</code> or array of characters).</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Lib</span>
+<span class="kw">import </span><span class="dt">Reflex</span>
+<span class="kw">import </span><span class="dt">Reflex.Dom</span>
+<span class="kw">import qualified</span> <span class="dt">Data.Map</span> <span class="kw">as</span> <span class="dt">Map</span></code></pre></div>
+<p>The first import is our own project library that we will define in <code>src/Lib.hs</code> later on. The two <code>Reflex</code> and <code>Reflex.Dom</code> imports are related to the <a href="https://github.com/reflex-frp">Reflex-FRP</a> project. These two packages together will help us write Haskell code that will translate to JavaScript and HTML. The last import–<code>Map</code>–allows us to define hash tables with keys and values.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">main ::</span> <span class="dt">IO</span> ()
+main <span class="fu">=</span> mainWidgetWithHead headElement bodyElement</code></pre></div>
+<p>This is the entry or starting point of our application. The first line defines its output as an empty <code>IO</code> context or input-output monad unit. Think of <code>()</code> as <code>void</code>. The second line equates the <code>main</code> function to <code>mainWidgetWithHead</code> which takes two arguments. The first argument is the HTML head section <code>&lt;head&gt;&lt;!--...--&gt;&lt;/head&gt;</code> while the second argument defines the HTML body section <code>&lt;body&gt;&lt;!--...--&gt;&lt;/body&gt;</code>.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">headElement ::</span> <span class="dt">MonadWidget</span> t m <span class="ot">=&gt;</span> m ()
+headElement <span class="fu">=</span> <span class="kw">do</span></code></pre></div>
+<p>Here we begin the <code>headElement</code> function definition. Its type declaration says that, given that the <code>MonadWidget</code> interface (type-class) is defined for some type <code>m</code>, it returns a <code>m</code> empty context or monad unit. In the second line we begin the <code>do</code> block.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  el <span class="st">&quot;title&quot;</span> (text <span class="st">&quot;On/Off Button&quot;</span>)</code></pre></div>
+<p>This function takes a HTML tag name and some text that will go inside the HTML tag. After we build the project, this line will translate to <code>&lt;title&gt;On/Off Button&lt;/title&gt;</code>. Note that <code>el</code> is short for element.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  styleSheet <span class="st">&quot;css/style.css&quot;</span>
+  styleSheet <span class="st">&quot;https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css&quot;</span></code></pre></div>
+<p><code>styleSheet</code> is a function we define below. It takes a single argument–the location of the style sheet. We will be using some icons so we will need <a href="http://fontawesome.io/icons/">Font Awesome</a>.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  <span class="kw">where</span>
+    styleSheet link <span class="fu">=</span> elAttr <span class="st">&quot;link&quot;</span> (Map.fromList [
+          (<span class="st">&quot;rel&quot;</span>, <span class="st">&quot;stylesheet&quot;</span>)
+        , (<span class="st">&quot;type&quot;</span>, <span class="st">&quot;text/css&quot;</span>)
+        , (<span class="st">&quot;href&quot;</span>, link)
+      ]) <span class="fu">$</span> return ()</code></pre></div>
+<p>Our style sheet function takes a string (the <code>href</code> value) and returns an element with three attributes defined. This will translate to <code>&lt;link rel=&quot;stylesheet&quot;</code> <code>type=&quot;text/css&quot; href=link /&gt;</code>. Notice how we use the <code>Map</code> package here–defining three keys and values which become the element’s attributes.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">bodyElement ::</span> <span class="dt">MonadWidget</span> t m <span class="ot">=&gt;</span> m ()
+bodyElement <span class="fu">=</span> el <span class="st">&quot;div&quot;</span> <span class="fu">$</span> onOffButton</code></pre></div>
+<p>Our <code>bodyElement</code> function takes no arguments and creates a parent <code>div</code> element which holds whatever element(s) is/are returned by the <code>onOffButton</code> function defined in <code>src/Lib.hs</code>.</p>
+<div class="sourceCode"><pre class="sourceCode html"><code class="sourceCode html"><span class="co">&lt;!--...--&gt;</span>
+  <span class="kw">&lt;div&gt;</span>
+    <span class="co">&lt;!-- onOffButton output --&gt;</span>
+  <span class="kw">&lt;/div&gt;</span>
+<span class="co">&lt;!--...-&gt;</span></code></pre></div>
+<p>Here is <code>app/Main.hs</code> in its entirety.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">{-</span>
+<span class="co">  David Lettier (C) 2016.</span>
+<span class="co">  http://www.lettier.com/</span>
+<span class="co">-}</span>
+
+<span class="ot">{-# LANGUAGE OverloadedStrings #-}</span>
+
+<span class="kw">import </span><span class="dt">Lib</span>
+<span class="kw">import </span><span class="dt">Reflex</span>
+<span class="kw">import </span><span class="dt">Reflex.Dom</span>
+<span class="kw">import qualified</span> <span class="dt">Data.Map</span> <span class="kw">as</span> <span class="dt">Map</span>
+
+<span class="ot">main ::</span> <span class="dt">IO</span> ()
+main <span class="fu">=</span> mainWidgetWithHead headElement bodyElement
+
+<span class="ot">headElement ::</span> <span class="dt">MonadWidget</span> t m <span class="ot">=&gt;</span> m ()
+headElement <span class="fu">=</span> <span class="kw">do</span>
+  el <span class="st">&quot;title&quot;</span> (text <span class="st">&quot;On/Off Button&quot;</span>)
+  styleSheet <span class="st">&quot;css/style.css&quot;</span>
+  styleSheet <span class="st">&quot;https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css&quot;</span>
+  <span class="kw">where</span>
+    styleSheet link <span class="fu">=</span> elAttr <span class="st">&quot;link&quot;</span> (Map.fromList [
+          (<span class="st">&quot;rel&quot;</span>, <span class="st">&quot;stylesheet&quot;</span>)
+        , (<span class="st">&quot;type&quot;</span>, <span class="st">&quot;text/css&quot;</span>)
+        , (<span class="st">&quot;href&quot;</span>, link)
+      ]) <span class="fu">$</span> return ()
+
+<span class="ot">bodyElement ::</span> <span class="dt">MonadWidget</span> t m <span class="ot">=&gt;</span> m ()
+bodyElement <span class="fu">=</span> el <span class="st">&quot;div&quot;</span> <span class="fu">$</span> onOffButton</code></pre></div>
+<h3 id="lib">Lib</h3>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE RecursiveDo #-}</span></code></pre></div>
+<p>This language extension allows us to do something like this:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">someFuncZero <span class="fu">=</span> <span class="kw">do</span>
+  rec
+    a <span class="ot">&lt;-</span> someFuncOne b
+    b <span class="ot">&lt;-</span> someFuncTwo a
+  return ()</code></pre></div>
+<p>Notice how <code>a</code> depends on <code>b</code> and <code>b</code> depends on <code>a</code> and <code>a</code> depends on <code>b</code> and … recursively.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">module</span> <span class="dt">Lib</span> (
+  onOffButton
+) <span class="kw">where</span></code></pre></div>
+<p>Our main application file, <code>app/Main.hs</code>, relies on the <code>onOffButton</code> function. In order to access it, we export it from our library <code>src/Lib.hs</code>.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Reflex</span>
+<span class="kw">import </span><span class="dt">Reflex.Dom</span>
+<span class="kw">import qualified</span> <span class="dt">Data.Map</span> <span class="kw">as</span> <span class="dt">Map</span></code></pre></div>
+<p>These imports are the same as the ones in <code>app/Main.hs</code>.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">onOffButton ::</span> <span class="dt">MonadWidget</span> t m <span class="ot">=&gt;</span> m ()
+onOffButton <span class="fu">=</span> <span class="kw">do</span></code></pre></div>
+<p>The function <code>onOffButton</code> takes no arguments and produces a push button on the generated HTML page.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  rec
+    <span class="kw">let</span> onButtonClass  <span class="fu">=</span> Map.singleton <span class="st">&quot;class&quot;</span> <span class="st">&quot;onButton&quot;</span>
+    <span class="kw">let</span> offButtonClass <span class="fu">=</span> Map.singleton <span class="st">&quot;class&quot;</span> <span class="st">&quot;offButton&quot;</span></code></pre></div>
+<p>Here we define two hashes which only contain a single key and value each. These will specify the <code>class=&quot;...&quot;</code> attribute for the <code>&lt;button&gt;&lt;/button&gt;</code> element we generate below.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">    (buttonElement, _) <span class="ot">&lt;-</span> elDynAttr' <span class="st">&quot;button&quot;</span> cssClassDynamic <span class="fu">$</span> elDynHtml' <span class="st">&quot;span&quot;</span> textDynamic</code></pre></div>
+<p>The main element on the page will be our button. Its CSS class is dynamic (will change). The CSS class is different based on the button’s state. The button has two states: down or up.</p>
+<p><code>elDynAttr'</code> generates an element that has dynamic attributes and returns a tuple containing the element created and a monad. We will only use the returned element <code>buttonElement</code>. The function <code>elDynHtml'</code> generates an element that has dynamic inner HTML. The <code>$</code> function, in this context, will set the element generated by <code>elDynHtml'</code> as the child of the element generated by <code>elDynAttr'</code>.</p>
+<p>This line will roughly translate to:</p>
+<div class="sourceCode"><pre class="sourceCode html"><code class="sourceCode html"><span class="co">&lt;!--...--&gt;</span>
+  <span class="kw">&lt;button</span><span class="ot"> class=</span><span class="st">&quot;...&quot;</span><span class="kw">&gt;</span>
+    <span class="kw">&lt;span&gt;</span><span class="co">&lt;!--...--&gt;</span><span class="kw">&lt;/span&gt;</span>
+  <span class="kw">&lt;/button&gt;</span>
+<span class="co">&lt;!--...--&gt;</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">    buttonElementClickEvent <span class="ot">&lt;-</span> return <span class="fu">$</span> domEvent <span class="dt">Click</span> buttonElement
+    toggleDynamic <span class="ot">&lt;-</span> toggle <span class="dt">False</span> buttonElementClickEvent</code></pre></div>
+<p>Here we setup a toggling dynamic that starts off with a <code>False</code> value. Every time the button is clicked, the <code>toggleDynamic</code> will flip to <code>!toggleDynamic</code> (false, true, false, true, …).</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">    cssClassDynamic <span class="ot">&lt;-</span> mapDyn (
+        \ x <span class="ot">-&gt;</span> <span class="kw">if</span> x <span class="kw">then</span> (
+<span class="ot">          onButtonClass ::</span> <span class="dt">Map.Map</span> <span class="dt">String</span> <span class="dt">String</span>
+        ) <span class="kw">else</span> (
+<span class="ot">          offButtonClass ::</span> <span class="dt">Map.Map</span> <span class="dt">String</span> <span class="dt">String</span>
+        )
+      ) toggleDynamic</code></pre></div>
+<p>Using the <code>x</code> value extracted from the toggle dynamic, we return either the “on” CSS class (if the toggle is true) or we return the “off” CSS class (if the toggle is false). The <code>Map.Map String String</code> parts are type annotations which say that <code>on/OffButtonClass</code> has a type where the hash key and value are type <code>String</code>. The <code>( \ x -&gt; ... )</code> syntax is a lambda or anonymous function.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">    textDynamic <span class="ot">&lt;-</span> mapDyn (
+        \ x <span class="ot">-&gt;</span> <span class="kw">if</span> x <span class="kw">then</span> (
+          <span class="st">&quot;&lt;i class='fa fa-circle-o-notch' aria-hidden='true'&gt;&lt;/i&gt;&quot;</span><span class="ot"> ::</span> <span class="dt">String</span>
+        ) <span class="kw">else</span> (
+          <span class="st">&quot;&lt;i class='fa fa-power-off' aria-hidden='true'&gt;&lt;/i&gt;&quot;</span><span class="ot"> ::</span> <span class="dt">String</span>
+      )) toggleDynamic
+  return ()</code></pre></div>
+<p>Similar to the <code>cssClassDynamic</code>, we define the dynamic inner HTML based on the <code>x</code> value extracted from <code>toggleDynamic</code>. <code>True</code> evaluates to the Font Awesome icon <code>fa-circle-o-notch</code> while <code>False</code> evaluates to the Font Awesome icon <code>fa-power-off</code>. These icons will show up on the face of the button and will swap with each button press.</p>
+<p>Here is <code>src/Lib.hs</code> in its entirety.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">{-</span>
+<span class="co">  David Lettier (C) 2016.</span>
+<span class="co">  http://www.lettier.com/</span>
+<span class="co">-}</span>
+
+<span class="ot">{-# LANGUAGE RecursiveDo #-}</span>
+
+<span class="kw">module</span> <span class="dt">Lib</span> (
+  onOffButton
+) <span class="kw">where</span>
+
+<span class="kw">import </span><span class="dt">Reflex</span>
+<span class="kw">import </span><span class="dt">Reflex.Dom</span>
+<span class="kw">import qualified</span> <span class="dt">Data.Map</span> <span class="kw">as</span> <span class="dt">Map</span>
+
+<span class="ot">onOffButton ::</span> <span class="dt">MonadWidget</span> t m <span class="ot">=&gt;</span> m ()
+onOffButton <span class="fu">=</span> <span class="kw">do</span>
+  rec
+    <span class="kw">let</span> onButtonClass  <span class="fu">=</span> Map.singleton <span class="st">&quot;class&quot;</span> <span class="st">&quot;onButton&quot;</span>
+    <span class="kw">let</span> offButtonClass <span class="fu">=</span> Map.singleton <span class="st">&quot;class&quot;</span> <span class="st">&quot;offButton&quot;</span>
+    (buttonElement, _) <span class="ot">&lt;-</span> elDynAttr' <span class="st">&quot;button&quot;</span> cssClassDynamic <span class="fu">$</span> elDynHtml' <span class="st">&quot;span&quot;</span> textDynamic
+    buttonElementClickEvent <span class="ot">&lt;-</span> return <span class="fu">$</span> domEvent <span class="dt">Click</span> buttonElement
+    toggleDynamic <span class="ot">&lt;-</span> toggle <span class="dt">False</span> buttonElementClickEvent
+    cssClassDynamic <span class="ot">&lt;-</span> mapDyn (
+        \ x <span class="ot">-&gt;</span> <span class="kw">if</span> x <span class="kw">then</span> (
+<span class="ot">          onButtonClass ::</span> <span class="dt">Map.Map</span> <span class="dt">String</span> <span class="dt">String</span>
+        ) <span class="kw">else</span> (
+<span class="ot">          offButtonClass ::</span> <span class="dt">Map.Map</span> <span class="dt">String</span> <span class="dt">String</span>
+        )
+      ) toggleDynamic
+    textDynamic <span class="ot">&lt;-</span> mapDyn (
+        \ x <span class="ot">-&gt;</span> <span class="kw">if</span> x <span class="kw">then</span> (
+          <span class="st">&quot;&lt;i class='fa fa-circle-o-notch' aria-hidden='true'&gt;&lt;/i&gt;&quot;</span><span class="ot"> ::</span> <span class="dt">String</span>
+        ) <span class="kw">else</span> (
+          <span class="st">&quot;&lt;i class='fa fa-power-off' aria-hidden='true'&gt;&lt;/i&gt;&quot;</span><span class="ot"> ::</span> <span class="dt">String</span>
+      )) toggleDynamic
+  return ()</code></pre></div>
+<h2 id="scss">SCSS</h2>
+<p>To make the button more visually appealing we will style it using <a href="http://sass-lang.com/">Sass</a>.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/onOffButton
+<span class="fu">touch</span> static/scss/style.scss</code></pre></div>
+<p>Here is the <code>static/scss/style.scss</code> file in its entirety.</p>
+<div class="sourceCode"><pre class="sourceCode css"><code class="sourceCode css">body <span class="kw">{</span>
+  <span class="kw">margin:</span>  <span class="dt">0px</span><span class="kw">;</span>
+  <span class="kw">padding:</span> <span class="dt">0px</span><span class="kw">;</span>
+  <span class="kw">background-color:</span> <span class="dt">#252b3a</span><span class="kw">;</span>
+<span class="kw">}</span>
+div <span class="kw">{</span>
+  <span class="kw">text-align:</span> <span class="dt">center</span><span class="kw">;</span>
+<span class="kw">}</span>
+
+$buttonSize<span class="dv">:</span> 300px;
+
+button <span class="kw">{</span>
+  <span class="kw">width:</span>  $buttonSize<span class="kw">;</span>
+  <span class="kw">height:</span> $buttonSize<span class="kw">;</span>
+  <span class="kw">border-radius:</span> <span class="dt">100%</span><span class="kw">;</span>
+  <span class="kw">border-width:</span> <span class="dt">20px</span><span class="kw">;</span>
+  <span class="kw">border-color:</span> <span class="dt">#546170</span><span class="kw">;</span>
+  <span class="kw">font-size:</span> <span class="dt">50px</span><span class="kw">;</span>
+  <span class="kw">color:</span> <span class="dt">white</span><span class="kw">;</span>
+  <span class="kw">text-shadow:</span> <span class="dt">0px</span> <span class="dt">0px</span> <span class="dt">40px</span> whitesmoke<span class="kw">;</span>
+  <span class="kw">position:</span> <span class="dt">absolute</span><span class="kw">;</span>
+  <span class="kw">top:</span> <span class="dt">40%</span><span class="kw">;</span>
+  <span class="kw">outline:</span> <span class="dt">none</span><span class="kw">;</span>
+  <span class="kw">cursor:</span> <span class="dt">pointer</span><span class="kw">;</span>
+  <span class="kw">margin-left:</span> $buttonSize / <span class="dt">2</span> * <span class="dt">-1</span><span class="kw">;</span>
+<span class="kw">}</span>
+<span class="fl">.offButton</span> <span class="kw">{</span>
+  <span class="kw">background-color:</span> <span class="dt">#db5461</span><span class="kw">;</span>
+  <span class="kw">border-style:</span> <span class="dt">outset</span><span class="kw">;</span>
+<span class="kw">}</span>
+<span class="fl">.onButton</span> <span class="kw">{</span>
+  <span class="kw">background-color:</span> <span class="dt">#54d367</span><span class="kw">;</span>
+  <span class="kw">border-style:</span> <span class="dt">inset</span><span class="kw">;</span>
+<span class="kw">}</span></code></pre></div>
+<p>Notice the <code>.offButton</code> and <code>.onButton</code> CSS classes.</p>
+<h1 id="build">Build</h1>
+<p>With our source code files in place, we can build our project and view it in the browser.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">cd</span> ~/onOffButton
+<span class="ex">nvm</span> use
+<span class="ex">npm</span> run build:dist
+<span class="ex">npm</span> run watch:all</code></pre></div>
+<p>The final project structure is shown below.</p>
+<div class="sourceCode"><pre class="sourceCode yaml"><code class="sourceCode yaml">onOffButton/
+  app/
+    Main.hs
+  dist/
+    css/
+      style.css
+    all.js
+    lib.js
+    out.js
+    rtl.js
+    runmain.js
+    index.html
+  node_modules/
+    ...
+  src/
+    Lib.hs
+  static/
+    scsss/
+      style.scss
+  onOffButton.cabal
+  package.json
+  Setup.hs
+  stack.yaml
+  .nvmrc</code></pre></div>
+<h1 id="output">Output</h1>
+<p>After opening <code>dist/index.html</code> in your browser, the following output will be produced.</p>
+<div class="sourceCode"><pre class="sourceCode html"><code class="sourceCode html"><span class="kw">&lt;html&gt;</span>
+  <span class="kw">&lt;head&gt;</span>
+    <span class="kw">&lt;title&gt;</span>On/Off Button<span class="kw">&lt;/title&gt;</span>
+    <span class="kw">&lt;link</span><span class="ot"> href=</span><span class="st">&quot;css/style.css&quot;</span><span class="ot"> rel=</span><span class="st">&quot;stylesheet&quot;</span><span class="ot"> type=</span><span class="st">&quot;text/css&quot;</span><span class="kw">&gt;</span>
+    <span class="kw">&lt;link</span><span class="ot"> href=</span><span class="st">&quot;https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css&quot;</span><span class="ot"> rel=</span><span class="st">&quot;stylesheet&quot;</span><span class="ot"> type=</span><span class="st">&quot;text/css&quot;</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;/head&gt;</span>
+  <span class="kw">&lt;body&gt;</span>
+    <span class="kw">&lt;div&gt;</span>
+      <span class="kw">&lt;button</span><span class="ot"> class=</span><span class="st">&quot;offButton&quot;</span><span class="kw">&gt;</span>
+        <span class="kw">&lt;span&gt;</span>
+          <span class="kw">&lt;i</span><span class="ot"> class=</span><span class="st">&quot;fa fa-power-off&quot;</span><span class="ot"> aria-hidden=</span><span class="st">&quot;true&quot;</span><span class="kw">&gt;&lt;/i&gt;</span>
+        <span class="kw">&lt;/span&gt;</span>
+      <span class="kw">&lt;/button&gt;</span>
+    <span class="kw">&lt;/div&gt;</span>
+  <span class="kw">&lt;/body&gt;</span>
+<span class="kw">&lt;/html&gt;</span></code></pre></div>
+<h1 id="recap">Recap</h1>
+<p>Using an array of tools and the Haskell programming language, we built a push button interface for a web browser. All of our Haskell source code was transpiled to HTML and JavaScript.</p>
+<p>If you enjoyed programming in Haskell, be sure to read <a href="../posts/2016-07-15-building-a-haskell-web-api.html">Building a Haskell Web API</a>.</p>
+</div>
+<div class="post-footer">
+  <div class="display-left">
+    <h2 class="post-footer-cta">
+      Hi there!
+      <a href="../" title="Home">Browse</a>
+      and subscribe to the
+      <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
+      for more content.
+    </h2>
+  </div>
+  <div class="display-right text-align-right post-footer-copyright">
+    <h4>
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2017</span> David Lettier
+    </h4>
+  </div>
+</div>
+
+    </div>
+    <div class="share-toolbox addthis_sharing_toolbox"></div>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4fc2bc7a00a9352b"></script>
+    <script>
+      (function(i,s,o,g,r,a,m){
+        i.GoogleAnalyticsObject = r;
+        i[r] = i[r] || function () { (i[r].q = i[r].q || []).push(arguments); };
+        i[r].l=1*new Date();
+        a=s.createElement(o);
+        m=s.getElementsByTagName(o)[0];
+        a.async=1;
+        a.src=g;
+        m.parentNode.insertBefore(a,m);
+      })(
+        window,
+        document,
+        'script',
+        '//www.google-analytics.com/analytics.js',
+        'ga'
+      );
+      ga('create', 'UA-34323684-2', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </body>
+</html>
