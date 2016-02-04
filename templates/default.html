@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="$if(frontPage)$$for(frontPage)$$if(author)$$author$$endif$$endfor$$else$David Lettier$endif$">
+    <meta name="description" content="$if(frontPage)$$for(frontPage)$$title$$endfor$$else$$if(title)$$title$$else$Data science, machine intelligence, and graphics programming.$endif$$endif$">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <!--<link href='https://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>-->
+    <!--<link href='https://fonts.googleapis.com/css?family=Roboto+Condensed:300' rel='stylesheet' type='text/css'>-->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pandoc.css">
+    <link rel="stylesheet" type="text/css" href="/css/default.css">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4fc2bc7a00a9352b"></script>
+    <title>$if(frontPage)$$for(frontPage)$$title$$if(author)$ by $author$$endif$$endfor$$else$$title$$if(author)$ by $author$$endif$$endif$</title>
+  </head>
+  <body>
+    <span name="top"></span>
+    <nav class="navbar navbar-inverse navbar-transparent navbar-fixed-top">
+      <div class="container-fluid">
+        <ul class="nav navbar-nav">
+          <li class="nav-link"><a href="/">Home</a></li>
+          <li class="nav-link"><a href="/posts.html">Posts</a></li>
+        </ul>
+        <div class="nav-right">
+          <a href="http://www.lettier.com/" title="Lettier.com">
+            <div class="lettier-icon">
+              <img src="/images/logo.svg" width="30" height="30" alt="Lettier.com" class="lettier-icon-img">
+            </div>
+          </a>
+          <a href="https://www.github.com/lettier" title="Github">
+            <i class="fa fa-github nav-icon"></i>
+          </a>
+          <a href="https://www.linkedin.com/in/lettier" title="LinkedIn">
+            <i class="fa fa-linkedin nav-icon"></i>
+          </a>
+          <!--<a href="https://stackoverflow.com/users/3838674/lettier" title="Stack Overflow">
+            <i class="fa fa-stack-overflow nav-icon"></i>
+          </a>-->
+          <a href="https://www.hackerrank.com/lettier" title="HackerRank">
+            <i class="fa fa-trophy nav-icon nav-icon-second-last"></i>
+          </a>
+          <a href="https://www.behance.net/dlettier" title="Behance">
+            <i class="fa fa-behance nav-icon nav-icon-last"></i>
+          </a>
+        </div>
+      </div>
+    </nav>
+    <div class="jumbotron"
+      $if(frontPage)$
+        $for(frontPage)$
+          style="background-image: url('$jumbotron_image$');"
+        $endfor$
+      $else$
+        $if(jumbotron_image)$
+          style="background-image: url('$jumbotron_image$');"
+        $endif$
+      $endif$
+    >
+      <div class="container vertical-center">
+        <div class="jumbotron-text">
+          <span class="jumbotron-text-background">
+            $if(frontPage)$
+              $for(frontPage)$
+                $title$
+              $endfor$
+            $else$
+              $title$
+            $endif$
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="container page-container">
+      $body$
+    </div>
+  </body>
+</html>

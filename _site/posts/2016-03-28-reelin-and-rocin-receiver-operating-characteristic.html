@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="David Lettier">
+    <meta name="description" content="Reelin' and ROCin', Receiver Operating Characteristic">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <!--<link href='https://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>-->
+    <!--<link href='https://fonts.googleapis.com/css?family=Roboto+Condensed:300' rel='stylesheet' type='text/css'>-->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/pandoc.css">
+    <link rel="stylesheet" type="text/css" href="../css/default.css">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4fc2bc7a00a9352b"></script>
+    <title>Reelin' and ROCin', Receiver Operating Characteristic by David Lettier</title>
+  </head>
+  <body>
+    <span name="top"></span>
+    <nav class="navbar navbar-inverse navbar-transparent navbar-fixed-top">
+      <div class="container-fluid">
+        <ul class="nav navbar-nav">
+          <li class="nav-link"><a href="../">Home</a></li>
+          <li class="nav-link"><a href="../posts.html">Posts</a></li>
+        </ul>
+        <div class="nav-right">
+          <a href="http://www.lettier.com/" title="Lettier.com">
+            <div class="lettier-icon">
+              <img src="../images/logo.svg" width="30" height="30" alt="Lettier.com" class="lettier-icon-img">
+            </div>
+          </a>
+          <a href="https://www.github.com/lettier" title="Github">
+            <i class="fa fa-github nav-icon"></i>
+          </a>
+          <a href="https://www.linkedin.com/in/lettier" title="LinkedIn">
+            <i class="fa fa-linkedin nav-icon"></i>
+          </a>
+          <!--<a href="https://stackoverflow.com/users/3838674/lettier" title="Stack Overflow">
+            <i class="fa fa-stack-overflow nav-icon"></i>
+          </a>-->
+          <a href="https://www.hackerrank.com/lettier" title="HackerRank">
+            <i class="fa fa-trophy nav-icon nav-icon-second-last"></i>
+          </a>
+          <a href="https://www.behance.net/dlettier" title="Behance">
+            <i class="fa fa-behance nav-icon nav-icon-last"></i>
+          </a>
+        </div>
+      </div>
+    </nav>
+    <div class="jumbotron" style="background-image: url('/images/2016-03-28-reelin-and-rocin-receiver-operating-characteristic/jumbotron_image.jpg');">
+      <div class="container vertical-center">
+        <div class="jumbotron-text">
+          <span class="jumbotron-text-background">
+            
+              Reelin' and ROCin', Receiver Operating Characteristic
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="container page-container">
+      <div class="post-header">
+  <div class="display-left">
+    <div class="addthis_sharing_toolbox"></div>
+  </div>
+  <div class="display-right date-author">
+    <p>2016/03/28 &nbsp; <i class="fa fa-calendar"></i></p>
+    
+      <p>David Lettier &nbsp; <i class="fa fa-user"></i></p>
+    
+  </div>
+</div>
+<div class="post-body">
+  <h1 id="the-scenario">The Scenario</h1>
+<p>Imagine standing by a murky stream. You notice objects floating passed you. Pulling out your notebook, you write down for each object how confident you are that it is a fish (between 0.0 and 1.0). Not all are fish with some pieces being trash. Downstream, your friend scoops up each object and writes down what it actually is.</p>
+<div class="figure">
+<img src="../images/2016-03-28-reelin-and-rocin-receiver-operating-characteristic/stream.jpg" alt="The Murky Stream" class="post-img post-img-fill" />
+<p class="caption">The Murky Stream</p>
+</div>
+<h1 id="thresholds">Thresholds</h1>
+<p>In this sense you are a binary classifier capable of classifying an object in the stream as either class fish or not class fish (class trash) but more importantly you give the class probabilities for each classified object. Since your friend has the actual classes of the objects, we can see how well you separated the classes.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="op">|</span> Class Fish Probability <span class="op">|</span> Actual Fish <span class="op">|</span> Actual Trash <span class="op">|</span>
+<span class="op">|------------------------|-------------|--------------|</span>
+<span class="op">|</span> <span class="fl">0.0</span>                    <span class="op">|</span>         <span class="dv">0</span>   <span class="op">|</span>         <span class="dv">11</span>   <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.1</span>                    <span class="op">|</span>         <span class="dv">0</span>   <span class="op">|</span>         <span class="dv">10</span>   <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.2</span>                    <span class="op">|</span>         <span class="dv">0</span>   <span class="op">|</span>         <span class="dv">12</span>   <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.3</span>                    <span class="op">|</span>         <span class="dv">1</span>   <span class="op">|</span>          <span class="dv">9</span>   <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.4</span>                    <span class="op">|</span>         <span class="dv">2</span>   <span class="op">|</span>          <span class="dv">8</span>   <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.5</span>                    <span class="op">|</span>         <span class="dv">6</span>   <span class="op">|</span>          <span class="dv">7</span>   <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.6</span>                    <span class="op">|</span>         <span class="dv">8</span>   <span class="op">|</span>          <span class="dv">5</span>   <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.7</span>                    <span class="op">|</span>        <span class="dv">10</span>   <span class="op">|</span>          <span class="dv">1</span>   <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.8</span>                    <span class="op">|</span>        <span class="dv">20</span>   <span class="op">|</span>          <span class="dv">1</span>   <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.9</span>                    <span class="op">|</span>        <span class="dv">22</span>   <span class="op">|</span>          <span class="dv">0</span>   <span class="op">|</span>
+<span class="op">|</span> <span class="fl">1.0</span>                    <span class="op">|</span>        <span class="dv">23</span>   <span class="op">|</span>          <span class="dv">0</span>   <span class="op">|</span>
+<span class="op">|------------------------|-------------|--------------|-----|</span>
+<span class="op">|</span> Totals                 <span class="op">|</span>        <span class="dv">92</span>   <span class="op">|</span>         <span class="dv">64</span>   <span class="op">|</span> <span class="dv">156</span> <span class="op">|</span></code></pre></div>
+<div class="figure">
+<img src="../images/2016-03-28-reelin-and-rocin-receiver-operating-characteristic/cfp.png" alt="Class Fish Probabilities Distribution" class="post-img post-img-fill" />
+<p class="caption">Class Fish Probabilities Distribution</p>
+</div>
+<p>So for all the objects that you said <code>0.0</code>, zero were fish and 11 were trash. For each one you said was <code>0.7</code>, 10 were fish and one was trash.</p>
+<p>The goal now is to set a threshold such that if your gut feeling is <code>&gt;=</code> you call out <code>fish</code>, otherwise you yell out <code>not fish</code>. This will make it easier on your downstream friend. Based on <code>fish</code> or <code>not fish</code>, they can quickly clean up the stream, scooping out the trash. After all, they have to make a decision to scoop or not and working with thresholds makes this harder versus a binary decision.</p>
+<p>Say you set the threshold at <code>0.6</code>, then the following would be your prediction contingency table.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">                  <span class="op">|</span> Actual Fish <span class="op">|</span> Actual Trash <span class="op">|</span> Totals <span class="op">|</span>
+<span class="op">|-----------------|-------------|--------------|--------|</span>
+<span class="op">|</span> Predicted Fish  <span class="op">|</span> <span class="dv">83</span> (TP)     <span class="op">|</span>  <span class="dv">7</span> (FP)      <span class="op">|</span> <span class="dv">90</span>     <span class="op">|</span>
+<span class="op">|</span> Predicted Trash <span class="op">|</span>  <span class="dv">9</span> (FN)     <span class="op">|</span> <span class="dv">57</span> (TN)      <span class="op">|</span> <span class="dv">66</span>     <span class="op">|</span>
+<span class="op">|-----------------|-------------|--------------|--------|</span>
+<span class="op">|</span> Totals          <span class="op">|</span> <span class="dv">92</span>          <span class="op">|</span> <span class="dv">64</span>           <span class="op">|</span> <span class="dv">156</span>    <span class="op">|</span></code></pre></div>
+<div class="figure">
+<img src="../images/2016-03-28-reelin-and-rocin-receiver-operating-characteristic/cfp1.png" alt="Threshold set a 0.6" class="post-img post-img-fill" />
+<p class="caption">Threshold set a 0.6</p>
+</div>
+<h1 id="tpr-and-fpr">TPR and FPR</h1>
+<p>To get our point on the <a href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">ROC</a> curve, we need to calculate the <code>true positive rate (TPR)</code> and the <code>false positive rate (FPR)</code>.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="op">|</span> Class Fish Probability <span class="op">|</span> Actual Fish (FN) <span class="op">|</span> Actual Trash (TN) <span class="op">|</span>
+<span class="op">|------------------------|------------------|-------------------|------------|</span>
+<span class="op">|</span> <span class="fl">0.0</span>                    <span class="op">|</span>         <span class="dv">0</span>        <span class="op">|</span>         <span class="dv">11</span>        <span class="op">|</span>            <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.1</span>                    <span class="op">|</span>         <span class="dv">0</span>        <span class="op">|</span>         <span class="dv">10</span>        <span class="op">|</span>            <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.2</span>                    <span class="op">|</span>         <span class="dv">0</span>        <span class="op">|</span>         <span class="dv">12</span>        <span class="op">|</span> <span class="st">&quot;Not Fish&quot;</span> <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.3</span>                    <span class="op">|</span>         <span class="dv">1</span>        <span class="op">|</span>          <span class="dv">9</span>        <span class="op">|</span>            <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.4</span>                    <span class="op">|</span>         <span class="dv">2</span>        <span class="op">|</span>          <span class="dv">8</span>        <span class="op">|</span>            <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.5</span>                    <span class="op">|</span>         <span class="dv">6</span>        <span class="op">|</span>          <span class="dv">7</span>        <span class="op">|</span>            <span class="op">|</span>
+<span class="op">|------------------------|------------------|-------------------|------------|</span>
+<span class="op">|</span> Class Fish Probability <span class="op">|</span> Actual Fish (TP) <span class="op">|</span> Actual Trash (FP) <span class="op">|</span>
+<span class="op">|------------------------|------------------|-------------------|------------|</span>
+<span class="op">|</span> <span class="fl">0.6</span>                    <span class="op">|</span>         <span class="dv">8</span>        <span class="op">|</span>          <span class="dv">5</span>        <span class="op">|</span>            <span class="op">|</span> <span class="op">&lt;--</span> Threshold
+<span class="op">|</span> <span class="fl">0.7</span>                    <span class="op">|</span>        <span class="dv">10</span>        <span class="op">|</span>          <span class="dv">1</span>        <span class="op">|</span>            <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.8</span>                    <span class="op">|</span>        <span class="dv">20</span>        <span class="op">|</span>          <span class="dv">1</span>        <span class="op">|</span>  <span class="st">&quot;Fish&quot;</span>    <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.9</span>                    <span class="op">|</span>        <span class="dv">22</span>        <span class="op">|</span>          <span class="dv">0</span>        <span class="op">|</span>            <span class="op">|</span>
+<span class="op">|</span> <span class="fl">1.0</span>                    <span class="op">|</span>        <span class="dv">23</span>        <span class="op">|</span>          <span class="dv">0</span>        <span class="op">|</span>            <span class="op">|</span>
+<span class="op">|------------------------|------------------|-------------------|------------|</span>
+<span class="op">|</span> Totals                 <span class="op">|</span>        <span class="dv">92</span>        <span class="op">|</span>         <span class="dv">64</span>        <span class="op">|</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">For threshold <span class="fl">0.6</span>:
+
+TPR <span class="op">=</span> TP <span class="op">/</span> TP <span class="op">+</span> FN <span class="op">=</span> <span class="dv">83</span> <span class="op">/</span> (<span class="dv">83</span> <span class="op">+</span> <span class="dv">9</span>) <span class="op">=</span> <span class="dv">83</span> <span class="op">/</span> <span class="dv">92</span> <span class="op">=</span> <span class="fl">0.9021739130434783</span>
+FPR <span class="op">=</span> FP <span class="op">/</span> FP <span class="op">+</span> TN <span class="op">=</span>  <span class="dv">7</span> <span class="op">/</span> (<span class="dv">7</span> <span class="op">+</span> <span class="dv">57</span>) <span class="op">=</span>  <span class="dv">7</span> <span class="op">/</span> <span class="dv">64</span> <span class="op">=</span> <span class="fl">0.109375</span></code></pre></div>
+<h1 id="roc-curve">ROC Curve</h1>
+<p>To complete the curve we will need to calculate this for each class fish probability you called out.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="op">|</span> Class Fish Probability <span class="op">|</span> TPR  <span class="op">|</span> FPR  <span class="op">|</span>
+<span class="op">|------------------------|------|------|</span>
+<span class="op">|</span> <span class="fl">0.0</span>                    <span class="op">|</span> <span class="dv">1</span>    <span class="op">|</span> <span class="dv">1</span>    <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.1</span>                    <span class="op">|</span> <span class="dv">1</span>    <span class="op">|</span> <span class="fl">0.82</span> <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.2</span>                    <span class="op">|</span> <span class="dv">1</span>    <span class="op">|</span> <span class="fl">0.67</span> <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.3</span>                    <span class="op">|</span> <span class="dv">1</span>    <span class="op">|</span> <span class="fl">0.48</span> <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.4</span>                    <span class="op">|</span> <span class="fl">0.98</span> <span class="op">|</span> <span class="fl">0.34</span> <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.5</span>                    <span class="op">|</span> <span class="fl">0.96</span> <span class="op">|</span> <span class="fl">0.21</span> <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.6</span>                    <span class="op">|</span> <span class="fl">0.90</span> <span class="op">|</span> <span class="fl">0.10</span> <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.7</span>                    <span class="op">|</span> <span class="fl">0.81</span> <span class="op">|</span> <span class="fl">0.03</span> <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.8</span>                    <span class="op">|</span> <span class="fl">0.70</span> <span class="op">|</span> <span class="fl">0.01</span> <span class="op">|</span>
+<span class="op">|</span> <span class="fl">0.9</span>                    <span class="op">|</span> <span class="fl">0.48</span> <span class="op">|</span> <span class="dv">0</span>    <span class="op">|</span>
+<span class="op">|</span> <span class="fl">1.0</span>                    <span class="op">|</span> <span class="fl">0.25</span> <span class="op">|</span> <span class="dv">0</span>    <span class="op">|</span></code></pre></div>
+<div class="figure">
+<img src="../images/2016-03-28-reelin-and-rocin-receiver-operating-characteristic/roc.png" alt="ROC Curve" class="post-img post-img-fill" />
+<p class="caption">ROC Curve</p>
+</div>
+<p>If you set <code>0.0</code> as the threshold then you would label every object in the stream as a fish. This wouldn’t be very useful but you would get all of the true positives but would also get all of the false positives (64 in total for the recording period). With <code>0.0</code> being the threshold, all of the fish would be left in the stream but so would all of the trash.</p>
+<p>Setting the threshold to <code>1.0</code>, you would rarely call out fish unless you were 100% certain. Of course when you did yell out fish, you would probably never be wrong resulting in no false positives. However, you would miss most of the true positives resulting in most of the fish <i>and</i> trash being taken out of the stream. In other words, since you barely ever call out fish, your friend downstream assumes almost everything floating down is trash. Going with <code>1.0</code> would suffocate a lot of fish but would get most if not all of the trash.</p>
+<p>Based on the curve, the best threshold turns out to be <code>0.6</code> such that if you are <code>&gt;=</code> 60% sure you call out fish. Notice that the <code>0.6</code> threshold point on the ROC curve is the closest to <code>(0.0 FPR, 1.0 TPR)</code>—a perfect classifier capturing all of the true positives and making no false positives.</p>
+<h1 id="wrap-up">Wrap-up</h1>
+<p>Coming up with a fake scenario, we built up a binary classification problem. We discussed the ROC curve charting the FPR vs TPR trade offs at various threshold levels of class probability. Looking at the curve, we picked the best threshold for the best classifier.</p>
+</div>
+<div class="post-footer">
+  <div class="display-left">
+    <h3 class="post-footer-cta">
+      Looking for more content? Click <a href="../posts.html">here</a> or return to the <a href="#top">top</a>.
+    </h3>
+  </div>
+  <div class="display-right text-align-right post-footer-copyright">
+    <h4>
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2015</span> David Lettier.
+    </h4>
+  </div>
+</div>
+<script>
+  (function () {
+    document.getElementById('copyrightYear').innerHTML = new Date().getFullYear();
+  })();
+</script>
+
+    </div>
+  </body>
+</html>

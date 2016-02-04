@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="David Lettier">
+    <meta name="description" content="Fibonacci, LCM and GCD in Haskell">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <!--<link href='https://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>-->
+    <!--<link href='https://fonts.googleapis.com/css?family=Roboto+Condensed:300' rel='stylesheet' type='text/css'>-->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/pandoc.css">
+    <link rel="stylesheet" type="text/css" href="../css/default.css">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4fc2bc7a00a9352b"></script>
+    <title>Fibonacci, LCM and GCD in Haskell by David Lettier</title>
+  </head>
+  <body>
+    <span name="top"></span>
+    <nav class="navbar navbar-inverse navbar-transparent navbar-fixed-top">
+      <div class="container-fluid">
+        <ul class="nav navbar-nav">
+          <li class="nav-link"><a href="../">Home</a></li>
+          <li class="nav-link"><a href="../posts.html">Posts</a></li>
+        </ul>
+        <div class="nav-right">
+          <a href="http://www.lettier.com/" title="Lettier.com">
+            <div class="lettier-icon">
+              <img src="../images/logo.svg" width="30" height="30" alt="Lettier.com" class="lettier-icon-img">
+            </div>
+          </a>
+          <a href="https://www.github.com/lettier" title="Github">
+            <i class="fa fa-github nav-icon"></i>
+          </a>
+          <a href="https://www.linkedin.com/in/lettier" title="LinkedIn">
+            <i class="fa fa-linkedin nav-icon"></i>
+          </a>
+          <!--<a href="https://stackoverflow.com/users/3838674/lettier" title="Stack Overflow">
+            <i class="fa fa-stack-overflow nav-icon"></i>
+          </a>-->
+          <a href="https://www.hackerrank.com/lettier" title="HackerRank">
+            <i class="fa fa-trophy nav-icon nav-icon-second-last"></i>
+          </a>
+          <a href="https://www.behance.net/dlettier" title="Behance">
+            <i class="fa fa-behance nav-icon nav-icon-last"></i>
+          </a>
+        </div>
+      </div>
+    </nav>
+    <div class="jumbotron" style="background-image: url('/images/2016-04-22-fibonacci-lcm-and-gcd-in-haskell/jumbotron_image.jpg');">
+      <div class="container vertical-center">
+        <div class="jumbotron-text">
+          <span class="jumbotron-text-background">
+            
+              Fibonacci, LCM and GCD in Haskell
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="container page-container">
+      <div class="post-header">
+  <div class="display-left">
+    <div class="addthis_sharing_toolbox"></div>
+  </div>
+  <div class="display-right date-author">
+    <p>2016/04/22 &nbsp; <i class="fa fa-calendar"></i></p>
+    
+      <p>David Lettier &nbsp; <i class="fa fa-user"></i></p>
+    
+  </div>
+</div>
+<div class="post-body">
+  <p>The following three problems: the Fibonacci sequence, Least Common Multiple, and the Greatest Common Divisor are potential problems one may be asked to solve during a technical interview. All of the main headers link to a larger collection of interview questions collected over the years.</p>
+<h2 id="fibonacci"><a href="https://github.com/lettier/interviewquestions/blob/master/recursion/fibonacci.hs">Fibonacci</a></h2>
+<h3 id="overview">Overview</h3>
+<p>Using multiple recursion (vs single recursion) we output the i<sup>th</sup> number of the sequence:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">   Index<span class="op">:</span> <span class="dv">0</span> <span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span> <span class="dv">4</span> <span class="dv">5</span> <span class="dv">6</span>  <span class="dv">7</span>  <span class="dv">8</span> ...
+Sequence<span class="op">:</span> <span class="dv">0</span> <span class="dv">1</span> <span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span> <span class="dv">5</span> <span class="dv">8</span> <span class="dv">13</span> <span class="dv">21</span> ...</code></pre></div>
+<p>which has the pattern <code>0 + 1 = 1</code>, <code>1 + 1 = 2</code>, <code>1 + 2 = 3</code>, and so on and so forth…</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"> <span class="dv">1</span>) <span class="co">{-</span>
+<span class="co"> 2)   (C) David Lettier 2016</span>
+<span class="co"> 3)   http://www.lettier.com/</span>
+<span class="co"> 4) -}</span>
+ <span class="dv">5</span>)
+ <span class="dv">6</span>) <span class="kw">import </span><span class="dt">System.Environment</span> (getArgs)
+ <span class="dv">7</span>)
+ <span class="dv">8</span>)<span class="ot"> fib ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span>
+ <span class="dv">9</span>) fib x <span class="fu">|</span> x <span class="fu">&lt;=</span> <span class="dv">0</span> <span class="fu">=</span> <span class="dv">0</span>
+<span class="dv">10</span>) fib <span class="dv">1</span> <span class="fu">=</span> <span class="dv">1</span>
+<span class="dv">11</span>) fib x <span class="fu">=</span> (<span class="fu">+</span>) (fib y) (fib z)
+<span class="dv">12</span>)   <span class="kw">where</span> y <span class="fu">=</span> x <span class="fu">-</span> <span class="dv">1</span>
+<span class="dv">13</span>)         z <span class="fu">=</span> x <span class="fu">-</span> <span class="dv">2</span>
+<span class="dv">14</span>)
+<span class="dv">15</span>)<span class="ot"> main ::</span> <span class="dt">IO</span> ()
+<span class="dv">16</span>) main <span class="fu">=</span> <span class="kw">do</span>
+<span class="dv">17</span>)   args <span class="ot">&lt;-</span> getArgs
+<span class="dv">18</span>)   <span class="kw">let</span> args' <span class="fu">=</span> map (\ x <span class="ot">-&gt;</span> read<span class="ot"> x ::</span> <span class="dt">Int</span>) args
+<span class="dv">19</span>)   <span class="kw">let</span> x <span class="fu">=</span> <span class="kw">case</span> args' <span class="kw">of</span>
+<span class="dv">20</span>)         [] <span class="ot">-&gt;</span> <span class="dt">Nothing</span>
+<span class="dv">21</span>)         (x<span class="fu">:</span>y) <span class="ot">-&gt;</span> <span class="dt">Just</span> x
+<span class="dv">22</span>)   <span class="kw">let</span> result <span class="fu">=</span> <span class="kw">case</span> x <span class="kw">of</span>
+<span class="dv">23</span>)         <span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="st">&quot;Error.&quot;</span>
+<span class="dv">24</span>)         <span class="dt">Just</span> x <span class="ot">-&gt;</span> show <span class="fu">$</span> fib x
+<span class="dv">25</span>)   putStrLn result
+<span class="dv">26</span>)   return ()</code></pre></div>
+<h3 id="input">Input</h3>
+<p>Line 17 gets the command line arguments we need for our input into <code>fib</code>. Before we can just pass it off however, we need to consider a few cases. If empty then we having <code>Nothing</code> otherwise we have <code>[something,...]</code> and we take <code>Just x</code>. Now if we have <code>Nothing</code> then we will output <code>&quot;Error.&quot;</code> otherwise we will pass the integer to <code>fib</code>.</p>
+<h3 id="fib">Fib</h3>
+<p>Defined on lines eight through 13, <code>fib</code> starts out with pattern matching. If <code>x</code> is negative just output <code>0</code>. However if <code>x</code> is <code>1</code> then just return <code>1</code>. Line 11 is the multiple recursive call which falls inline with the pattern that our current number is the sum of the previous two numbers in the sequence. Notice that <code>y</code> is <code>x - 1</code> while <code>z</code> is <code>x - 2</code>.</p>
+<h2 id="lcm"><a href="https://github.com/lettier/interviewquestions/blob/master/number_theory/lcm.hs">LCM</a></h2>
+<h3 id="overview-1">Overview</h3>
+<p>The LCM is the smallest product found in all of the products of each number under review. This solution only works with two integers but you could expand it to work with more.</p>
+<p>Say our numbers are two, three, and four:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">   <span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span> <span class="dv">4</span> <span class="dv">5</span> <span class="dv">6</span> <span class="dv">7</span> <span class="dv">8</span> <span class="dv">9</span> <span class="dv">10</span> <span class="dv">11</span> <span class="dv">12</span> <span class="dv">13</span> ...
+<span class="dv">2</span><span class="op">:</span>   <span class="dv">2</span>   <span class="dv">4</span>   <span class="dv">6</span>   <span class="dv">8</span>   <span class="dv">10</span>    <span class="dv">12</span>    ...
+<span class="dv">3</span><span class="op">:</span>     <span class="dv">3</span>     <span class="dv">6</span>     <span class="dv">9</span>       <span class="dv">12</span>    ...
+<span class="dv">4</span><span class="op">:</span>       <span class="dv">4</span>       <span class="dv">8</span>         <span class="dv">12</span>    ...
+                            <span class="op">^</span></code></pre></div>
+<p>then the LCM would be <code>12</code>.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"> <span class="dv">1</span>) <span class="co">{-</span>
+<span class="co"> 2)   (C) David Lettier 2016</span>
+<span class="co"> 3)   http://www.lettier.com/</span>
+<span class="co"> 4) -}</span>
+ <span class="dv">5</span>)
+ <span class="dv">6</span>) <span class="kw">import </span><span class="dt">System.Environment</span> (getArgs)
+ <span class="dv">7</span>)
+ <span class="dv">8</span>)<span class="ot"> lcm' ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">Int</span>
+ <span class="dv">9</span>) lcm' <span class="dv">0</span> <span class="dv">0</span> <span class="fu">=</span> <span class="dt">Just</span> <span class="dv">0</span>
+<span class="dv">10</span>) lcm' <span class="dv">0</span> _ <span class="fu">=</span> <span class="dt">Nothing</span>
+<span class="dv">11</span>) lcm' _ <span class="dv">0</span> <span class="fu">=</span> <span class="dt">Nothing</span>
+<span class="dv">12</span>) lcm' x y <span class="fu">=</span> <span class="dt">Just</span> <span class="fu">$</span> head <span class="fu">$</span> filter (\ z <span class="ot">-&gt;</span> (mod z b) <span class="fu">==</span> <span class="dv">0</span>) multiples_a
+<span class="dv">13</span>)   <span class="kw">where</span> multiples_a <span class="fu">=</span> multiples a
+<span class="dv">14</span>)         a <span class="fu">=</span> abs x
+<span class="dv">15</span>)         b <span class="fu">=</span> abs y
+<span class="dv">16</span>)
+<span class="dv">17</span>)<span class="ot"> multiples ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [<span class="dt">Int</span>]
+<span class="dv">18</span>) multiples x <span class="fu">=</span> map (<span class="fu">*</span> x) [<span class="dv">1</span><span class="fu">..</span>]
+<span class="dv">19</span>)
+<span class="dv">20</span>)<span class="ot"> main ::</span> <span class="dt">IO</span> ()
+<span class="dv">21</span>) main <span class="fu">=</span> <span class="kw">do</span>
+<span class="dv">22</span>)   args <span class="ot">&lt;-</span> getArgs
+<span class="dv">23</span>)   <span class="kw">let</span> args' <span class="fu">=</span> map (\ x <span class="ot">-&gt;</span> read<span class="ot"> x ::</span> <span class="dt">Int</span>) args
+<span class="dv">24</span>)   <span class="kw">let</span> [x, y] <span class="fu">=</span> <span class="kw">case</span> args' <span class="kw">of</span>
+<span class="dv">25</span>)         []      <span class="ot">-&gt;</span> [<span class="dv">0</span>, <span class="dv">1</span>]
+<span class="dv">26</span>)         [x]     <span class="ot">-&gt;</span> [<span class="dv">0</span>, x]
+<span class="dv">27</span>)         (x<span class="fu">:</span>y<span class="fu">:</span>z) <span class="ot">-&gt;</span> [x, y]
+<span class="dv">28</span>)   <span class="kw">let</span> result <span class="fu">=</span> <span class="kw">case</span> lcm' x y <span class="kw">of</span>
+<span class="dv">29</span>)         <span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="st">&quot;Error.&quot;</span>
+<span class="dv">30</span>)         <span class="dt">Just</span> x <span class="ot">-&gt;</span> show x
+<span class="dv">31</span>)   putStrLn result
+<span class="dv">32</span>)   return ()</code></pre></div>
+<h3 id="input-1">Input</h3>
+<p>Our input procedure is largely the same as the Fibonacci one however we need an input of two integers on the command line. If we do not get two integers, we will fill the input with <code>0</code>s. Depending of the other input, <code>lcm'</code> will catch this and may return <code>Nothing</code>.</p>
+<h3 id="lcm-1">LCM’</h3>
+<p>Defined on line 9, <code>lcm'</code> makes an exception for <code>0 0</code> such that <code>0</code> is the LCM for both zero and zero. Otherwise if one input is zero and the other is not we return <code>Nothing</code>. If we allowed zero to be a possible common multiple then zero would be the LCM for any combination of integers such that zero is a multiple of every number.</p>
+<p>The last case does not deal with zero and proceeds to return the <code>head</code> of the common multiples between <code>x</code> and <code>y</code>. <code>multiples</code> multiplies <code>x</code> with every number in the range <code>[1,inf)</code>. Note that the program does not actually attempt to multiply a infinite number of integers due to <a href="https://en.wikipedia.org/wiki/Lazy_evaluation">lazy evaluation</a>. On line 12 these multiples are filtered by the multiples that are evenly divided by <code>y</code>.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="dt">Prelude</span><span class="fu">&gt;</span> <span class="kw">let</span> multiples x <span class="fu">=</span> map (<span class="fu">*</span> x) [<span class="dv">1</span><span class="fu">..</span>]
+<span class="dt">Prelude</span><span class="fu">&gt;</span> <span class="kw">let</span> common_multiples x y <span class="fu">=</span> filter (\ z <span class="ot">-&gt;</span> (mod z y) <span class="fu">==</span> <span class="dv">0</span>) (multiples x)
+<span class="dt">Prelude</span><span class="fu">&gt;</span> take <span class="dv">10</span> <span class="fu">$</span> common_multiples  <span class="dv">6</span> <span class="dv">12</span>
+[<span class="dv">12</span>,<span class="dv">24</span>,<span class="dv">36</span>,<span class="dv">48</span>,<span class="dv">60</span>,<span class="dv">72</span>,<span class="dv">84</span>,<span class="dv">96</span>,<span class="dv">108</span>,<span class="dv">120</span>]
+<span class="dt">Prelude</span><span class="fu">&gt;</span> take <span class="dv">10</span> <span class="fu">$</span> common_multiples <span class="dv">5</span> <span class="dv">13</span>
+[<span class="dv">65</span>,<span class="dv">130</span>,<span class="dv">195</span>,<span class="dv">260</span>,<span class="dv">325</span>,<span class="dv">390</span>,<span class="dv">455</span>,<span class="dv">520</span>,<span class="dv">585</span>,<span class="dv">650</span>]
+<span class="dt">Prelude</span><span class="fu">&gt;</span> take <span class="dv">10</span> <span class="fu">$</span> common_multiples <span class="dv">12</span> <span class="dv">36</span>
+[<span class="dv">36</span>,<span class="dv">72</span>,<span class="dv">108</span>,<span class="dv">144</span>,<span class="dv">180</span>,<span class="dv">216</span>,<span class="dv">252</span>,<span class="dv">288</span>,<span class="dv">324</span>,<span class="dv">360</span>]</code></pre></div>
+<p>Since we started at <code>1</code>, the least common multiple is at the <code>head</code> of the list/array of common multiples.</p>
+<h2 id="gcd"><a href="https://github.com/lettier/interviewquestions/blob/master/number_theory/gcd.hs">GCD</a></h2>
+<h3 id="overview-2">Overview</h3>
+<p><i>Somewhat</i> similar to the spirit of LCM, the GCD finds the largest number that evenly divides all of the numbers being considered. Looking at two, three, and four again:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">   <span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span> <span class="dv">4</span> ...
+<span class="dv">2</span><span class="op">:</span> <span class="dv">1</span> <span class="dv">2</span>     ...
+<span class="dv">3</span><span class="op">:</span> <span class="dv">1</span>   <span class="dv">3</span>   ...
+<span class="dv">4</span><span class="op">:</span> <span class="dv">1</span> <span class="dv">2</span>   <span class="dv">4</span> ...
+   <span class="op">^</span></code></pre></div>
+<p>one is the GCD.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"> <span class="dv">1</span>) <span class="co">{-</span>
+<span class="co"> 2)   (C) David Lettier 2016</span>
+<span class="co"> 3)   http://www.lettier.com/</span>
+<span class="co"> 4) -}</span>
+ <span class="dv">5</span>)
+ <span class="dv">6</span>) <span class="kw">import </span><span class="dt">System.Environment</span> (getArgs)
+ <span class="dv">7</span>)
+ <span class="dv">8</span>)<span class="ot"> gcd' ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span>
+ <span class="dv">9</span>) gcd' <span class="dv">0</span> y <span class="fu">=</span> abs y
+<span class="dv">10</span>) gcd' x <span class="dv">0</span> <span class="fu">=</span> abs x
+<span class="dv">11</span>) gcd' x y <span class="fu">=</span> <span class="kw">case</span> divisors a b <span class="kw">of</span>
+<span class="dv">12</span>)       [] <span class="ot">-&gt;</span> <span class="fu">-</span><span class="dv">1</span>
+<span class="dv">13</span>)       (x<span class="fu">:</span>y) <span class="ot">-&gt;</span> x
+<span class="dv">14</span>)   <span class="kw">where</span> a <span class="fu">=</span> abs x
+<span class="dv">15</span>)         b <span class="fu">=</span> abs y
+<span class="dv">16</span>)
+<span class="dv">17</span>)<span class="ot"> divisors ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [<span class="dt">Int</span>]
+<span class="dv">18</span>) divisors x y <span class="fu">=</span> filter (\ z <span class="ot">-&gt;</span> ((mod x z) <span class="fu">+</span> (mod y z)) <span class="fu">==</span> <span class="dv">0</span>)  [a, b<span class="fu">..</span><span class="dv">1</span>]
+<span class="dv">19</span>)   <span class="kw">where</span> a <span class="fu">=</span> min x y
+<span class="dv">20</span>)         b <span class="fu">=</span> <span class="kw">if</span> (a <span class="fu">-</span> <span class="dv">1</span>) <span class="fu">&lt;</span> <span class="dv">0</span> <span class="kw">then</span> <span class="dv">0</span> <span class="kw">else</span> (a <span class="fu">-</span> <span class="dv">1</span>)
+<span class="dv">21</span>)
+<span class="dv">22</span>) <span class="co">-- Euclid's GCD Algorithm</span>
+<span class="dv">23</span>)
+<span class="dv">24</span>)<span class="ot"> gcd'' ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span>
+<span class="dv">25</span>) gcd'' x <span class="dv">0</span> <span class="fu">=</span> abs x
+<span class="dv">26</span>) gcd'' x y <span class="fu">=</span> gcd'' b (mod a b)
+<span class="dv">27</span>)   <span class="kw">where</span> a <span class="fu">=</span> abs x
+<span class="dv">28</span>)         b <span class="fu">=</span> abs y
+<span class="dv">29</span>)
+<span class="dv">30</span>)<span class="ot"> main ::</span> <span class="dt">IO</span> ()
+<span class="dv">31</span>) main <span class="fu">=</span> <span class="kw">do</span>
+<span class="dv">32</span>)   args <span class="ot">&lt;-</span> getArgs
+<span class="dv">33</span>)   <span class="kw">let</span> args' <span class="fu">=</span> map (\ x <span class="ot">-&gt;</span> read<span class="ot"> x ::</span> <span class="dt">Int</span>) args
+<span class="dv">34</span>)   <span class="kw">let</span> [x, y] <span class="fu">=</span> <span class="kw">case</span> args' <span class="kw">of</span>
+<span class="dv">35</span>)         [] <span class="ot">-&gt;</span> [<span class="dv">0</span>, <span class="dv">0</span>]
+<span class="dv">36</span>)         [x] <span class="ot">-&gt;</span> [<span class="dv">0</span>, x]
+<span class="dv">37</span>)         (x<span class="fu">:</span>y<span class="fu">:</span>z) <span class="ot">-&gt;</span> [x, y]
+<span class="dv">38</span>)   <span class="kw">let</span> result <span class="fu">=</span> assemble_output (gcd' x y) (gcd'' x y)
+<span class="dv">39</span>)   putStrLn result
+<span class="dv">40</span>)   return ()
+<span class="dv">41</span>)
+<span class="dv">42</span>)<span class="ot"> assemble_output ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">String</span>
+<span class="dv">43</span>) assemble_output x y <span class="fu">=</span> (show x) <span class="fu">++</span> <span class="st">&quot; &quot;</span> <span class="fu">++</span> (show y)</code></pre></div>
+<h3 id="input-2">Input</h3>
+<p>As with the LCM, the GCD input procedure pattern matches in an attempt to assemble two input integers. If it cannot assemble two inputs it will fill the inputs in with zero.</p>
+<h3 id="output">Output</h3>
+<p>As you will later read, there are two methods defined for computing the greatest common divisor of two integers. <code>assemble_output</code> takes takes both the output of <code>gcd'</code> and <code>gcd''</code> and outputs them concatenated as a string.</p>
+<h3 id="gcd-1">GCD’</h3>
+<p><code>gcd'</code> is defined on lines eight through 15. It takes two integers and outputs an integer. If one or more inputs are zero then the GCD is just the other (possibly) non-zero variable. If both are zero then the GCD is zero. Negative inputs are just converted to their absolute values. This is the same behavior as <code>gcd</code> found in the <code>Prelude</code>.</p>
+<p><code>divisors</code> takes two integers and outputs a list of integers such that every integer in the list evenly divides both <code>x</code> and <code>y</code>. Note that <code>divisors</code> goes from greatest to least <code>[a, b..1]</code>. <code>gcd'</code> uses this list and returns the head/first integer found in the list since this is indeed the greatest common divisor since the list is descending. We could have found all of the common divisors ascending and then returned the maximum or reversed the list and took the head but then we would have to go through the list twice.</p>
+<h3 id="gcd-euclids-algorithm">GCD’’ (Euclid’s Algorithm)</h3>
+<p><code>gcd''</code> is Euclid’s or the <i>Euclidean Algorithm</i>.</p>
+<blockquote>
+<p>The Euclidean Algorithm makes use of these properties by rapidly reducing the problem into easier and easier problems, using the third property, until it is easily solved by using one of the first two properties.</p>
+<footer>
+<a href="https://www.khanacademy.org/computing/computer-science/cryptography/modarithmetic/a/the-euclidean-algorithm">Khan Academy</a>
+</footer>
+</blockquote>
+<p>If the second parameter is zero, we just output the first absolute value of the first parameter. Otherwise we recursively call <code>gcd'</code> where the first parameter was the second parameter and the second parameter is the remainder of <code>a</code> divided by <code>b</code>.</p>
+<h2 id="wrap-up">Wrap-up</h2>
+<p>Solving whiteboard problems every now and then can never hurt. We discussed the Fibonacci sequence, LCM and GCD. All solutions were written in Haskell but the algorithms easily translate to other languages. We discussed pattern matching, the <code>Maybe Monad</code>, <code>filter</code>, <code>map</code> and <code>head</code>. GCD was defined two ways. One way took an iterative approach while the second way, Euclid’s Algorithm, used a simple recursive method.</p>
+</div>
+<div class="post-footer">
+  <div class="display-left">
+    <h3 class="post-footer-cta">
+      Looking for more content? Click <a href="../posts.html">here</a> or return to the <a href="#top">top</a>.
+    </h3>
+  </div>
+  <div class="display-right text-align-right post-footer-copyright">
+    <h4>
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2015</span> David Lettier.
+    </h4>
+  </div>
+</div>
+<script>
+  (function () {
+    document.getElementById('copyrightYear').innerHTML = new Date().getFullYear();
+  })();
+</script>
+
+    </div>
+  </body>
+</html>

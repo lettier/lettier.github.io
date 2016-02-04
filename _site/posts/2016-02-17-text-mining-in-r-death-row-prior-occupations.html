@@ -1,0 +1,1768 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="David Lettier">
+    <meta name="description" content="Text Mining in R: Death Row Prior Occupations">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <!--<link href='https://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>-->
+    <!--<link href='https://fonts.googleapis.com/css?family=Roboto+Condensed:300' rel='stylesheet' type='text/css'>-->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/pandoc.css">
+    <link rel="stylesheet" type="text/css" href="../css/default.css">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4fc2bc7a00a9352b"></script>
+    <title>Text Mining in R: Death Row Prior Occupations by David Lettier</title>
+  </head>
+  <body>
+    <span name="top"></span>
+    <nav class="navbar navbar-inverse navbar-transparent navbar-fixed-top">
+      <div class="container-fluid">
+        <ul class="nav navbar-nav">
+          <li class="nav-link"><a href="../">Home</a></li>
+          <li class="nav-link"><a href="../posts.html">Posts</a></li>
+        </ul>
+        <div class="nav-right">
+          <a href="http://www.lettier.com/" title="Lettier.com">
+            <div class="lettier-icon">
+              <img src="../images/logo.svg" width="30" height="30" alt="Lettier.com" class="lettier-icon-img">
+            </div>
+          </a>
+          <a href="https://www.github.com/lettier" title="Github">
+            <i class="fa fa-github nav-icon"></i>
+          </a>
+          <a href="https://www.linkedin.com/in/lettier" title="LinkedIn">
+            <i class="fa fa-linkedin nav-icon"></i>
+          </a>
+          <!--<a href="https://stackoverflow.com/users/3838674/lettier" title="Stack Overflow">
+            <i class="fa fa-stack-overflow nav-icon"></i>
+          </a>-->
+          <a href="https://www.hackerrank.com/lettier" title="HackerRank">
+            <i class="fa fa-trophy nav-icon nav-icon-second-last"></i>
+          </a>
+          <a href="https://www.behance.net/dlettier" title="Behance">
+            <i class="fa fa-behance nav-icon nav-icon-last"></i>
+          </a>
+        </div>
+      </div>
+    </nav>
+    <div class="jumbotron" style="background-image: url('/images/2016-02-17-text-mining-in-r-death-row-prior-occupations/jumbotron_image.png');">
+      <div class="container vertical-center">
+        <div class="jumbotron-text">
+          <span class="jumbotron-text-background">
+            
+              Text Mining in R: Death Row Prior Occupations
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="container page-container">
+      <div class="post-header">
+  <div class="display-left">
+    <div class="addthis_sharing_toolbox"></div>
+  </div>
+  <div class="display-right date-author">
+    <p>2016/02/17 &nbsp; <i class="fa fa-calendar"></i></p>
+    
+      <p>David Lettier &nbsp; <i class="fa fa-user"></i></p>
+    
+  </div>
+</div>
+<div class="post-body">
+  <p>Found in a list of <a href="http://rs.io/100-interesting-data-sets-for-statistics/">100+ interesting data sets</a>, the <a href="http://www.tdcj.state.tx.us/death_row/index.html">Texas Department of Criminal Justice</a> provides different collections of information on death row inmates both present and past. Prior occupations for each current offender are listed <a href="http://www.tdcj.state.tx.us/death_row/dr_offenders_on_dr.html">here</a>.</p>
+<h1 id="dependencies">Dependencies</h1>
+<p>We’ll need some packages to scrape, cluster, and chart our findings.</p>
+<ul>
+<li><a href="https://cran.r-project.org/web/packages/rvest/rvest.pdf">rvest</a>: “Wrappers around the ‘xml2’ and ‘httr’ packages to make it easy to download, then manipulate, HTML and XML.”</li>
+<li><a href="https://cran.r-project.org/web/packages/wordcloud/wordcloud.pdf">wordcloud</a>: “Pretty word clouds.”</li>
+<li><a href="https://cran.r-project.org/web/packages/tm/tm.pdf">tm</a>: “A framework for text mining applications within R.”</li>
+<li><a href="https://cran.r-project.org/web/packages/apcluster/apcluster.pdf">apcluster</a>: “The ‘apcluster’ package implements Frey’s and Dueck’s Affinity Propagation clustering in R.”</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(rvest)
+<span class="kw">library</span>(wordcloud)
+<span class="kw">library</span>(tm)
+<span class="kw">library</span>(apcluster)</code></pre></div>
+<h1 id="collection">Collection</h1>
+<p>The data we wish to look at is not in the form we need it. We’ll need to capture the HTML and parse it looking for the prior occupation information. Using <code>rvest</code>, we will grep for all <code>&lt;p&gt;</code> tags that contain the occupation information. Not every page is consistent so we will need some logic to hunt around for the prior occupation field. Once we’ve parsed every page, all of the raw information will be saved to a CSV file for later pre-processing. Each line corresponds to each death row inmate prior occupations collected.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># -----------------------</span>
+<span class="co"># Scraping</span>
+<span class="co"># -----------------------</span>
+
+base_link &lt;-<span class="st"> 'https://www.tdcj.state.tx.us/death_row/'</span>
+main_link &lt;-<span class="st"> 'https://www.tdcj.state.tx.us/death_row/dr_offenders_on_dr.html'</span>
+csv_filename &lt;-<span class="st"> 'prior_occupations_dirty.csv'</span>
+
+if (!<span class="kw">file.exists</span>(csv_filename)) {
+  page &lt;-<span class="st"> </span><span class="kw">read_html</span>(main_link)
+  page
+  links &lt;-<span class="st"> </span><span class="kw">html_attr</span>(<span class="kw">html_nodes</span>(page, <span class="st">'a'</span>), <span class="st">'href'</span>)
+  links
+  links &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">'^dr_info.*html$'</span>, links, <span class="dt">value=</span><span class="ot">TRUE</span>)
+  links
+  prior_occupations_dirty &lt;-<span class="st"> </span><span class="kw">c</span>()
+  for (link in links) {
+    texts &lt;-<span class="st"> </span><span class="kw">read_html</span>(<span class="kw">paste</span>(base_link, link, <span class="dt">sep=</span><span class="st">''</span>)) %&gt;%<span class="st"> </span><span class="kw">html_nodes</span>(<span class="st">'p'</span>) %&gt;%<span class="st"> </span><span class="kw">html_text</span>()
+    if (<span class="kw">length</span>(<span class="kw">grep</span>(<span class="st">'Prior Prison'</span>, texts[<span class="dv">3</span>])) &gt;=<span class="st"> </span><span class="dv">1</span>) {
+      prior_occupations_dirty &lt;-<span class="st"> </span><span class="kw">c</span>(prior_occupations_dirty, texts[<span class="dv">2</span>])
+    } else {
+      prior_occupations_dirty &lt;-<span class="st"> </span><span class="kw">c</span>(prior_occupations_dirty, texts[<span class="dv">3</span>])
+    }
+  }
+  prior_occupations_dirty_df =<span class="st"> </span><span class="kw">as.data.frame</span>(prior_occupations_dirty)
+  <span class="kw">write.csv</span>(prior_occupations_dirty_df, <span class="dt">file=</span>csv_filename)
+}</code></pre></div>
+<h1 id="pre-processing">Pre-processing</h1>
+<p>With the CSV file opened, we need to clean each entry for unwanted white-space and punctuation. For those with multiple prior occupations, we’ll split on the commas. Once cleaned, we’ll add each prior occupation per inmate to the <code>inmates_occupations</code> list.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># -----------------------</span>
+<span class="co"># Cleaning</span>
+<span class="co"># -----------------------</span>
+
+csv_file &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="dt">file=</span>csv_filename)
+prior_occupations_dirty &lt;-<span class="st"> </span><span class="kw">as.vector</span>(<span class="kw">t</span>(csv_file$prior_occupations_dirty))
+
+prior_occupations_cleaned =<span class="st"> </span><span class="kw">c</span>()
+inmates_prior_occupations =<span class="st"> </span><span class="kw">list</span>()
+i &lt;-<span class="st"> </span><span class="dv">1</span>
+for (prior_occupation_dirty in prior_occupations_dirty) {
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">'Prior Occupation'</span>, <span class="st">''</span>, prior_occupation_dirty)
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">tolower</span>(prior_occupation)
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">'^</span><span class="ch">\\</span><span class="st">W+|^</span><span class="ch">\\</span><span class="st">s+'</span>, <span class="st">' '</span>, prior_occupation)
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">'`'</span>, <span class="st">''</span>, prior_occupation)
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">':'</span>, <span class="st">' '</span>, prior_occupation)
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">'</span><span class="ch">\\</span><span class="st">.'</span>, <span class="st">' '</span>, prior_occupation)
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">'</span><span class="ch">\r</span><span class="st">'</span>, <span class="st">' '</span>, prior_occupation)
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">'</span><span class="ch">\n</span><span class="st">'</span>, <span class="st">' '</span>, prior_occupation)
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">'</span><span class="ch">\\</span><span class="st">s+'</span>, <span class="st">' '</span>, prior_occupation)
+  if (<span class="kw">length</span>(<span class="kw">grep</span>(<span class="st">'n/a'</span>, prior_occupation)) ==<span class="st"> </span><span class="dv">0</span>) {
+    prior_occupation &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">'/'</span>, <span class="st">', '</span>, prior_occupation)
+  }
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">' and '</span>, <span class="st">', '</span>, prior_occupation)
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">'&amp;'</span>, <span class="st">', '</span>, prior_occupation)
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">';'</span>, <span class="st">', '</span>, prior_occupation)
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">trimws</span>(prior_occupation)
+  prior_occupations &lt;-<span class="st"> </span><span class="kw">strsplit</span>(prior_occupation, <span class="st">', '</span>)
+  prior_occupations &lt;-<span class="st"> </span><span class="kw">lapply</span>(prior_occupations, function (x) <span class="kw">return</span>(<span class="kw">gsub</span>(<span class="st">'</span><span class="ch">\\</span><span class="st">s+'</span>, <span class="st">' '</span>, x)))
+  prior_occupations &lt;-<span class="st"> </span><span class="kw">lapply</span>(prior_occupations, function (x) <span class="kw">return</span>(<span class="kw">trimws</span>(x)))
+  if (<span class="kw">length</span>(prior_occupations[[<span class="dv">1</span>]]) &gt;<span class="st"> </span><span class="dv">0</span>) {
+    prior_occupations_cleaned &lt;-<span class="st"> </span><span class="kw">c</span>(prior_occupations_cleaned, prior_occupations, <span class="dt">recursive=</span>T)
+    inmates_prior_occupations[[<span class="kw">toString</span>(i)]] &lt;-<span class="st"> </span>prior_occupations[[<span class="dv">1</span>]]
+    i &lt;-<span class="st"> </span>i +<span class="st"> </span><span class="dv">1</span>
+  }
+}
+total_inmate_count =<span class="st"> </span><span class="kw">length</span>(inmates_prior_occupations)</code></pre></div>
+<p>Looking over the dataset, you’ll notice some redundancies such as <code>mechanic</code> versus <code>auto mechanic</code>. With care, we will condense the prior occupations to the sub-strings of the redundancies. We’ll also need to hard-code some corrections for irregularities such as <code>fork lift</code> versus <code>forklift</code>. Once the duplicates have been merged, we’ll generate a unique list of the prior occupations for our axis labels.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># -----------------------</span>
+<span class="co"># Duplication Removal</span>
+<span class="co"># -----------------------</span>
+
+prior_occupations_merged =<span class="st"> </span><span class="kw">c</span>()
+prior_occupations_merged_map =<span class="st"> </span><span class="kw">list</span>()
+for (prior_occupation_cleaned1 in prior_occupations_cleaned) {
+  prior_occupation &lt;-<span class="st"> </span>prior_occupation_cleaned1
+  if (<span class="kw">is.null</span>(prior_occupations_merged_map[[prior_occupation]])) {
+    if (<span class="kw">nchar</span>(prior_occupation) &gt;=<span class="st"> </span><span class="dv">4</span>) {
+      for (prior_occupation_cleaned2 in prior_occupations_cleaned) {
+        if (<span class="kw">nchar</span>(prior_occupation_cleaned2) &gt;=<span class="st"> </span><span class="dv">4</span>) {
+          if (<span class="kw">length</span>(<span class="kw">grep</span>(prior_occupation_cleaned2, prior_occupation)) &gt;<span class="st"> </span><span class="dv">0</span>) {
+            if (<span class="kw">nchar</span>(prior_occupation) &gt;=<span class="st"> </span><span class="kw">nchar</span>(prior_occupation_cleaned2)) {
+              prior_occupation &lt;-<span class="st"> </span>prior_occupation_cleaned2
+            }
+          }
+        }
+      }
+    }
+    if (prior_occupation ==<span class="st"> 'n/a'</span>) {
+      prior_occupation &lt;-<span class="st"> 'none'</span>
+    }
+    if (<span class="kw">length</span>(<span class="kw">grep</span>(<span class="st">'air condition'</span>, prior_occupation)) &gt;<span class="st"> </span><span class="dv">0</span>) {
+      prior_occupation &lt;-<span class="st"> 'ac'</span>
+    }
+    if (<span class="kw">length</span>(<span class="kw">grep</span>(<span class="st">'fork lift'</span>, prior_occupation)) &gt;<span class="st"> </span><span class="dv">0</span>) {
+      prior_occupation &lt;-<span class="st"> 'forklift'</span>
+    }
+    if (<span class="kw">length</span>(<span class="kw">grep</span>(<span class="st">'forklift'</span>, prior_occupation)) &gt;<span class="st"> </span><span class="dv">0</span>) {
+      prior_occupation &lt;-<span class="st"> 'forklift'</span>
+    }
+    if (<span class="kw">length</span>(<span class="kw">grep</span>(<span class="st">'clerical'</span>, prior_occupation)) &gt;<span class="st"> </span><span class="dv">0</span>) {
+      prior_occupation &lt;-<span class="st"> 'clerk'</span>
+    }
+    if (<span class="kw">length</span>(<span class="kw">grep</span>(<span class="st">'welding'</span>, prior_occupation)) &gt;<span class="st"> </span><span class="dv">0</span>) {
+      prior_occupation &lt;-<span class="st"> 'welder'</span>
+    }
+    prior_occupations_merged_map[[prior_occupation_cleaned1]] &lt;-<span class="st"> </span>prior_occupation
+  } else {
+    prior_occupation &lt;-<span class="st"> </span>prior_occupations_merged_map[[prior_occupation]]
+  }
+  prior_occupations_merged &lt;-<span class="st"> </span><span class="kw">c</span>(prior_occupations_merged, prior_occupation)
+}
+total_prior_occupation_count =<span class="st"> </span><span class="kw">length</span>(prior_occupations_merged)
+
+i &lt;-<span class="st"> </span><span class="dv">1</span>
+for (inmate_prior_occupations in inmates_prior_occupations) {
+  temp =<span class="st"> </span><span class="kw">c</span>()
+  for (prior_occupation in inmate_prior_occupations) {
+    temp &lt;-<span class="st"> </span><span class="kw">c</span>(temp, prior_occupations_merged_map[[prior_occupation]])
+  }
+  inmates_prior_occupations[[<span class="kw">toString</span>(i)]] &lt;-<span class="st"> </span>temp
+  i &lt;-<span class="st"> </span>i +<span class="st"> </span><span class="dv">1</span>
+}
+unique_prior_occupations =<span class="st"> </span><span class="kw">unique</span>(<span class="kw">sort</span>(prior_occupations_merged))
+unique_prior_occupations_length &lt;-<span class="st"> </span><span class="kw">length</span>(unique_prior_occupations)</code></pre></div>
+<h1 id="mining">Mining</h1>
+<p>We have collected, cleaned, and removed erroneous variations in our dataset. Now we’ll move on to mining and plotting/charting our data.</p>
+<h2 id="total-prior-occupation-relative-frequency-distribution">Total Prior Occupation Relative Frequency Distribution</h2>
+<p>Let us begin by charting the relative frequency of prior occupations listed across all sampled inmates.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># -----------------------</span>
+<span class="co"># Prior Occupation Relative Frequency Chart</span>
+<span class="co"># -----------------------</span>
+
+prior_occupations_table &lt;-<span class="st"> </span><span class="kw">table</span>(prior_occupations_merged)
+prior_occupations_table &lt;-<span class="st"> </span>prior_occupations_table /<span class="st"> </span><span class="kw">sum</span>(prior_occupations_table) *<span class="st"> </span><span class="dv">100</span>
+<span class="kw">png</span>(<span class="dt">file=</span><span class="st">'prior_occupation_relative_freq_dist.png'</span>, <span class="dt">width=</span><span class="dv">1500</span>, <span class="dt">height=</span><span class="dv">1500</span>)
+<span class="kw">par</span>(
+  <span class="dt">mai=</span><span class="kw">c</span>(<span class="fl">3.0</span>, <span class="fl">1.0</span>, <span class="fl">1.0</span>, <span class="fl">1.0</span>)
+)
+<span class="kw">barplot</span>(
+  prior_occupations_table,
+  <span class="dt">col=</span><span class="kw">rainbow</span>(<span class="kw">length</span>(prior_occupations_table)),
+  <span class="dt">cex.names=</span><span class="fl">1.1</span>,
+  <span class="dt">las=</span><span class="dv">2</span>,
+  <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),
+  <span class="dt">axes=</span>F
+)
+<span class="kw">axis</span>(<span class="dv">2</span>, <span class="dt">at=</span><span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">100</span>,<span class="dv">5</span>))
+<span class="kw">grid</span>(<span class="dt">ny=</span><span class="dv">100</span>, <span class="dt">nx=</span><span class="ot">NA</span>)
+<span class="kw">barplot</span>(
+  prior_occupations_table,
+  <span class="dt">col=</span><span class="kw">rainbow</span>(<span class="kw">length</span>(prior_occupations_table)),
+  <span class="dt">cex.names=</span><span class="fl">1.1</span>,
+  <span class="dt">las=</span><span class="dv">2</span>,
+  <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),
+  <span class="dt">axes=</span>F,
+  <span class="dt">add=</span>T,
+  <span class="dt">xlab=</span><span class="st">''</span>,
+  <span class="dt">ylab=</span><span class="kw">paste</span>(<span class="st">'Percentage of'</span>, total_prior_occupation_count, <span class="st">'listed Prior Occupations'</span>),
+  <span class="dt">main=</span><span class="kw">paste</span>(<span class="st">'Prior Occupation Relative Frequency Distribution of'</span>, total_inmate_count, <span class="st">'Texas Death Row Inmates'</span>)
+)
+<span class="kw">mtext</span>(<span class="st">'Prior Occupation'</span>, <span class="dt">side=</span><span class="dv">1</span>, <span class="dt">line=</span><span class="dv">13</span>)</code></pre></div>
+<div class="figure">
+<img src="../images/2016-02-17-text-mining-in-r-death-row-prior-occupations/prior_occupation_relative_freq_dist.png" alt="Prior Occupation Relative Frequency Distribution of 182 Texas Death Row Inmates" class="post-img post-img-fill" />
+<p class="caption">Prior Occupation Relative Frequency Distribution of 182 Texas Death Row Inmates</p>
+</div>
+<p>The unique prior occupations are in alphabetical order along the x-axis. The y-axis is the relative frequency distribution. <code>laborer</code> accounts for nearly 41% of the 291 listed prior occupations among the 182 death row inmates sampled. Attributing to its large percentage was the merging of duplicates, for example, <code>general laborer</code> and <code>assembly line laborer</code> into just <code>laborer</code>. One could argue that they are distinct labels. <code>contruction</code> and <code>none</code> are the second and third largest respectively.</p>
+<p>We can explore the dataset further by clustering the sampled inmates by the prior occupations they had. We’ll treat each inmate as a document with their prior occupations making up the document. By clustering the inmates via their prior occupations, we can partition the dataset into different prior occupation profiles.</p>
+<h2 id="inmate-prior-occupations-matrix">Inmate Prior Occupations Matrix</h2>
+<p>To begin clustering, we will need to vectorize each inmates’ prior occupations. We’ll assemble these vectors, into the <code>inmate_matrix_count</code> where <code>[i][j]</code> is <code>&gt;= 1</code> if the i<sup>th</sup> inmate had the j<sup>th</sup> occupation and 0 otherwise. No inmate had the same prior occupation listed more than once, so no count will be greater than one.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># -----------------------</span>
+<span class="co"># Inmate x Prior Occupations</span>
+<span class="co"># -----------------------</span>
+
+inmate_matrix_count &lt;-<span class="st"> </span><span class="kw">c</span>()
+for (row in <span class="dv">1</span>:<span class="kw">length</span>(inmates_prior_occupations)) {
+  inmate_prior_occupations &lt;-<span class="st"> </span>inmates_prior_occupations[[<span class="kw">toString</span>(row)]]
+  for (unique_prior_occupation in unique_prior_occupations) {
+    inmate_matrix_count &lt;-<span class="st"> </span><span class="kw">c</span>(
+      inmate_matrix_count,
+      <span class="kw">sum</span>(unique_prior_occupation ==<span class="st"> </span>inmate_prior_occupations)
+    )
+  }
+}
+inmate_matrix_count =<span class="st"> </span><span class="kw">matrix</span>(
+  inmate_matrix_count,
+  <span class="dt">nrow=</span>total_inmate_count,
+  <span class="dt">ncol=</span>unique_prior_occupations_length,
+  <span class="dt">byrow=</span>T
+)</code></pre></div>
+<h2 id="prior-occupation-weighting-tf-idf">Prior Occupation Weighting (TF-IDF)</h2>
+<p>Since we are dealing with text and that nearly half of all sampled inmates were a laborer at some point, we’ll perform a term weighting technique known as <a href="https://en.wikipedia.org/wiki/Tf%E2%80%93idf">TF-IDF</a>. Given that an inmate was both a <code>laborer</code> and <code>welder</code> at some point, TF-IDF will weight <code>laborer</code> less since <code>welder</code> appears less frequently in the text corpus. Knowing that an inmate was a <code>laborer</code> does not <i>say</i> as much as knowing they were also a <code>welder</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># -----------------------</span>
+<span class="co"># TF-IDF</span>
+<span class="co"># -----------------------</span>
+
+inmate_matrix_tfidf &lt;-<span class="st"> </span><span class="kw">matrix</span>(
+  <span class="kw">c</span>(
+    <span class="dv">1</span>:(total_inmate_count *<span class="st"> </span>unique_prior_occupations_length)
+  ) *<span class="st"> </span><span class="dv">0</span>,
+  <span class="dt">nrow=</span>total_inmate_count,
+  <span class="dt">ncol=</span>unique_prior_occupations_length,
+  <span class="dt">byrow=</span>T
+)
+nrow_count &lt;-<span class="st"> </span><span class="kw">nrow</span>(inmate_matrix_count)
+for (row in <span class="dv">1</span>:<span class="kw">nrow</span>(inmate_matrix_count)) {
+  for (col in <span class="dv">1</span>:<span class="kw">ncol</span>(inmate_matrix_count)) {
+    tf &lt;-<span class="st"> </span>inmate_matrix_count[row,col]
+    df &lt;-<span class="st"> </span><span class="kw">length</span>(<span class="kw">which</span>(inmate_matrix_count[,col] &gt;<span class="st"> </span><span class="dv">0</span>))
+    idf &lt;-<span class="st"> </span><span class="kw">log</span>(nrow_count /<span class="st"> </span>(df +<span class="st"> </span><span class="dv">1</span>))
+    tfidf &lt;-<span class="st"> </span>tf *<span class="st"> </span>idf
+    inmate_matrix_tfidf[row,col] &lt;-<span class="st"> </span>tfidf
+  }
+}</code></pre></div>
+<h2 id="multidimensional-scaling-mds">Multidimensional Scaling (MDS)</h2>
+<p>To visualize the inmate vectors in two dimensions we’ll employ <a href="https://en.wikipedia.org/wiki/Multidimensional_scaling">multidimensional scaling</a>.</p>
+<blockquote>
+An MDS algorithm aims to place each object in N-dimensional space such that the between-object distances are preserved as well as possible.
+<footer>
+Multidimensional Scaling, Wikipedia, the free encyclopedia
+</footer>
+</blockquote>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># -----------------------</span>
+<span class="co"># MDS</span>
+<span class="co"># -----------------------</span>
+
+plot_scale &lt;-<span class="st"> </span><span class="fl">1.0</span>
+
+scatter_plot_matrix &lt;-<span class="st"> </span>function(prefix, input_matrix) {
+  <span class="kw">png</span>(<span class="dt">file=</span><span class="kw">paste</span>(<span class="kw">tolower</span>(prefix), <span class="st">'scatter_plot.png'</span>, <span class="dt">sep=</span><span class="st">'_'</span>), <span class="dt">width=</span><span class="dv">1500</span>, <span class="dt">height=</span><span class="dv">1500</span>)
+  <span class="kw">plot.new</span>()
+  input_matrix[,<span class="dv">1</span>]
+  input_matrix[,<span class="dv">2</span>]
+  <span class="kw">textplot</span>(
+    input_matrix[, <span class="dv">1</span>],
+    input_matrix[, <span class="dv">2</span>],
+    <span class="kw">seq</span>(<span class="dv">1</span>:<span class="kw">length</span>(input_matrix[,<span class="dv">1</span>])),
+    <span class="dt">xlim=</span><span class="kw">c</span>(
+      <span class="kw">min</span>(input_matrix[, <span class="dv">1</span>]) *<span class="st"> </span>plot_scale,
+      <span class="kw">max</span>(input_matrix[, <span class="dv">1</span>]) *<span class="st"> </span>plot_scale
+    ),
+    <span class="dt">ylim=</span><span class="kw">c</span>(
+      <span class="kw">min</span>(input_matrix[, <span class="dv">2</span>]) *<span class="st"> </span>plot_scale,
+      <span class="kw">max</span>(input_matrix[, <span class="dv">2</span>]) *<span class="st"> </span>plot_scale
+    ),
+    <span class="dt">main=</span><span class="kw">paste</span>(<span class="st">'Inmate Prior Occupations 2D Visualization'</span>, <span class="kw">paste0</span>(<span class="st">'('</span>, prefix, <span class="st">')'</span>))
+  )
+}
+
+dist_matrix &lt;-<span class="st"> </span><span class="kw">dist</span>(inmate_matrix_count, <span class="dt">method=</span><span class="st">'euclidean'</span>)
+inmate_matrix_count_mds &lt;-<span class="st"> </span><span class="kw">cmdscale</span>(dist_matrix)
+<span class="kw">scatter_plot_matrix</span>(<span class="st">'COUNT-MDS'</span>, inmate_matrix_count_mds)
+
+dist_matrix &lt;-<span class="st"> </span><span class="kw">dist</span>(inmate_matrix_tfidf, <span class="dt">method=</span><span class="st">'euclidean'</span>)
+inmate_matrix_tfidf_mds &lt;-<span class="st"> </span><span class="kw">cmdscale</span>(dist_matrix)
+<span class="kw">scatter_plot_matrix</span>(<span class="st">'TFIDF-MDS'</span>, inmate_matrix_tfidf_mds)</code></pre></div>
+<div class="figure">
+<img src="../images/2016-02-17-text-mining-in-r-death-row-prior-occupations/tfidf-mds_scatter_plot.png" alt="Inmate Prior Occupation 2D Visualization (TFIDF-MDS)" class="post-img post-img-fill" />
+<p class="caption">Inmate Prior Occupation 2D Visualization (TFIDF-MDS)</p>
+</div>
+<p>We can see a large mass around the origin. Another distinct mass is seen at (-0.8951273 -0.702121).</p>
+<h2 id="affinity-propagation-ap-clustering">Affinity Propagation (AP) Clustering</h2>
+<p>Due to the concave shapes and variable density of the MDS scatter plot, we’ll employ <a href="https://en.wikipedia.org/wiki/Affinity_propagation">Affinity Propagation Clustering</a>. This has the added benefit of not having to specify the amount of clusters ahead of time (<code>K</code>).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># -----------------------</span>
+<span class="co"># AP CLUSTERING</span>
+<span class="co"># -----------------------</span>
+
+cluster_matrix &lt;-<span class="st"> </span>function(prefix, input_matrix, inmates_prior_occupations) {
+  apresult &lt;-<span class="st"> </span><span class="kw">apcluster</span>(<span class="kw">negDistMat</span>(<span class="dt">r=</span><span class="dv">2</span>), input_matrix)
+  input_cluster_labels =<span class="st"> </span><span class="kw">labels</span>(apresult, <span class="dt">type=</span><span class="st">'enum'</span>)
+
+  inmate_clusters_flt &lt;-<span class="st"> </span><span class="kw">list</span>()
+  inmate_clusters_str &lt;-<span class="st"> </span><span class="kw">list</span>()
+
+  i &lt;-<span class="st"> </span><span class="dv">1</span>
+  for (input_cluster_label in input_cluster_labels) {
+    input_cluster_label &lt;-<span class="st"> </span><span class="kw">toString</span>(input_cluster_label)
+
+    if (<span class="kw">is.null</span>(inmate_clusters_flt[[input_cluster_label]])) {
+      inmate_clusters_flt[[input_cluster_label]] &lt;-<span class="st"> </span><span class="kw">c</span>()
+      inmate_clusters_str[[input_cluster_label]] &lt;-<span class="st"> </span><span class="kw">list</span>()
+    }
+
+    inmate_clusters_flt[[input_cluster_label]] &lt;-<span class="st"> </span><span class="kw">c</span>(
+      inmate_clusters_flt[[input_cluster_label]],
+      input_matrix[i,]
+    )
+
+    i_str &lt;-<span class="st"> </span><span class="kw">toString</span>(i)
+    temp =<span class="st"> </span><span class="kw">list</span>()
+    temp[[i_str]] &lt;-<span class="st"> </span>inmates_prior_occupations[[i_str]]
+    inmate_clusters_str[[input_cluster_label]] &lt;-<span class="st"> </span><span class="kw">append</span>(
+      inmate_clusters_str[[input_cluster_label]],
+      temp
+    )
+
+    i &lt;-<span class="st"> </span>i +<span class="st"> </span><span class="dv">1</span>
+  }
+
+  for (cluster_i in <span class="dv">1</span>:<span class="kw">length</span>(inmate_clusters_flt)) {
+    cluster_i_str &lt;-<span class="st"> </span><span class="kw">toString</span>(cluster_i)
+    cluster &lt;-<span class="st"> </span><span class="kw">matrix</span>(inmate_clusters_flt[[cluster_i_str]], <span class="dt">ncol=</span><span class="dv">2</span>, <span class="dt">byrow=</span>T)
+    inmate_clusters_flt[[cluster_i_str]] &lt;-<span class="st"> </span>cluster
+  }
+
+  inmate_clusters_colors =<span class="st"> </span><span class="kw">rainbow</span>(<span class="kw">length</span>(inmate_clusters_flt), <span class="dt">v=</span><span class="fl">0.8</span>, <span class="dt">s=</span><span class="fl">0.5</span>)
+
+  <span class="kw">write</span>(
+    <span class="kw">sapply</span>(
+      <span class="kw">sort</span>(<span class="kw">as.integer</span>(<span class="kw">names</span>(inmate_clusters_str))),
+      function(x) <span class="kw">paste</span>(
+        <span class="st">'Cluster'</span>,
+        <span class="kw">toString</span>(x),
+        <span class="st">'</span><span class="ch">\n</span><span class="st"> '</span>,
+        <span class="kw">paste</span>(<span class="st">'Inmate'</span>, <span class="kw">names</span>(inmate_clusters_str[[<span class="kw">toString</span>(x)]]), inmate_clusters_str[[<span class="kw">toString</span>(x)]], <span class="dt">collapse=</span><span class="st">'</span><span class="ch">\n</span><span class="st">  '</span>)
+      )),
+    <span class="kw">paste</span>(<span class="kw">tolower</span>(prefix), <span class="st">'inmate_clusters.txt'</span>, <span class="dt">sep=</span><span class="st">'_'</span>)
+  )
+
+  <span class="kw">return</span>(<span class="kw">list</span>(<span class="dt">flt=</span>inmate_clusters_flt, <span class="dt">str=</span>inmate_clusters_str, <span class="dt">colors=</span>inmate_clusters_colors, <span class="dt">labels=</span>input_cluster_labels))
+}
+
+result &lt;-<span class="st"> </span><span class="kw">cluster_matrix</span>(<span class="st">'TFIDF-MDS-AP'</span>, inmate_matrix_tfidf_mds, inmates_prior_occupations)
+inmate_clusters_flt &lt;-<span class="st"> </span>result$flt
+inmate_clusters_str &lt;-<span class="st"> </span>result$str
+inmate_clusters_colors &lt;-<span class="st"> </span>result$colors
+inmate_cluster_labels &lt;-<span class="st"> </span>result$labels</code></pre></div>
+<p>With the <code>inmate_matrix_tfidf_mds</code> clustered, we can now plot the clusters.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">plot_clustering &lt;-<span class="st"> </span>function(prefix, input_matrix, inmate_cluster_flt, inmate_clusters_colors, inmate_cluster_labels) {
+  <span class="kw">png</span>(<span class="dt">file=</span><span class="kw">paste</span>(<span class="kw">tolower</span>(prefix), <span class="st">'inmate_clusters.png'</span>, <span class="dt">sep=</span><span class="st">'_'</span>), <span class="dt">width=</span><span class="dv">1500</span>, <span class="dt">height=</span><span class="dv">1500</span>)
+  <span class="kw">plot.new</span>()
+  <span class="kw">plot</span>(
+    input_matrix[,<span class="dv">1</span>],
+    input_matrix[,<span class="dv">2</span>],
+    <span class="dt">main=</span><span class="kw">paste</span>(<span class="st">'Death Row Inmate Clustering by Prior Occupations'</span>, <span class="kw">paste0</span>(<span class="st">'('</span>, prefix, <span class="st">')'</span>))
+  )
+  for (cluster_i in <span class="dv">1</span>:<span class="kw">length</span>(inmate_clusters_flt)) {
+    cluster_i_str &lt;-<span class="st"> </span><span class="kw">toString</span>(cluster_i)
+    <span class="kw">points</span>(
+      inmate_clusters_flt[[cluster_i_str]],
+      <span class="dt">col=</span>inmate_clusters_colors[cluster_i],
+      <span class="dt">bg=</span>inmate_clusters_colors[cluster_i],
+      <span class="dt">pch=</span><span class="dv">19</span>,
+      <span class="dt">cex=</span><span class="dv">5</span>,
+      <span class="dt">lwd=</span><span class="dv">2</span>
+    )
+  }
+  <span class="kw">text</span>(
+    input_matrix[, <span class="dv">1</span>],
+    input_matrix[, <span class="dv">2</span>],
+    inmate_cluster_labels,
+    <span class="dt">xlim=</span><span class="kw">c</span>(
+      <span class="kw">min</span>(input_matrix[, <span class="dv">1</span>]) *<span class="st"> </span>plot_scale,
+      <span class="kw">max</span>(input_matrix[, <span class="dv">1</span>]) *<span class="st"> </span>plot_scale
+    ),
+    <span class="dt">ylim=</span><span class="kw">c</span>(
+      <span class="kw">min</span>(input_matrix[, <span class="dv">2</span>]) *<span class="st"> </span>plot_scale,
+      <span class="kw">max</span>(input_matrix[, <span class="dv">2</span>]) *<span class="st"> </span>plot_scale
+    ),
+  )
+  <span class="kw">legend</span>(
+    <span class="st">'topright'</span>,
+    <span class="dt">legend=</span><span class="kw">lapply</span>(<span class="kw">c</span>(<span class="dv">1</span>:<span class="kw">length</span>(inmate_clusters_colors)), function (x) <span class="kw">return</span>(<span class="kw">toString</span>(x))),
+    <span class="dt">fill=</span>inmate_clusters_colors,
+    <span class="dt">cex=</span><span class="fl">1.3</span>,
+    <span class="dt">pt.cex=</span><span class="dv">1</span>
+  )
+}
+
+<span class="kw">plot_clustering</span>(<span class="st">'TFIDF-MDS-AP'</span>, inmate_matrix_tfidf_mds, inmate_clusters_flt, inmate_clusters_colors, inmate_cluster_labels)</code></pre></div>
+<div class="figure">
+<img src="../images/2016-02-17-text-mining-in-r-death-row-prior-occupations/tfidf-mds-ap_inmate_clusters.png" alt="Death Row Inmate Clustering by Prior Occupations (TFIDF-MDS-AP)" class="post-img post-img-fill" />
+<p class="caption">Death Row Inmate Clustering by Prior Occupations (TFIDF-MDS-AP)</p>
+</div>
+<p>In total, the algorithm generated 17 clusters. Cluster membership sizes range from one to 92 inmates.</p>
+<h3 id="inmate-clusters-prior-occupations-relative-frequency-distributions">Inmate Clusters, Prior Occupations Relative Frequency Distributions</h3>
+<p>Now let us generate a relative frequency distribution bar-chart for each TF-IDF MDS AP cluster.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">plot_clusters_occupation_distributions &lt;-<span class="st"> </span>function(prefix, inmate_clusters_str, unique_prior_occupations) {
+  for (i in <span class="dv">1</span>:<span class="kw">length</span>(inmate_clusters_str)) {
+    cluster &lt;-<span class="st"> </span>inmate_clusters_str[[<span class="kw">toString</span>(i)]]
+    cluster_prior_occupations &lt;-<span class="st"> </span><span class="kw">c</span>()
+    for (inmate_prior_occupations in cluster) {
+      cluster_prior_occupations &lt;-<span class="st"> </span><span class="kw">c</span>(cluster_prior_occupations, inmate_prior_occupations)
+    }
+
+    prior_occupations_table &lt;-<span class="st"> </span><span class="kw">table</span>(<span class="kw">factor</span>(cluster_prior_occupations, <span class="dt">levels=</span>unique_prior_occupations))
+    prior_occupations_table &lt;-<span class="st"> </span>prior_occupations_table /<span class="st"> </span><span class="kw">sum</span>(prior_occupations_table) *<span class="st"> </span><span class="dv">100</span>
+
+    <span class="kw">png</span>(<span class="dt">file=</span><span class="kw">paste</span>(<span class="kw">tolower</span>(prefix), <span class="kw">toString</span>(i), <span class="st">'prior_occupation_distribution.png'</span>, <span class="dt">sep=</span><span class="st">'_'</span>), <span class="dt">width=</span><span class="dv">1500</span>, <span class="dt">height=</span><span class="dv">1500</span>)
+    <span class="kw">plot.new</span>()
+    <span class="kw">par</span>(
+      <span class="dt">mai=</span><span class="kw">c</span>(<span class="fl">3.0</span>, <span class="fl">1.0</span>, <span class="fl">1.0</span>, <span class="fl">1.0</span>)
+    )
+    <span class="kw">barplot</span>(
+      prior_occupations_table,
+      <span class="dt">col=</span><span class="kw">rainbow</span>(<span class="kw">length</span>(prior_occupations_table)),
+      <span class="dt">cex.names=</span><span class="fl">1.1</span>,
+      <span class="dt">las=</span><span class="dv">2</span>,
+      <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),
+      <span class="dt">axes=</span>F
+    )
+    <span class="kw">axis</span>(<span class="dv">2</span>, <span class="dt">at=</span><span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">100</span>,<span class="dv">5</span>))
+    <span class="kw">grid</span>(<span class="dt">ny=</span><span class="dv">100</span>, <span class="dt">nx=</span><span class="ot">NA</span>)
+    <span class="kw">barplot</span>(
+      prior_occupations_table,
+      <span class="dt">col=</span><span class="kw">rainbow</span>(<span class="kw">length</span>(prior_occupations_table)),
+      <span class="dt">cex.names=</span><span class="fl">1.1</span>,
+      <span class="dt">las=</span><span class="dv">2</span>,
+      <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),
+      <span class="dt">axes=</span>F,
+      <span class="dt">add=</span>T,
+      <span class="dt">xlab=</span><span class="st">''</span>,
+      <span class="dt">ylab=</span><span class="kw">paste</span>(<span class="st">'Percentage of'</span>, <span class="kw">length</span>(cluster_prior_occupations), <span class="st">'listed Prior Occupations'</span>),
+      <span class="dt">main=</span><span class="kw">paste</span>(
+        <span class="st">'Prior Occupation Relative Frequency Distribution of'</span>,
+        <span class="kw">length</span>(cluster),
+        <span class="st">'Texas Death Row Inmate(s) for Cluster'</span>,
+        <span class="kw">toString</span>(i),
+        <span class="kw">paste0</span>(
+          <span class="st">'('</span>,
+          prefix,
+          <span class="st">')'</span>
+        )
+      )
+    )
+    <span class="kw">mtext</span>(<span class="st">'Prior Occupation'</span>, <span class="dt">side=</span><span class="dv">1</span>, <span class="dt">line=</span><span class="dv">13</span>)
+    <span class="kw">dev.off</span>()
+  }
+}
+
+<span class="kw">plot_clusters_occupation_distributions</span>(<span class="st">'TFIDF-MDS-AP'</span>, inmate_clusters_str, unique_prior_occupations)</code></pre></div>
+<div class="figure">
+<img src="../images/2016-02-17-text-mining-in-r-death-row-prior-occupations/tfidf-mds-ap_1_prior_occupation_distribution.png" alt="Prior Occupation Relative Frequency Distribution of 15 Texas Death Row Inmate(s) for Cluster 1 (TFIDF-MDS-AP)" class="post-img post-img-fill" />
+<p class="caption">Prior Occupation Relative Frequency Distribution of 15 Texas Death Row Inmate(s) for Cluster 1 (TFIDF-MDS-AP)</p>
+</div>
+<p>Cluster 1, seen at (-0.8951273 -0.702121), is solely comprised of <code>none</code> which agrees with the dataset. Intuitively, if an inmate had no prior occupations, you wouldn’t expect to see other prior occupation terms clustered with <code>none</code>.</p>
+<p>The following bar-charts are the clusters making up the large mass centered around the origin.</p>
+<div class="figure">
+<img src="../images/2016-02-17-text-mining-in-r-death-row-prior-occupations/tfidf-mds-ap_5_prior_occupation_distribution.png" alt="Prior Occupation Relative Frequency Distribution of 92 Texas Death Row Inmate(s) for Cluster 5 (TFIDF-MDS-AP)" class="post-img post-img-fill" />
+<p class="caption">Prior Occupation Relative Frequency Distribution of 92 Texas Death Row Inmate(s) for Cluster 5 (TFIDF-MDS-AP)</p>
+</div>
+<p>Cluster 5 accounts for the inmates that were mainly laborers with only a very few having one other prior occupation. This cluster also contains a large portion of the unique prior occupations found in the raw data set such as <code>computer software</code>.</p>
+<div class="figure">
+<img src="../images/2016-02-17-text-mining-in-r-death-row-prior-occupations/tfidf-mds-ap_10_prior_occupation_distribution.png" alt="Prior Occupation Relative Frequency Distribution of 13 Texas Death Row Inmate(s) for Cluster 10 (TFIDF-MDS-AP)" class="post-img post-img-fill" />
+<p class="caption">Prior Occupation Relative Frequency Distribution of 13 Texas Death Row Inmate(s) for Cluster 10 (TFIDF-MDS-AP)</p>
+</div>
+<p>For cluster 10, there is a large mixture of both <code>laborer</code> and <code>warehouse</code>.</p>
+<div class="figure">
+<img src="../images/2016-02-17-text-mining-in-r-death-row-prior-occupations/tfidf-mds-ap_17_prior_occupation_distribution.png" alt="Prior Occupation Relative Frequency Distribution of 14 Texas Death Row Inmate(s) for Cluster 17 (TFIDF-MDS-AP)" class="post-img post-img-fill" />
+<p class="caption">Prior Occupation Relative Frequency Distribution of 14 Texas Death Row Inmate(s) for Cluster 17 (TFIDF-MDS-AP)</p>
+</div>
+<p>Cluster 17 is more difficult to interpret and could have been likely clustered with cluster 5, however, it is the only cluster that accounts for the inmates that had <code>unknown</code> prior occupations. <code>unknown</code> did not collocate with any other prior occupation so it is surprising to find it clustered with other prior occupations. This is likely due to the MDS.</p>
+<h3 id="automatic-cluster-labels">Automatic Cluster Labels</h3>
+<p>Using <a href="https://en.wikipedia.org/wiki/Cluster_labeling#Differential_cluster_labeling">differential cluster labeling</a> and more specifically <a href="https://en.wikipedia.org/wiki/Cluster_labeling#Pointwise_mutual_information">pointwise mutual information (PMI)</a>, we can label each cluster according to its prior occupation with the highest association.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">pc &lt;-<span class="st"> </span>function(cn, b) {
+  if (b ==<span class="st"> </span><span class="dv">1</span>) {
+    <span class="kw">return</span>(<span class="kw">sum</span>(input_cluster_labels ==<span class="st"> </span>cn) /<span class="st"> </span><span class="kw">length</span>(input_cluster_labels))
+  } else {
+    <span class="kw">return</span>(<span class="kw">sum</span>(input_cluster_labels !=<span class="st"> </span>cn) /<span class="st"> </span><span class="kw">length</span>(input_cluster_labels))
+  }
+}
+
+pt &lt;-<span class="st"> </span>function(ct, b) {
+  if (b ==<span class="st"> </span><span class="dv">1</span>) {
+    in_d &lt;-<span class="st"> </span><span class="dv">0</span>
+    for (inmate_prior_occupations in inmates_prior_occupations) {
+      count &lt;-<span class="st"> </span><span class="kw">sum</span>(ct ==<span class="st"> </span>inmate_prior_occupations)
+      if (count &gt;<span class="st"> </span><span class="dv">0</span>) {
+        in_d &lt;-<span class="st"> </span>in_d +<span class="st"> </span><span class="dv">1</span>
+      }
+    }
+    <span class="kw">return</span>(in_d /<span class="st"> </span><span class="kw">length</span>(inmates_prior_occupations))
+  } else {
+    n_in_d &lt;-<span class="st"> </span><span class="dv">0</span>
+    for (inmate_prior_occupations in inmates_prior_occupations) {
+      count &lt;-<span class="st"> </span><span class="kw">sum</span>(ct ==<span class="st"> </span>inmate_prior_occupations)
+      if (count ==<span class="st"> </span><span class="dv">0</span>) {
+        n_in_d &lt;-<span class="st"> </span>n_in_d +<span class="st"> </span><span class="dv">1</span>
+      }
+    }
+    <span class="kw">return</span>(n_in_d /<span class="st"> </span><span class="kw">length</span>(inmates_prior_occupations))
+  }
+}
+
+pct &lt;-<span class="st"> </span>function(cn, ct, b) {
+  if (<span class="kw">all</span>(b ==<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">0</span>))) {
+    n_in_d &lt;-<span class="st"> </span><span class="dv">0</span>
+    inmate_indexes &lt;-<span class="st"> </span><span class="kw">which</span>(!input_cluster_labels %in%<span class="st"> </span>cn)
+    for (inmate_index in inmate_indexes) {
+      inmate_prior_occupations &lt;-<span class="st"> </span>inmates_prior_occupations[[<span class="kw">toString</span>(inmate_index)]]
+      count &lt;-<span class="st"> </span><span class="kw">sum</span>(ct ==<span class="st"> </span>inmate_prior_occupations)
+      if (count ==<span class="st"> </span><span class="dv">0</span>) {
+        n_in_d &lt;-<span class="st"> </span>n_in_d +<span class="st"> </span><span class="dv">1</span>
+      }
+    }
+    <span class="kw">return</span>(n_in_d /<span class="st"> </span><span class="kw">length</span>(inmate_indexes))
+  } else if (<span class="kw">all</span>(b ==<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>))) {
+    in_d &lt;-<span class="st"> </span><span class="dv">0</span>
+    inmate_indexes &lt;-<span class="st"> </span><span class="kw">which</span>(input_cluster_labels %in%<span class="st"> </span>cn)
+    for (inmate_index in inmate_indexes) {
+      inmate_prior_occupations &lt;-<span class="st"> </span>inmates_prior_occupations[[<span class="kw">toString</span>(inmate_index)]]
+      count &lt;-<span class="st"> </span><span class="kw">sum</span>(ct ==<span class="st"> </span>inmate_prior_occupations)
+      if (count &gt;<span class="st"> </span><span class="dv">0</span>) {
+        in_d &lt;-<span class="st"> </span>in_d +<span class="st"> </span><span class="dv">1</span>
+      }
+    }
+    <span class="kw">return</span>(in_d /<span class="st"> </span><span class="kw">length</span>(inmate_indexes))
+  } else if (<span class="kw">all</span>(b ==<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">0</span>))) {
+    n_in_d &lt;-<span class="st"> </span><span class="dv">0</span>
+    inmate_indexes &lt;-<span class="st"> </span><span class="kw">which</span>(input_cluster_labels %in%<span class="st"> </span>cn)
+    for (inmate_index in inmate_indexes) {
+      inmate_prior_occupations &lt;-<span class="st"> </span>inmates_prior_occupations[[<span class="kw">toString</span>(inmate_index)]]
+      count &lt;-<span class="st"> </span><span class="kw">sum</span>(ct ==<span class="st"> </span>inmate_prior_occupations)
+      if (count ==<span class="st"> </span><span class="dv">0</span>) {
+        n_in_d &lt;-<span class="st"> </span>n_in_d +<span class="st"> </span><span class="dv">1</span>
+      }
+    }
+    <span class="kw">return</span>(n_in_d /<span class="st"> </span><span class="kw">length</span>(inmate_indexes))
+  } else if (<span class="kw">all</span>(b ==<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>))) {
+    in_d &lt;-<span class="st"> </span><span class="dv">0</span>
+    inmate_indexes &lt;-<span class="st"> </span><span class="kw">which</span>(!input_cluster_labels %in%<span class="st"> </span>cn)
+    for (inmate_index in inmate_indexes) {
+      inmate_prior_occupations &lt;-<span class="st"> </span>inmates_prior_occupations[[<span class="kw">toString</span>(inmate_index)]]
+      count &lt;-<span class="st"> </span><span class="kw">sum</span>(ct ==<span class="st"> </span>inmate_prior_occupations)
+      if (count &gt;<span class="st"> </span><span class="dv">0</span>) {
+        in_d &lt;-<span class="st"> </span>in_d +<span class="st"> </span><span class="dv">1</span>
+      }
+    }
+    <span class="kw">return</span>(in_d /<span class="st"> </span><span class="kw">length</span>(inmate_indexes))
+  }
+}
+
+pmi &lt;-<span class="st"> </span>function(cn, ct) {
+  pmi_score &lt;-<span class="st"> </span><span class="dv">0</span>
+  for (in_c in <span class="dv">0</span>:<span class="dv">1</span>) {
+    for (has_t in <span class="dv">0</span>:<span class="dv">1</span>) {
+      jpct_r &lt;-<span class="st"> </span><span class="kw">pct</span>(cn, ct, <span class="kw">c</span>(in_c, has_t))
+      pc_r &lt;-<span class="st"> </span><span class="kw">pc</span>(cn, in_c)
+      pt_r &lt;-<span class="st"> </span><span class="kw">pt</span>(ct, has_t)
+      result &lt;-<span class="st"> </span>jpct_r *<span class="st"> </span><span class="kw">log2</span>(jpct_r /<span class="st"> </span>(pc_r *<span class="st"> </span>pt_r))
+      if (<span class="kw">is.nan</span>(result)) {
+        result &lt;-<span class="st"> </span><span class="dv">0</span>
+      }
+      pmi_score &lt;-<span class="st"> </span>pmi_score +<span class="st"> </span>result
+    }
+  }
+  <span class="kw">return</span>(pmi_score)
+}
+
+output_cluster_labels &lt;-<span class="st"> </span><span class="kw">list</span>()
+for(i in <span class="dv">1</span>:<span class="kw">length</span>(inmate_clusters_str)) {
+  cluster &lt;-<span class="st"> </span>inmate_clusters_str[[<span class="kw">toString</span>(i)]]
+  label &lt;-<span class="st"> ''</span>
+  max_pmi_score &lt;-<span class="st"> </span>-<span class="fl">1.0</span>
+  seen &lt;-<span class="st"> </span><span class="kw">c</span>()
+  for (inmate in cluster) {
+    for (prior_occupation in inmate) {
+      if (<span class="kw">sum</span>(prior_occupation ==<span class="st"> </span>seen) ==<span class="st"> </span><span class="dv">0</span>) {
+        pmi_score &lt;-<span class="st"> </span><span class="kw">pmi</span>(i, prior_occupation)
+        if (pmi_score &gt;<span class="st"> </span>max_pmi_score) {
+          output_cluster_labels[[<span class="kw">toString</span>(i)]] &lt;-<span class="st"> </span>prior_occupation
+          max_pmi_score &lt;-<span class="st"> </span>pmi_score
+        }
+        seen &lt;-<span class="st"> </span><span class="kw">c</span>(seen, prior_occupation)
+      }
+    }
+  }
+}</code></pre></div>
+<ul>
+<li>Cluster 1: <code>none</code></li>
+<li>Cluster 2: <code>mechanic</code></li>
+<li>Cluster 3: <code>mechanic</code></li>
+<li>Cluster 4: <code>construction</code></li>
+<li>Cluster 5: <code>laborer</code></li>
+<li>Cluster 6: <code>cook</code></li>
+<li>Cluster 7: <code>welder</code></li>
+<li>Cluster 8: <code>welder</code></li>
+<li>Cluster 9: <code>ac</code></li>
+<li>Cluster 10: <code>warehouse</code></li>
+<li>Cluster 11: <code>construction</code></li>
+<li>Cluster 12: <code>clerk</code></li>
+<li>Cluster 13: <code>shipping</code></li>
+<li>Cluster 14: <code>clerk</code></li>
+<li>Cluster 15: <code>welder</code></li>
+<li>Cluster 16: <code>mechanic</code></li>
+<li>Cluster 17: <code>unknown</code></li>
+</ul>
+<p>Condensing these even further:</p>
+<ol style="list-style-type: decimal">
+<li><code>none</code>: cluster 1</li>
+<li><code>mechanic</code>: cluster 2, 3, 16</li>
+<li><code>construction</code>: cluster 4, 11</li>
+<li><code>laborer</code>: cluster 5</li>
+<li><code>cook</code>: cluster 6</li>
+<li><code>welder</code>: cluster 7, 8, 15</li>
+<li><code>ac</code>: cluster 9</li>
+<li><code>warehouse</code>: cluster 10</li>
+<li><code>clerk</code>: cluster 12, 14</li>
+<li><code>shipping</code>: cluster 13</li>
+<li><code>unknown</code>: cluster 17</li>
+</ol>
+<p>This effectively condenses down the original 60 prior occupations down to the 11 most prominent in the sampled data. These 11 prior occupations could all be described as <a href="https://www.opm.gov/policy-data-oversight/data-analysis-documentation/federal-employment-reports/reports-publications/the-twenty-largest-blue-collar-occupations/">blue-collar occupations</a> with the exception of <code>clerk</code>.</p>
+<h3 id="tf-idf-ap-clustering-only">TF-IDF AP Clustering Only</h3>
+<p>Comparing the TF-IDF MDS AP clusters to TF-IDF AP clusters, using only the <code>inmate_matrix_tfidf</code>, the Affinity Propagation clustering algorithm generated 48 clusters using the original 60 dimensions versus the 17 clusters generated using the two dimensions found by MDS.</p>
+<p>These 48 clusters are more granular with a clearer partitioning of inmates with unique prior occupations. 30 out of the 48 clusters contain only one inmate due to their unique combination of prior occupations. Cluster membership ranges from one to 71. Like with the MDS clusters, <code>none</code> is its own cluster. However, unlike the MDS clusters, all of the <code>unknown</code> prior occupations are clustered together alone.</p>
+<div class="figure">
+<img src="../images/2016-02-17-text-mining-in-r-death-row-prior-occupations/tfidf-ap_47_prior_occupation_distribution.png" alt="Prior Occupation Relative Frequency Distribution of 6 Texas Death Row Inmate(s) for Cluster 47 (TFIDF-AP)" class="post-img post-img-fill" />
+<p class="caption">Prior Occupation Relative Frequency Distribution of 6 Texas Death Row Inmate(s) for Cluster 47 (TFIDF-AP)</p>
+</div>
+<h2 id="latent-semantic-indexing-lsi-singular-value-decomposition-svd">Latent Semantic Indexing (LSI), Singular Value Decomposition (SVD)</h2>
+<p>We can take the TF-IDF normalized inmate-prior-occupation matrix and perform <a href="https://en.wikipedia.org/wiki/Latent_semantic_indexing#Rank-reduced_singular_value_decomposition">SVD</a> on it.</p>
+<blockquote>
+LSI can be viewed as soft clustering by interpreting each dimension of the reduced space as a cluster and the value that a document has on that dimension as its fractional membership in that cluster.
+<footer>
+<a href="http://nlp.stanford.edu/IR-book/html/htmledition/latent-semantic-indexing-1.html">Introduction to Information Retrieval</a></foot>
+</blockquote>
+<p>This will give us three matrices <code>U</code>, <code>D</code>, and <code>V</code>. <code>U</code> contains our inmate-concept vectors in the new orthogonal basis.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># -----------------------</span>
+<span class="co"># SVD</span>
+<span class="co"># -----------------------</span>
+
+inmate_matrix_tfidf_svd &lt;-<span class="st"> </span><span class="kw">svd</span>(inmate_matrix_tfidf)
+k &lt;-<span class="st"> </span><span class="dv">38</span>
+inmate_k_basis_vectors =<span class="st"> </span>inmate_matrix_tfidf_svd$u[, <span class="dv">1</span>:k]
+k_singular_values_matrix =<span class="st"> </span><span class="kw">diag</span>(inmate_matrix_tfidf_svd$d)[<span class="dv">1</span>:k, <span class="dv">1</span>:k]
+inmate_matrix_tfidf_svd_truncated &lt;-<span class="st"> </span>inmate_k_basis_vectors %*%<span class="st"> </span>k_singular_values_matrix %*%<span class="st"> </span><span class="kw">t</span>(inmate_matrix_tfidf_svd$v[, <span class="dv">1</span>:k])
+
+<span class="kw">png</span>(<span class="dt">file=</span><span class="st">'svd_explained_variance.png'</span>, <span class="dt">width=</span><span class="dv">1500</span>, <span class="dt">height=</span><span class="dv">1500</span>)
+<span class="kw">plot.new</span>()
+cumulativeVarianceExplained =<span class="st"> </span><span class="kw">cumsum</span>(inmate_matrix_tfidf_svd$d^<span class="dv">2</span> /<span class="st"> </span><span class="kw">sum</span>(inmate_matrix_tfidf_svd$d^<span class="dv">2</span>)) *<span class="st"> </span><span class="dv">100</span>
+<span class="kw">plot</span>(
+  cumulativeVarianceExplained,
+  <span class="dt">type=</span><span class="st">'o'</span>,
+  <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">100</span>),
+  <span class="dt">xlab=</span><span class="st">'Index'</span>,
+  <span class="dt">ylab=</span><span class="st">'Percent of Variability Explained'</span>,
+  <span class="dt">main=</span><span class="st">'Singular Value Decomposition'</span>
+)
+<span class="kw">axis</span>(<span class="dv">1</span>, <span class="dt">at=</span><span class="kw">seq</span>(<span class="dv">1</span>,<span class="kw">length</span>(inmate_matrix_tfidf_svd$d)))
+<span class="kw">abline</span>(<span class="dt">v=</span>k)
+<span class="kw">abline</span>(<span class="dt">h=</span><span class="fl">90.0</span>)
+
+bar_colors &lt;-<span class="st"> </span><span class="kw">c</span>()
+for (i in <span class="dv">1</span>:<span class="kw">length</span>(inmate_matrix_tfidf_svd$d)) {
+  if (i ==<span class="st"> </span>k) {
+    bar_colors &lt;-<span class="st"> </span><span class="kw">c</span>(bar_colors, <span class="st">'brown2'</span>)
+  } else {
+    bar_colors &lt;-<span class="st"> </span><span class="kw">c</span>(bar_colors, <span class="st">'chartreuse3'</span>)
+  }
+}
+<span class="kw">png</span>(
+  <span class="dt">file=</span><span class="st">'svd_singular_values.png'</span>,
+  <span class="dt">width=</span><span class="dv">1500</span>,
+  <span class="dt">height=</span><span class="dv">1500</span>,
+)
+<span class="kw">plot.new</span>()
+<span class="kw">barplot</span>(
+  inmate_matrix_tfidf_svd$d,
+  <span class="dt">names.arg=</span><span class="dv">1</span>:<span class="kw">length</span>(inmate_matrix_tfidf_svd$d),
+  <span class="dt">col=</span>bar_colors,
+  <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="kw">max</span>(inmate_matrix_tfidf_svd$d) +<span class="st"> </span><span class="dv">1</span>),
+  <span class="dt">border=</span><span class="ot">NA</span>,
+  <span class="dt">xlab=</span><span class="st">'Index'</span>,
+  <span class="dt">ylab=</span><span class="st">'Singular Value'</span>,
+  <span class="dt">main=</span><span class="st">'Singular Value Decomposition'</span>
+)</code></pre></div>
+<div class="figure">
+<img src="../images/2016-02-17-text-mining-in-r-death-row-prior-occupations/svd_singular_values.png" alt="SVD Singular Values" class="post-img post-img-fill" />
+<p class="caption">SVD Singular Values</p>
+</div>
+<div class="figure">
+<img src="../images/2016-02-17-text-mining-in-r-death-row-prior-occupations/svd_explained_variance.png" alt="SVD Explained Variance" class="post-img post-img-fill" />
+<p class="caption">SVD Explained Variance</p>
+</div>
+<p>We’ll need to choose a <code>K &lt;= R</code> (<code>R</code> being the <a href="https://en.wikipedia.org/wiki/Rank_(linear_algebra)">rank</a>) where <code>R=60</code>. At <code>K=38</code>, 90% of the variability of the original matrix is explained.</p>
+<p>Now let us cluster and plot the prior occupation relative frequency distribution for each resulting cluster.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">result &lt;-<span class="st"> </span><span class="kw">cluster_matrix</span>(<span class="st">'TFIDF-SVD-AP'</span>, inmate_k_basis_vectors, inmates_prior_occupations)
+inmate_clusters_flt &lt;-<span class="st"> </span>result$flt
+inmate_clusters_str &lt;-<span class="st"> </span>result$str
+inmate_clusters_colors &lt;-<span class="st"> </span>result$colors
+inmate_cluster_labels &lt;-<span class="st"> </span>result$in_labels
+inmate_clusters_labels &lt;-<span class="st"> </span>result$out_labels
+
+if (k ==<span class="st"> </span><span class="dv">2</span>) {
+  <span class="kw">plot_clustering</span>(
+    <span class="st">'TFIDF-SVD-AP'</span>,
+    inmate_k_basis_vectors,
+    inmate_clusters_flt,
+    inmate_clusters_colors,
+    inmate_cluster_labels
+  )
+}
+<span class="kw">plot_clusters_occupation_distributions</span>(<span class="st">'TFIDF-SVD-AP'</span>, inmate_clusters_str, unique_prior_occupations)</code></pre></div>
+<p>After clustering, 40 clusters were found. Contrast this with the 48 found by TF-IDF alone which used 60 features instead the 38 used after applying SVD. Cluster membership ranges from one to 71.</p>
+<p>Below are the cluster labels found by PMI:</p>
+<ul>
+<li>Cluster 1: <code>computer operator</code></li>
+<li>Cluster 2: <code>none</code></li>
+<li>Cluster 3: <code>kitchen worker</code></li>
+<li>Cluster 4: <code>computer programmer</code></li>
+<li>Cluster 5: <code>construction</code></li>
+<li>Cluster 6: <code>warehouse</code></li>
+<li>Cluster 7: <code>landscaper</code></li>
+<li>Cluster 8: <code>cabinet maker</code></li>
+<li>Cluster 9: <code>sales</code></li>
+<li>Cluster 10: <code>pipe fitter</code></li>
+<li>Cluster 11: <code>laborer</code></li>
+<li>Cluster 12: <code>barber</code></li>
+<li>Cluster 13: <code>machine operator</code></li>
+<li>Cluster 14: <code>truck driver</code></li>
+<li>Cluster 15: <code>oil field</code></li>
+<li>Cluster 16: <code>food service</code></li>
+<li>Cluster 17: <code>roofer</code></li>
+<li>Cluster 18: <code>fabricator</code></li>
+<li>Cluster 19: <code>cook</code></li>
+<li>Cluster 20: <code>computer technician</code></li>
+<li>Cluster 21: <code>janitor</code></li>
+<li>Cluster 22: <code>wrecker driver</code></li>
+<li>Cluster 23: <code>painter</code></li>
+<li>Cluster 24: <code>hydro-water blaster</code></li>
+<li>Cluster 25: <code>ranch hand</code></li>
+<li>Cluster 26: <code>heavy equipment operator</code></li>
+<li>Cluster 27: <code>iron worker</code></li>
+<li>Cluster 28: <code>shipping</code></li>
+<li>Cluster 29: <code>computer software</code></li>
+<li>Cluster 30: <code>clerk</code></li>
+<li>Cluster 31: <code>plumber's helper</code></li>
+<li>Cluster 32: <code>welder</code></li>
+<li>Cluster 33: <code>mechanic</code></li>
+<li>Cluster 34: <code>carpenter</code></li>
+<li>Cluster 35: <code>forklift</code></li>
+<li>Cluster 36: <code>heating</code></li>
+<li>Cluster 37: <code>unkown</code></li>
+<li>Cluster 38: <code>food service</code></li>
+<li>Cluster 39: <code>jewelry designer</code></li>
+<li>Cluster 40: <code>ac</code></li>
+</ul>
+<h1 id="wrap-up">Wrap-up</h1>
+<p>We collected, parsed, and mined the prior occupations of current death row inmates. Interesting patterns discovered were the large portion of blue-collar occupations (most notably <code>laborer</code>) and more rare prior occupations such as <code>computer operator</code> and <code>jewelry designer</code>. An interesting hypothesis test would be the correlation between being on death row and having been a <code>laborer</code>. The SVD computation could be used for information retrieval allowing one to search for similar current inmates by some prior occupation query. Further analysis could include plotting the amount of each prior occupation seen per year.</p>
+<h1 id="appendix">Appendix</h1>
+<h2 id="full-svd-ap-clustering">Full SVD AP Clustering</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">Computer operator Cluster <span class="dv">1</span>
+  Inmate <span class="dv">1</span> computer operator
+
+None Cluster <span class="dv">2</span>
+  Inmate <span class="dv">3</span> none
+  Inmate <span class="dv">4</span> none
+  Inmate <span class="dv">8</span> none
+  Inmate <span class="dv">13</span> none
+  Inmate <span class="dv">18</span> none
+  Inmate <span class="dv">41</span> none
+  Inmate <span class="dv">42</span> none
+  Inmate <span class="dv">44</span> none
+  Inmate <span class="dv">50</span> none
+  Inmate <span class="dv">61</span> none
+  Inmate <span class="dv">63</span> none
+  Inmate <span class="dv">65</span> none
+  Inmate <span class="dv">66</span> none
+  Inmate <span class="dv">68</span> none
+  Inmate <span class="dv">177</span> none
+
+Kitchen worker Cluster <span class="dv">3</span>
+  Inmate <span class="dv">10</span> <span class="kw">c</span>(<span class="st">&quot;kitchen worker&quot;</span>, <span class="st">&quot;construction&quot;</span>)
+  Inmate <span class="dv">48</span> kitchen worker
+
+Computer programmer Cluster <span class="dv">4</span>
+  Inmate <span class="dv">11</span> computer programmer
+  Inmate <span class="dv">156</span> <span class="kw">c</span>(<span class="st">&quot;computer programmer&quot;</span>, <span class="st">&quot;repair&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+Construction Cluster <span class="dv">5</span>
+  Inmate <span class="dv">7</span> <span class="kw">c</span>(<span class="st">&quot;construction&quot;</span>, <span class="st">&quot;plumbing&quot;</span>)
+  Inmate <span class="dv">15</span> construction
+  Inmate <span class="dv">16</span> construction
+  Inmate <span class="dv">17</span> construction
+  Inmate <span class="dv">45</span> construction
+  Inmate <span class="dv">47</span> construction
+  Inmate <span class="dv">54</span> construction
+  Inmate <span class="dv">116</span> <span class="kw">c</span>(<span class="st">&quot;construction&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+Warehouse Cluster <span class="dv">6</span>
+  Inmate <span class="dv">5</span> <span class="kw">c</span>(<span class="st">&quot;warehouse&quot;</span>, <span class="st">&quot;construction&quot;</span>)
+  Inmate <span class="dv">12</span> warehouse
+  Inmate <span class="dv">22</span> <span class="kw">c</span>(<span class="st">&quot;warehouse&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">109</span> <span class="kw">c</span>(<span class="st">&quot;warehouse&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">112</span> <span class="kw">c</span>(<span class="st">&quot;warehouse&quot;</span>, <span class="st">&quot;electrician&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+Landscaper Cluster <span class="dv">7</span>
+  Inmate <span class="dv">25</span> <span class="kw">c</span>(<span class="st">&quot;landscaper&quot;</span>, <span class="st">&quot;cook&quot;</span>)
+  Inmate <span class="dv">69</span> <span class="kw">c</span>(<span class="st">&quot;landscaper&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+Cabinet maker Cluster <span class="dv">8</span>
+  Inmate <span class="dv">28</span> cabinet maker
+
+Sales Cluster <span class="dv">9</span>
+  Inmate <span class="dv">29</span> sales
+  Inmate <span class="dv">147</span> <span class="kw">c</span>(<span class="st">&quot;sound engineer&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+Pipe fitter Cluster <span class="dv">10</span>
+  Inmate <span class="dv">33</span> pipe fitter
+  Inmate <span class="dv">60</span> <span class="kw">c</span>(<span class="st">&quot;truck driver&quot;</span>, <span class="st">&quot;backhoe operator&quot;</span>, <span class="st">&quot;welder&quot;</span>, <span class="st">&quot;pipe fitter&quot;</span>)
+
+Laborer Cluster <span class="dv">11</span>
+  Inmate <span class="dv">6</span> repair
+  Inmate <span class="dv">21</span> laborer
+  Inmate <span class="dv">23</span> laborer
+  Inmate <span class="dv">26</span> laborer
+  Inmate <span class="dv">30</span> laborer
+  Inmate <span class="dv">32</span> laborer
+  Inmate <span class="dv">34</span> laborer
+  Inmate <span class="dv">35</span> laborer
+  Inmate <span class="dv">36</span> laborer
+  Inmate <span class="dv">38</span> laborer
+  Inmate <span class="dv">40</span> laborer
+  Inmate <span class="dv">43</span> laborer
+  Inmate <span class="dv">46</span> laborer
+  Inmate <span class="dv">51</span> laborer
+  Inmate <span class="dv">70</span> laborer
+  Inmate <span class="dv">71</span> laborer
+  Inmate <span class="dv">74</span> laborer
+  Inmate <span class="dv">77</span> <span class="kw">c</span>(<span class="st">&quot;electrician&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">78</span> laborer
+  Inmate <span class="dv">79</span> laborer
+  Inmate <span class="dv">80</span> laborer
+  Inmate <span class="dv">82</span> laborer
+  Inmate <span class="dv">85</span> laborer
+  Inmate <span class="dv">86</span> laborer
+  Inmate <span class="dv">87</span> laborer
+  Inmate <span class="dv">89</span> <span class="kw">c</span>(<span class="st">&quot;maintenance&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">90</span> laborer
+  Inmate <span class="dv">91</span> laborer
+  Inmate <span class="dv">94</span> laborer
+  Inmate <span class="dv">95</span> laborer
+  Inmate <span class="dv">96</span> laborer
+  Inmate <span class="dv">97</span> laborer
+  Inmate <span class="dv">98</span> laborer
+  Inmate <span class="dv">99</span> laborer
+  Inmate <span class="dv">100</span> <span class="kw">c</span>(<span class="st">&quot;fast food&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">104</span> laborer
+  Inmate <span class="dv">107</span> laborer
+  Inmate <span class="dv">110</span> laborer
+  Inmate <span class="dv">111</span> <span class="kw">c</span>(<span class="st">&quot;fast food&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">113</span> <span class="kw">c</span>(<span class="st">&quot;maintenance&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">119</span> <span class="kw">c</span>(<span class="st">&quot;maintenance&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">121</span> laborer
+  Inmate <span class="dv">122</span> laborer
+  Inmate <span class="dv">127</span> laborer
+  Inmate <span class="dv">128</span> laborer
+  Inmate <span class="dv">129</span> laborer
+  Inmate <span class="dv">130</span> laborer
+  Inmate <span class="dv">132</span> laborer
+  Inmate <span class="dv">133</span> laborer
+  Inmate <span class="dv">134</span> laborer
+  Inmate <span class="dv">136</span> laborer
+  Inmate <span class="dv">138</span> laborer
+  Inmate <span class="dv">139</span> laborer
+  Inmate <span class="dv">140</span> laborer
+  Inmate <span class="dv">142</span> laborer
+  Inmate <span class="dv">144</span> laborer
+  Inmate <span class="dv">145</span> laborer
+  Inmate <span class="dv">149</span> laborer
+  Inmate <span class="dv">150</span> laborer
+  Inmate <span class="dv">151</span> laborer
+  Inmate <span class="dv">152</span> laborer
+  Inmate <span class="dv">154</span> laborer
+  Inmate <span class="dv">157</span> laborer
+  Inmate <span class="dv">163</span> laborer
+  Inmate <span class="dv">166</span> laborer
+  Inmate <span class="dv">171</span> laborer
+  Inmate <span class="dv">174</span> laborer
+  Inmate <span class="dv">175</span> laborer
+  Inmate <span class="dv">176</span> laborer
+  Inmate <span class="dv">179</span> laborer
+  Inmate <span class="dv">181</span> laborer
+
+Barber Cluster <span class="dv">12</span>
+  Inmate <span class="dv">39</span> <span class="kw">c</span>(<span class="st">&quot;barber&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+Machine operator Cluster <span class="dv">13</span>
+  Inmate <span class="dv">53</span> machine operator
+
+Truck driver Cluster <span class="dv">14</span>
+  Inmate <span class="dv">20</span> truck driver
+  Inmate <span class="dv">56</span> truck driver
+  Inmate <span class="dv">57</span> truck driver
+  Inmate <span class="dv">62</span> <span class="kw">c</span>(<span class="st">&quot;truck driver&quot;</span>, <span class="st">&quot;warehouse&quot;</span>)
+  Inmate <span class="dv">88</span> <span class="kw">c</span>(<span class="st">&quot;truck driver&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+Oil field Cluster <span class="dv">15</span>
+  Inmate <span class="dv">58</span> <span class="kw">c</span>(<span class="st">&quot;welder&quot;</span>, <span class="st">&quot;oil field&quot;</span>, <span class="st">&quot;architectural design&quot;</span>, <span class="st">&quot;construction&quot;</span>)
+
+Food service Cluster <span class="dv">16</span>
+  Inmate <span class="dv">59</span> <span class="kw">c</span>(<span class="st">&quot;food service&quot;</span>, <span class="st">&quot;clerk&quot;</span>)
+
+Roofer Cluster <span class="dv">17</span>
+  Inmate <span class="dv">64</span> roofer
+  Inmate <span class="dv">72</span> <span class="kw">c</span>(<span class="st">&quot;mechanic&quot;</span>, <span class="st">&quot;roofer&quot;</span>, <span class="st">&quot;concrete&quot;</span>)
+
+Fabricator Cluster <span class="dv">18</span>
+  Inmate <span class="dv">75</span> <span class="kw">c</span>(<span class="st">&quot;fabricator&quot;</span>, <span class="st">&quot;refrigeration services&quot;</span>)
+
+Cook Cluster <span class="dv">19</span>
+  Inmate <span class="dv">37</span> cook
+  Inmate <span class="dv">67</span> <span class="kw">c</span>(<span class="st">&quot;construction&quot;</span>, <span class="st">&quot;cook&quot;</span>)
+  Inmate <span class="dv">81</span> <span class="kw">c</span>(<span class="st">&quot;cook&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">83</span> <span class="kw">c</span>(<span class="st">&quot;cook&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">118</span> <span class="kw">c</span>(<span class="st">&quot;cook&quot;</span>, <span class="st">&quot;construction&quot;</span>, <span class="st">&quot;welder&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">124</span> <span class="kw">c</span>(<span class="st">&quot;cook&quot;</span>, <span class="st">&quot;welder&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">137</span> <span class="kw">c</span>(<span class="st">&quot;cook&quot;</span>, <span class="st">&quot;mechanic&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+Computer technician Cluster <span class="dv">20</span>
+  Inmate <span class="dv">84</span> <span class="kw">c</span>(<span class="st">&quot;computer technician&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+Janitor Cluster <span class="dv">21</span>
+  Inmate <span class="dv">92</span> <span class="kw">c</span>(<span class="st">&quot;janitor&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+Wrecker driver Cluster <span class="dv">22</span>
+  Inmate <span class="dv">93</span> <span class="kw">c</span>(<span class="st">&quot;wrecker driver&quot;</span>, <span class="st">&quot;construction&quot;</span>, <span class="st">&quot;lineman&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+Painter Cluster <span class="dv">23</span>
+  Inmate <span class="dv">73</span> painter
+  Inmate <span class="dv">101</span> <span class="kw">c</span>(<span class="st">&quot;painter&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">120</span> <span class="kw">c</span>(<span class="st">&quot;painter&quot;</span>, <span class="st">&quot;construction&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+Hydro-water blaster Cluster <span class="dv">24</span>
+  Inmate <span class="dv">103</span> <span class="kw">c</span>(<span class="st">&quot;hydro-water blaster&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+Ranch hand Cluster <span class="dv">25</span>
+  Inmate <span class="dv">105</span> <span class="kw">c</span>(<span class="st">&quot;repair&quot;</span>, <span class="st">&quot;ranch hand&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+Heavy equipment operator Cluster <span class="dv">26</span>
+  Inmate <span class="dv">14</span> <span class="kw">c</span>(<span class="st">&quot;mechanic&quot;</span>, <span class="st">&quot;warehouse&quot;</span>, <span class="st">&quot;heavy equipment operator&quot;</span>)
+  Inmate <span class="dv">114</span> <span class="kw">c</span>(<span class="st">&quot;heavy equipment operator&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">162</span> <span class="kw">c</span>(<span class="st">&quot;carpenter&quot;</span>, <span class="st">&quot;heavy equipment operator&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+Iron worker Cluster <span class="dv">27</span>
+  Inmate <span class="dv">115</span> <span class="kw">c</span>(<span class="st">&quot;iron worker&quot;</span>, <span class="st">&quot;construction&quot;</span>, <span class="st">&quot;carpet layer&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+Shipping Cluster <span class="dv">28</span>
+  Inmate <span class="dv">123</span> <span class="kw">c</span>(<span class="st">&quot;shipping&quot;</span>, <span class="st">&quot;receiving&quot;</span>, <span class="st">&quot;clerk&quot;</span>, <span class="st">&quot;mechanic&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+Computer software Cluster <span class="dv">29</span>
+  Inmate <span class="dv">126</span> <span class="kw">c</span>(<span class="st">&quot;computer software&quot;</span>, <span class="st">&quot;accounting&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+Clerk Cluster <span class="dv">30</span>
+  Inmate <span class="dv">2</span> clerk
+  Inmate <span class="dv">27</span> clerk
+  Inmate <span class="dv">117</span> <span class="kw">c</span>(<span class="st">&quot;clerk&quot;</span>, <span class="st">&quot;welder&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">131</span> <span class="kw">c</span>(<span class="st">&quot;clerk&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">153</span> <span class="kw">c</span>(<span class="st">&quot;clerk&quot;</span>, <span class="st">&quot;orderly&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+<span class="st">&quot;Plumber's helper&quot;</span> Cluster <span class="dv">31</span>
+  Inmate <span class="dv">141</span> <span class="kw">c</span>(<span class="st">&quot;electrician&quot;</span>, <span class="st">&quot;plumber's helper&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+Welder Cluster <span class="dv">32</span>
+  Inmate <span class="dv">19</span> welder
+  Inmate <span class="dv">31</span> <span class="kw">c</span>(<span class="st">&quot;welder&quot;</span>, <span class="st">&quot;lawn scaping&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">55</span> welder
+  Inmate <span class="dv">76</span> <span class="kw">c</span>(<span class="st">&quot;welder&quot;</span>, <span class="st">&quot;fence builder&quot;</span>)
+  Inmate <span class="dv">135</span> <span class="kw">c</span>(<span class="st">&quot;welder&quot;</span>, <span class="st">&quot;contractor&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">143</span> <span class="kw">c</span>(<span class="st">&quot;welder&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+Mechanic Cluster <span class="dv">33</span>
+  Inmate <span class="dv">9</span> <span class="kw">c</span>(<span class="st">&quot;mechanic&quot;</span>, <span class="st">&quot;welder&quot;</span>)
+  Inmate <span class="dv">52</span> <span class="kw">c</span>(<span class="st">&quot;mechanic&quot;</span>, <span class="st">&quot;welder&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">146</span> <span class="kw">c</span>(<span class="st">&quot;mechanic&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">148</span> <span class="kw">c</span>(<span class="st">&quot;electrician&quot;</span>, <span class="st">&quot;mechanic&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">158</span> <span class="kw">c</span>(<span class="st">&quot;mechanic&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">161</span> <span class="kw">c</span>(<span class="st">&quot;auto&quot;</span>, <span class="st">&quot;mechanic&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">182</span> mechanic
+
+Carpenter Cluster <span class="dv">34</span>
+  Inmate <span class="dv">106</span> <span class="kw">c</span>(<span class="st">&quot;warehouse&quot;</span>, <span class="st">&quot;carpenter&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">108</span> <span class="kw">c</span>(<span class="st">&quot;maintenance&quot;</span>, <span class="st">&quot;carpenter&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">125</span> <span class="kw">c</span>(<span class="st">&quot;welder&quot;</span>, <span class="st">&quot;carpenter&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">155</span> <span class="kw">c</span>(<span class="st">&quot;carpenter&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">164</span> <span class="kw">c</span>(<span class="st">&quot;carpenter&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+Forklift Cluster <span class="dv">35</span>
+  Inmate <span class="dv">24</span> <span class="kw">c</span>(<span class="st">&quot;forklift&quot;</span>, <span class="st">&quot;warehouse&quot;</span>)
+  Inmate <span class="dv">49</span> <span class="kw">c</span>(<span class="st">&quot;laborer&quot;</span>, <span class="st">&quot;forklift&quot;</span>)
+  Inmate <span class="dv">159</span> <span class="kw">c</span>(<span class="st">&quot;forklift&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+Heating Cluster <span class="dv">36</span>
+  Inmate <span class="dv">160</span> <span class="kw">c</span>(<span class="st">&quot;heating&quot;</span>, <span class="st">&quot;ac&quot;</span>, <span class="st">&quot;electronics&quot;</span>, <span class="st">&quot;exterminator&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+Unknown Cluster <span class="dv">37</span>
+  Inmate <span class="dv">165</span> unknown
+  Inmate <span class="dv">167</span> unknown
+  Inmate <span class="dv">168</span> unknown
+  Inmate <span class="dv">169</span> unknown
+  Inmate <span class="dv">172</span> unknown
+  Inmate <span class="dv">173</span> unknown
+
+Food service Cluster <span class="dv">38</span>
+  Inmate <span class="dv">170</span> <span class="kw">c</span>(<span class="st">&quot;warehouse&quot;</span>, <span class="st">&quot;food service&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+
+Jewelry designer Cluster <span class="dv">39</span>
+  Inmate <span class="dv">178</span> jewelry designer
+
+Ac Cluster <span class="dv">40</span>
+  Inmate <span class="dv">102</span> <span class="kw">c</span>(<span class="st">&quot;ac&quot;</span>, <span class="st">&quot;repair&quot;</span>, <span class="st">&quot;electrician&quot;</span>, <span class="st">&quot;laborer&quot;</span>)
+  Inmate <span class="dv">180</span> ac</code></pre></div>
+<h2 id="full-source-code">Full Source Code</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># -----------------------</span>
+<span class="co"># (C) 2016 David lettier</span>
+<span class="co"># http://www.lettier.com/</span>
+<span class="co"># -----------------------</span>
+
+<span class="kw">library</span>(rvest)
+<span class="kw">library</span>(wordcloud)
+<span class="kw">library</span>(tm)
+<span class="kw">library</span>(apcluster)
+
+<span class="co"># -----------------------</span>
+<span class="co"># Scraping</span>
+<span class="co"># -----------------------</span>
+
+base_link &lt;-<span class="st"> 'https://www.tdcj.state.tx.us/death_row/'</span>
+main_link &lt;-<span class="st"> 'https://www.tdcj.state.tx.us/death_row/dr_offenders_on_dr.html'</span>
+csv_filename &lt;-<span class="st"> 'prior_occupations_dirty.csv'</span>
+
+if (!<span class="kw">file.exists</span>(csv_filename)) {
+  page &lt;-<span class="st"> </span><span class="kw">read_html</span>(main_link)
+  page
+  links &lt;-<span class="st"> </span><span class="kw">html_attr</span>(<span class="kw">html_nodes</span>(page, <span class="st">'a'</span>), <span class="st">'href'</span>)
+  links
+  links &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">'^dr_info.*html$'</span>, links, <span class="dt">value=</span><span class="ot">TRUE</span>)
+  links
+  prior_occupations_dirty &lt;-<span class="st"> </span><span class="kw">c</span>()
+  for (link in links) {
+    texts &lt;-<span class="st"> </span><span class="kw">read_html</span>(<span class="kw">paste</span>(base_link, link, <span class="dt">sep=</span><span class="st">''</span>)) %&gt;%<span class="st"> </span><span class="kw">html_nodes</span>(<span class="st">'p'</span>) %&gt;%<span class="st"> </span><span class="kw">html_text</span>()
+    if (<span class="kw">length</span>(<span class="kw">grep</span>(<span class="st">'Prior Prison'</span>, texts[<span class="dv">3</span>])) &gt;=<span class="st"> </span><span class="dv">1</span>) {
+      prior_occupations_dirty &lt;-<span class="st"> </span><span class="kw">c</span>(prior_occupations_dirty, texts[<span class="dv">2</span>])
+    } else {
+      prior_occupations_dirty &lt;-<span class="st"> </span><span class="kw">c</span>(prior_occupations_dirty, texts[<span class="dv">3</span>])
+    }
+  }
+  prior_occupations_dirty_df =<span class="st"> </span><span class="kw">as.data.frame</span>(prior_occupations_dirty)
+  <span class="kw">write.csv</span>(prior_occupations_dirty_df, <span class="dt">file=</span>csv_filename)
+}
+
+<span class="co"># -----------------------</span>
+<span class="co"># Cleaning</span>
+<span class="co"># -----------------------</span>
+
+csv_file &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="dt">file=</span>csv_filename)
+prior_occupations_dirty &lt;-<span class="st"> </span><span class="kw">as.vector</span>(<span class="kw">t</span>(csv_file$prior_occupations_dirty))
+
+prior_occupations_cleaned =<span class="st"> </span><span class="kw">c</span>()
+inmates_prior_occupations =<span class="st"> </span><span class="kw">list</span>()
+i &lt;-<span class="st"> </span><span class="dv">1</span>
+for (prior_occupation_dirty in prior_occupations_dirty) {
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">'Prior Occupation'</span>, <span class="st">''</span>, prior_occupation_dirty)
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">tolower</span>(prior_occupation)
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">'^</span><span class="ch">\\</span><span class="st">W+|^</span><span class="ch">\\</span><span class="st">s+'</span>, <span class="st">' '</span>, prior_occupation)
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">'`'</span>, <span class="st">''</span>, prior_occupation)
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">':'</span>, <span class="st">' '</span>, prior_occupation)
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">'</span><span class="ch">\\</span><span class="st">.'</span>, <span class="st">' '</span>, prior_occupation)
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">'</span><span class="ch">\r</span><span class="st">'</span>, <span class="st">' '</span>, prior_occupation)
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">'</span><span class="ch">\n</span><span class="st">'</span>, <span class="st">' '</span>, prior_occupation)
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">'</span><span class="ch">\\</span><span class="st">s+'</span>, <span class="st">' '</span>, prior_occupation)
+  if (<span class="kw">length</span>(<span class="kw">grep</span>(<span class="st">'n/a'</span>, prior_occupation)) ==<span class="st"> </span><span class="dv">0</span>) {
+    prior_occupation &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">'/'</span>, <span class="st">', '</span>, prior_occupation)
+  }
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">' and '</span>, <span class="st">', '</span>, prior_occupation)
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">'&amp;'</span>, <span class="st">', '</span>, prior_occupation)
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">';'</span>, <span class="st">', '</span>, prior_occupation)
+  prior_occupation &lt;-<span class="st"> </span><span class="kw">trimws</span>(prior_occupation)
+  prior_occupations &lt;-<span class="st"> </span><span class="kw">strsplit</span>(prior_occupation, <span class="st">', '</span>)
+  prior_occupations &lt;-<span class="st"> </span><span class="kw">lapply</span>(prior_occupations, function (x) <span class="kw">return</span>(<span class="kw">gsub</span>(<span class="st">'</span><span class="ch">\\</span><span class="st">s+'</span>, <span class="st">' '</span>, x)))
+  prior_occupations &lt;-<span class="st"> </span><span class="kw">lapply</span>(prior_occupations, function (x) <span class="kw">return</span>(<span class="kw">trimws</span>(x)))
+  if (<span class="kw">length</span>(prior_occupations[[<span class="dv">1</span>]]) &gt;<span class="st"> </span><span class="dv">0</span>) {
+    prior_occupations_cleaned &lt;-<span class="st"> </span><span class="kw">c</span>(prior_occupations_cleaned, prior_occupations, <span class="dt">recursive=</span>T)
+    inmates_prior_occupations[[<span class="kw">toString</span>(i)]] &lt;-<span class="st"> </span>prior_occupations[[<span class="dv">1</span>]]
+    i &lt;-<span class="st"> </span>i +<span class="st"> </span><span class="dv">1</span>
+  }
+}
+total_inmate_count =<span class="st"> </span><span class="kw">length</span>(inmates_prior_occupations)
+
+<span class="co"># -----------------------</span>
+<span class="co"># Duplication Removal</span>
+<span class="co"># -----------------------</span>
+
+prior_occupations_merged =<span class="st"> </span><span class="kw">c</span>()
+prior_occupations_merged_map =<span class="st"> </span><span class="kw">list</span>()
+for (prior_occupation_cleaned1 in prior_occupations_cleaned) {
+  prior_occupation &lt;-<span class="st"> </span>prior_occupation_cleaned1
+  if (<span class="kw">is.null</span>(prior_occupations_merged_map[[prior_occupation]])) {
+    if (<span class="kw">nchar</span>(prior_occupation) &gt;=<span class="st"> </span><span class="dv">4</span>) {
+      for (prior_occupation_cleaned2 in prior_occupations_cleaned) {
+        if (<span class="kw">nchar</span>(prior_occupation_cleaned2) &gt;=<span class="st"> </span><span class="dv">4</span>) {
+          if (<span class="kw">length</span>(<span class="kw">grep</span>(prior_occupation_cleaned2, prior_occupation)) &gt;<span class="st"> </span><span class="dv">0</span>) {
+            if (<span class="kw">nchar</span>(prior_occupation) &gt;=<span class="st"> </span><span class="kw">nchar</span>(prior_occupation_cleaned2)) {
+              prior_occupation &lt;-<span class="st"> </span>prior_occupation_cleaned2
+            }
+          }
+        }
+      }
+    }
+    if (prior_occupation ==<span class="st"> 'n/a'</span>) {
+      prior_occupation &lt;-<span class="st"> 'none'</span>
+    }
+    if (<span class="kw">length</span>(<span class="kw">grep</span>(<span class="st">'air condition'</span>, prior_occupation)) &gt;<span class="st"> </span><span class="dv">0</span>) {
+      prior_occupation &lt;-<span class="st"> 'ac'</span>
+    }
+    if (<span class="kw">length</span>(<span class="kw">grep</span>(<span class="st">'fork lift'</span>, prior_occupation)) &gt;<span class="st"> </span><span class="dv">0</span>) {
+      prior_occupation &lt;-<span class="st"> 'forklift'</span>
+    }
+    if (<span class="kw">length</span>(<span class="kw">grep</span>(<span class="st">'forklift'</span>, prior_occupation)) &gt;<span class="st"> </span><span class="dv">0</span>) {
+      prior_occupation &lt;-<span class="st"> 'forklift'</span>
+    }
+    if (<span class="kw">length</span>(<span class="kw">grep</span>(<span class="st">'clerical'</span>, prior_occupation)) &gt;<span class="st"> </span><span class="dv">0</span>) {
+      prior_occupation &lt;-<span class="st"> 'clerk'</span>
+    }
+    if (<span class="kw">length</span>(<span class="kw">grep</span>(<span class="st">'welding'</span>, prior_occupation)) &gt;<span class="st"> </span><span class="dv">0</span>) {
+      prior_occupation &lt;-<span class="st"> 'welder'</span>
+    }
+    prior_occupations_merged_map[[prior_occupation_cleaned1]] &lt;-<span class="st"> </span>prior_occupation
+  } else {
+    prior_occupation &lt;-<span class="st"> </span>prior_occupations_merged_map[[prior_occupation]]
+  }
+  prior_occupations_merged &lt;-<span class="st"> </span><span class="kw">c</span>(prior_occupations_merged, prior_occupation)
+}
+total_prior_occupation_count =<span class="st"> </span><span class="kw">length</span>(prior_occupations_merged)
+
+i &lt;-<span class="st"> </span><span class="dv">1</span>
+for (inmate_prior_occupations in inmates_prior_occupations) {
+  temp =<span class="st"> </span><span class="kw">c</span>()
+  for (prior_occupation in inmate_prior_occupations) {
+    temp &lt;-<span class="st"> </span><span class="kw">c</span>(temp, prior_occupations_merged_map[[prior_occupation]])
+  }
+  inmates_prior_occupations[[<span class="kw">toString</span>(i)]] &lt;-<span class="st"> </span>temp
+  i &lt;-<span class="st"> </span>i +<span class="st"> </span><span class="dv">1</span>
+}
+unique_prior_occupations =<span class="st"> </span><span class="kw">sort</span>(<span class="kw">unique</span>(prior_occupations_merged))
+unique_prior_occupations_length &lt;-<span class="st"> </span><span class="kw">length</span>(unique_prior_occupations)
+
+<span class="co"># -----------------------</span>
+<span class="co"># Prior Occupation Relative Frequency Chart</span>
+<span class="co"># -----------------------</span>
+
+prior_occupations_table &lt;-<span class="st"> </span><span class="kw">table</span>(prior_occupations_merged)
+prior_occupations_table &lt;-<span class="st"> </span>prior_occupations_table /<span class="st"> </span><span class="kw">sum</span>(prior_occupations_table) *<span class="st"> </span><span class="dv">100</span>
+<span class="kw">png</span>(<span class="dt">file=</span><span class="st">'prior_occupation_relative_freq_dist.png'</span>, <span class="dt">width=</span><span class="dv">1500</span>, <span class="dt">height=</span><span class="dv">1500</span>)
+<span class="kw">par</span>(
+  <span class="dt">mai=</span><span class="kw">c</span>(<span class="fl">3.0</span>, <span class="fl">1.0</span>, <span class="fl">1.0</span>, <span class="fl">1.0</span>)
+)
+<span class="kw">barplot</span>(
+  prior_occupations_table,
+  <span class="dt">col=</span><span class="kw">rainbow</span>(<span class="kw">length</span>(prior_occupations_table)),
+  <span class="dt">cex.names=</span><span class="fl">1.1</span>,
+  <span class="dt">las=</span><span class="dv">2</span>,
+  <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),
+  <span class="dt">axes=</span>F,
+  <span class="dt">border=</span><span class="ot">NA</span>
+)
+<span class="kw">axis</span>(<span class="dv">2</span>, <span class="dt">at=</span><span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">100</span>,<span class="dv">5</span>))
+<span class="kw">grid</span>(<span class="dt">ny=</span><span class="dv">100</span>, <span class="dt">nx=</span><span class="ot">NA</span>)
+<span class="kw">barplot</span>(
+  prior_occupations_table,
+  <span class="dt">col=</span><span class="kw">rainbow</span>(<span class="kw">length</span>(prior_occupations_table)),
+  <span class="dt">cex.names=</span><span class="fl">1.1</span>,
+  <span class="dt">border=</span><span class="ot">NA</span>,
+  <span class="dt">las=</span><span class="dv">2</span>,
+  <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),
+  <span class="dt">axes=</span>F,
+  <span class="dt">add=</span>T,
+  <span class="dt">xlab=</span><span class="st">''</span>,
+  <span class="dt">ylab=</span><span class="kw">paste</span>(<span class="st">'Percentage of'</span>, total_prior_occupation_count, <span class="st">'listed Prior Occupations'</span>),
+  <span class="dt">main=</span><span class="kw">paste</span>(<span class="st">'Prior Occupation Relative Frequency Distribution of'</span>, total_inmate_count, <span class="st">'Texas Death Row Inmates'</span>)
+)
+<span class="kw">mtext</span>(<span class="st">'Prior Occupation'</span>, <span class="dt">side=</span><span class="dv">1</span>, <span class="dt">line=</span><span class="dv">13</span>)
+
+<span class="co"># -----------------------</span>
+<span class="co"># Inmate x Prior Occupations</span>
+<span class="co"># -----------------------</span>
+
+inmate_matrix_count &lt;-<span class="st"> </span><span class="kw">c</span>()
+for (row in <span class="dv">1</span>:<span class="kw">length</span>(inmates_prior_occupations)) {
+  inmate_prior_occupations &lt;-<span class="st"> </span>inmates_prior_occupations[[<span class="kw">toString</span>(row)]]
+  for (unique_prior_occupation in unique_prior_occupations) {
+    inmate_matrix_count &lt;-<span class="st"> </span><span class="kw">c</span>(
+      inmate_matrix_count,
+      <span class="kw">sum</span>(unique_prior_occupation ==<span class="st"> </span>inmate_prior_occupations)
+    )
+  }
+}
+inmate_matrix_count =<span class="st"> </span><span class="kw">matrix</span>(
+  inmate_matrix_count,
+  <span class="dt">nrow=</span>total_inmate_count,
+  <span class="dt">ncol=</span>unique_prior_occupations_length,
+  <span class="dt">byrow=</span>T
+)
+
+<span class="co"># -----------------------</span>
+<span class="co"># TF-IDF</span>
+<span class="co"># -----------------------</span>
+
+inmate_matrix_tfidf &lt;-<span class="st"> </span><span class="kw">matrix</span>(
+  <span class="kw">c</span>(
+    <span class="dv">1</span>:(total_inmate_count *<span class="st"> </span>unique_prior_occupations_length)
+  ) *<span class="st"> </span><span class="dv">0</span>,
+  <span class="dt">nrow=</span>total_inmate_count,
+  <span class="dt">ncol=</span>unique_prior_occupations_length,
+  <span class="dt">byrow=</span>T
+)
+nrow_count &lt;-<span class="st"> </span><span class="kw">nrow</span>(inmate_matrix_count)
+for (row in <span class="dv">1</span>:<span class="kw">nrow</span>(inmate_matrix_count)) {
+  for (col in <span class="dv">1</span>:<span class="kw">ncol</span>(inmate_matrix_count)) {
+    tf &lt;-<span class="st"> </span>inmate_matrix_count[row,col]
+    df &lt;-<span class="st"> </span><span class="kw">length</span>(<span class="kw">which</span>(inmate_matrix_count[,col] &gt;<span class="st"> </span><span class="dv">0</span>))
+    idf &lt;-<span class="st"> </span><span class="kw">log</span>(nrow_count /<span class="st"> </span>(df +<span class="st"> </span><span class="dv">1</span>))
+    tfidf &lt;-<span class="st"> </span>tf *<span class="st"> </span>idf
+    inmate_matrix_tfidf[row,col] &lt;-<span class="st"> </span>tfidf
+  }
+}
+
+inmate_matrix_tfidf_l2_norm =<span class="st"> </span><span class="kw">c</span>()
+for (row in <span class="dv">1</span>:<span class="kw">nrow</span>(inmate_matrix_tfidf)) {
+  row_vector &lt;-<span class="st"> </span>inmate_matrix_tfidf[row,]
+  row_vector_norm &lt;-<span class="st"> </span>row_vector/(<span class="kw">sqrt</span>(<span class="kw">sum</span>(row_vector^<span class="dv">2</span>)))
+  inmate_matrix_tfidf_l2_norm =<span class="st"> </span><span class="kw">c</span>(
+    inmate_matrix_tfidf_l2_norm,
+    row_vector_norm
+  )
+}
+inmate_matrix_tfidf_l2_norm &lt;-<span class="st"> </span><span class="kw">matrix</span>(
+  inmate_matrix_tfidf_l2_norm,
+  <span class="dt">nrow=</span>total_inmate_count,
+  <span class="dt">ncol=</span>unique_prior_occupations_length,
+  <span class="dt">byrow=</span>T
+)
+
+<span class="co">#inmate_matrix_tfidf &lt;- inmate_matrix_tfidf_l2_norm</span>
+
+<span class="co"># -----------------------</span>
+<span class="co"># MDS</span>
+<span class="co"># -----------------------</span>
+
+plot_scale &lt;-<span class="st"> </span><span class="fl">1.0</span>
+
+scatter_plot_matrix &lt;-<span class="st"> </span>function(prefix, input_matrix) {
+  <span class="kw">png</span>(<span class="dt">file=</span><span class="kw">paste</span>(<span class="kw">tolower</span>(prefix), <span class="st">'scatter_plot.png'</span>, <span class="dt">sep=</span><span class="st">'_'</span>), <span class="dt">width=</span><span class="dv">1500</span>, <span class="dt">height=</span><span class="dv">1500</span>)
+  <span class="kw">plot.new</span>()
+  input_matrix[,<span class="dv">1</span>]
+  input_matrix[,<span class="dv">2</span>]
+  <span class="kw">textplot</span>(
+    input_matrix[, <span class="dv">1</span>],
+    input_matrix[, <span class="dv">2</span>],
+    <span class="kw">seq</span>(<span class="dv">1</span>:<span class="kw">length</span>(input_matrix[,<span class="dv">1</span>])),
+    <span class="dt">xlim=</span><span class="kw">c</span>(
+      <span class="kw">min</span>(input_matrix[, <span class="dv">1</span>]) *<span class="st"> </span>plot_scale,
+      <span class="kw">max</span>(input_matrix[, <span class="dv">1</span>]) *<span class="st"> </span>plot_scale
+    ),
+    <span class="dt">ylim=</span><span class="kw">c</span>(
+      <span class="kw">min</span>(input_matrix[, <span class="dv">2</span>]) *<span class="st"> </span>plot_scale,
+      <span class="kw">max</span>(input_matrix[, <span class="dv">2</span>]) *<span class="st"> </span>plot_scale
+    ),
+    <span class="dt">main=</span><span class="kw">paste</span>(<span class="st">'Inmate Prior Occupations 2D Visualization'</span>, <span class="kw">paste0</span>(<span class="st">'('</span>, prefix, <span class="st">')'</span>))
+  )
+}
+
+dist_matrix &lt;-<span class="st"> </span><span class="kw">dist</span>(inmate_matrix_count, <span class="dt">method=</span><span class="st">'euclidean'</span>)
+inmate_matrix_count_mds &lt;-<span class="st"> </span><span class="kw">cmdscale</span>(dist_matrix)
+<span class="kw">scatter_plot_matrix</span>(<span class="st">'COUNT-MDS'</span>, inmate_matrix_count_mds)
+
+dist_matrix &lt;-<span class="st"> </span><span class="kw">dist</span>(inmate_matrix_tfidf, <span class="dt">method=</span><span class="st">'euclidean'</span>)
+inmate_matrix_tfidf_mds &lt;-<span class="st"> </span><span class="kw">cmdscale</span>(dist_matrix)
+<span class="kw">scatter_plot_matrix</span>(<span class="st">'TFIDF-MDS'</span>, inmate_matrix_tfidf_mds)
+
+<span class="co"># -----------------------</span>
+<span class="co"># AP CLUSTERING</span>
+<span class="co"># -----------------------</span>
+
+cluster_matrix &lt;-<span class="st"> </span>function(prefix, input_matrix, inmates_prior_occupations) {
+  apresult &lt;-<span class="st"> </span><span class="kw">apcluster</span>(<span class="kw">negDistMat</span>(<span class="dt">r=</span><span class="dv">2</span>), input_matrix)
+  input_cluster_labels =<span class="st"> </span><span class="kw">labels</span>(apresult, <span class="dt">type=</span><span class="st">'enum'</span>)
+
+  inmate_clusters_flt &lt;-<span class="st"> </span><span class="kw">list</span>()
+  inmate_clusters_str &lt;-<span class="st"> </span><span class="kw">list</span>()
+
+  i &lt;-<span class="st"> </span><span class="dv">1</span>
+  for (input_cluster_label in input_cluster_labels) {
+    input_cluster_label &lt;-<span class="st"> </span><span class="kw">toString</span>(input_cluster_label)
+
+    if (<span class="kw">is.null</span>(inmate_clusters_flt[[input_cluster_label]])) {
+      inmate_clusters_flt[[input_cluster_label]] &lt;-<span class="st"> </span><span class="kw">c</span>()
+      inmate_clusters_str[[input_cluster_label]] &lt;-<span class="st"> </span><span class="kw">list</span>()
+    }
+
+    inmate_clusters_flt[[input_cluster_label]] &lt;-<span class="st"> </span><span class="kw">c</span>(
+      inmate_clusters_flt[[input_cluster_label]],
+      input_matrix[i,]
+    )
+
+    i_str &lt;-<span class="st"> </span><span class="kw">toString</span>(i)
+    temp =<span class="st"> </span><span class="kw">list</span>()
+    temp[[i_str]] &lt;-<span class="st"> </span>inmates_prior_occupations[[i_str]]
+    inmate_clusters_str[[input_cluster_label]] &lt;-<span class="st"> </span><span class="kw">append</span>(
+      inmate_clusters_str[[input_cluster_label]],
+      temp
+    )
+
+    i &lt;-<span class="st"> </span>i +<span class="st"> </span><span class="dv">1</span>
+  }
+
+  for (cluster_i in <span class="dv">1</span>:<span class="kw">length</span>(inmate_clusters_flt)) {
+    cluster_i_str &lt;-<span class="st"> </span><span class="kw">toString</span>(cluster_i)
+    cluster &lt;-<span class="st"> </span><span class="kw">matrix</span>(inmate_clusters_flt[[cluster_i_str]], <span class="dt">ncol=</span><span class="dv">2</span>, <span class="dt">byrow=</span>T)
+    inmate_clusters_flt[[cluster_i_str]] &lt;-<span class="st"> </span>cluster
+  }
+
+  inmate_clusters_colors =<span class="st"> </span><span class="kw">rainbow</span>(<span class="kw">length</span>(inmate_clusters_flt), <span class="dt">v=</span><span class="fl">0.8</span>, <span class="dt">s=</span><span class="fl">0.5</span>)
+
+  pc &lt;-<span class="st"> </span>function(cn, b) {
+    if (b ==<span class="st"> </span><span class="dv">1</span>) {
+      <span class="kw">return</span>(<span class="kw">sum</span>(input_cluster_labels ==<span class="st"> </span>cn) /<span class="st"> </span><span class="kw">length</span>(input_cluster_labels))
+    } else {
+      <span class="kw">return</span>(<span class="kw">sum</span>(input_cluster_labels !=<span class="st"> </span>cn) /<span class="st"> </span><span class="kw">length</span>(input_cluster_labels))
+    }
+  }
+
+  pt &lt;-<span class="st"> </span>function(ct, b) {
+    if (b ==<span class="st"> </span><span class="dv">1</span>) {
+      in_d &lt;-<span class="st"> </span><span class="dv">0</span>
+      for (inmate_prior_occupations in inmates_prior_occupations) {
+        count &lt;-<span class="st"> </span><span class="kw">sum</span>(ct ==<span class="st"> </span>inmate_prior_occupations)
+        if (count &gt;<span class="st"> </span><span class="dv">0</span>) {
+          in_d &lt;-<span class="st"> </span>in_d +<span class="st"> </span><span class="dv">1</span>
+        }
+      }
+      <span class="kw">return</span>(in_d /<span class="st"> </span><span class="kw">length</span>(inmates_prior_occupations))
+    } else {
+      n_in_d &lt;-<span class="st"> </span><span class="dv">0</span>
+      for (inmate_prior_occupations in inmates_prior_occupations) {
+        count &lt;-<span class="st"> </span><span class="kw">sum</span>(ct ==<span class="st"> </span>inmate_prior_occupations)
+        if (count ==<span class="st"> </span><span class="dv">0</span>) {
+          n_in_d &lt;-<span class="st"> </span>n_in_d +<span class="st"> </span><span class="dv">1</span>
+        }
+      }
+      <span class="kw">return</span>(n_in_d /<span class="st"> </span><span class="kw">length</span>(inmates_prior_occupations))
+    }
+  }
+
+  pct &lt;-<span class="st"> </span>function(cn, ct, b) {
+    if (<span class="kw">all</span>(b ==<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">0</span>))) {
+      n_in_d &lt;-<span class="st"> </span><span class="dv">0</span>
+      inmate_indexes &lt;-<span class="st"> </span><span class="kw">which</span>(!input_cluster_labels %in%<span class="st"> </span>cn)
+      for (inmate_index in inmate_indexes) {
+        inmate_prior_occupations &lt;-<span class="st"> </span>inmates_prior_occupations[[<span class="kw">toString</span>(inmate_index)]]
+        count &lt;-<span class="st"> </span><span class="kw">sum</span>(ct ==<span class="st"> </span>inmate_prior_occupations)
+        if (count ==<span class="st"> </span><span class="dv">0</span>) {
+          n_in_d &lt;-<span class="st"> </span>n_in_d +<span class="st"> </span><span class="dv">1</span>
+        }
+      }
+      <span class="kw">return</span>(n_in_d /<span class="st"> </span><span class="kw">length</span>(inmate_indexes))
+    } else if (<span class="kw">all</span>(b ==<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>))) {
+      in_d &lt;-<span class="st"> </span><span class="dv">0</span>
+      inmate_indexes &lt;-<span class="st"> </span><span class="kw">which</span>(input_cluster_labels %in%<span class="st"> </span>cn)
+      for (inmate_index in inmate_indexes) {
+        inmate_prior_occupations &lt;-<span class="st"> </span>inmates_prior_occupations[[<span class="kw">toString</span>(inmate_index)]]
+        count &lt;-<span class="st"> </span><span class="kw">sum</span>(ct ==<span class="st"> </span>inmate_prior_occupations)
+        if (count &gt;<span class="st"> </span><span class="dv">0</span>) {
+          in_d &lt;-<span class="st"> </span>in_d +<span class="st"> </span><span class="dv">1</span>
+        }
+      }
+      <span class="kw">return</span>(in_d /<span class="st"> </span><span class="kw">length</span>(inmate_indexes))
+    } else if (<span class="kw">all</span>(b ==<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">0</span>))) {
+      n_in_d &lt;-<span class="st"> </span><span class="dv">0</span>
+      inmate_indexes &lt;-<span class="st"> </span><span class="kw">which</span>(input_cluster_labels %in%<span class="st"> </span>cn)
+      for (inmate_index in inmate_indexes) {
+        inmate_prior_occupations &lt;-<span class="st"> </span>inmates_prior_occupations[[<span class="kw">toString</span>(inmate_index)]]
+        count &lt;-<span class="st"> </span><span class="kw">sum</span>(ct ==<span class="st"> </span>inmate_prior_occupations)
+        if (count ==<span class="st"> </span><span class="dv">0</span>) {
+          n_in_d &lt;-<span class="st"> </span>n_in_d +<span class="st"> </span><span class="dv">1</span>
+        }
+      }
+      <span class="kw">return</span>(n_in_d /<span class="st"> </span><span class="kw">length</span>(inmate_indexes))
+    } else if (<span class="kw">all</span>(b ==<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>))) {
+      in_d &lt;-<span class="st"> </span><span class="dv">0</span>
+      inmate_indexes &lt;-<span class="st"> </span><span class="kw">which</span>(!input_cluster_labels %in%<span class="st"> </span>cn)
+      for (inmate_index in inmate_indexes) {
+        inmate_prior_occupations &lt;-<span class="st"> </span>inmates_prior_occupations[[<span class="kw">toString</span>(inmate_index)]]
+        count &lt;-<span class="st"> </span><span class="kw">sum</span>(ct ==<span class="st"> </span>inmate_prior_occupations)
+        if (count &gt;<span class="st"> </span><span class="dv">0</span>) {
+          in_d &lt;-<span class="st"> </span>in_d +<span class="st"> </span><span class="dv">1</span>
+        }
+      }
+      <span class="kw">return</span>(in_d /<span class="st"> </span><span class="kw">length</span>(inmate_indexes))
+    }
+  }
+
+  pmi &lt;-<span class="st"> </span>function(cn, ct) {
+    pmi_score &lt;-<span class="st"> </span><span class="dv">0</span>
+    for (in_c in <span class="dv">0</span>:<span class="dv">1</span>) {
+      for (has_t in <span class="dv">0</span>:<span class="dv">1</span>) {
+        jpct_r &lt;-<span class="st"> </span><span class="kw">pct</span>(cn, ct, <span class="kw">c</span>(in_c, has_t))
+        pc_r &lt;-<span class="st"> </span><span class="kw">pc</span>(cn, in_c)
+        pt_r &lt;-<span class="st"> </span><span class="kw">pt</span>(ct, has_t)
+        result &lt;-<span class="st"> </span>jpct_r *<span class="st"> </span><span class="kw">log2</span>(jpct_r /<span class="st"> </span>(pc_r *<span class="st"> </span>pt_r))
+        if (<span class="kw">is.nan</span>(result)) {
+          result &lt;-<span class="st"> </span><span class="dv">0</span>
+        }
+        pmi_score &lt;-<span class="st"> </span>pmi_score +<span class="st"> </span>result
+      }
+    }
+    <span class="kw">return</span>(pmi_score)
+  }
+
+  output_cluster_labels &lt;-<span class="st"> </span><span class="kw">list</span>()
+  for(i in <span class="dv">1</span>:<span class="kw">length</span>(inmate_clusters_str)) {
+    cluster &lt;-<span class="st"> </span>inmate_clusters_str[[<span class="kw">toString</span>(i)]]
+    label &lt;-<span class="st"> ''</span>
+    max_pmi_score &lt;-<span class="st"> </span>-<span class="fl">1.0</span>
+    seen &lt;-<span class="st"> </span><span class="kw">c</span>()
+    for (inmate in cluster) {
+      for (prior_occupation in inmate) {
+        if (<span class="kw">sum</span>(prior_occupation ==<span class="st"> </span>seen) ==<span class="st"> </span><span class="dv">0</span>) {
+          pmi_score &lt;-<span class="st"> </span><span class="kw">pmi</span>(i, prior_occupation)
+          if (pmi_score &gt;<span class="st"> </span>max_pmi_score) {
+            output_cluster_labels[[<span class="kw">toString</span>(i)]] &lt;-<span class="st"> </span>prior_occupation
+            max_pmi_score &lt;-<span class="st"> </span>pmi_score
+          }
+          seen &lt;-<span class="st"> </span><span class="kw">c</span>(seen, prior_occupation)
+        }
+      }
+    }
+  }
+
+  <span class="kw">write</span>(
+    <span class="kw">sapply</span>(
+      <span class="kw">sort</span>(<span class="kw">as.integer</span>(<span class="kw">names</span>(inmate_clusters_str))),
+      function(x) <span class="kw">paste</span>(
+        <span class="kw">paste0</span>(
+          <span class="kw">toupper</span>(<span class="kw">substring</span>(output_cluster_labels[[<span class="kw">toString</span>(x)]], <span class="dv">1</span>, <span class="dv">1</span>)),
+          <span class="kw">substring</span>(
+            output_cluster_labels[[<span class="kw">toString</span>(x)]],
+            <span class="dv">2</span>,
+            <span class="kw">nchar</span>(output_cluster_labels[[<span class="kw">toString</span>(x)]])
+          )
+        ),
+        <span class="st">'Cluster'</span>,
+        <span class="kw">toString</span>(x),
+        <span class="st">'</span><span class="ch">\n</span><span class="st"> '</span>,
+        <span class="kw">paste</span>(<span class="st">'Inmate'</span>, <span class="kw">names</span>(inmate_clusters_str[[<span class="kw">toString</span>(x)]]), inmate_clusters_str[[<span class="kw">toString</span>(x)]], <span class="dt">collapse=</span><span class="st">'</span><span class="ch">\n</span><span class="st">  '</span>)
+      )),
+    <span class="kw">paste</span>(<span class="kw">tolower</span>(prefix), <span class="st">'inmate_clusters.txt'</span>, <span class="dt">sep=</span><span class="st">'_'</span>)
+  )
+
+  <span class="kw">return</span>(
+    <span class="kw">list</span>(
+      <span class="dt">flt=</span>inmate_clusters_flt,
+      <span class="dt">str=</span>inmate_clusters_str,
+      <span class="dt">colors=</span>inmate_clusters_colors,
+      <span class="dt">in_labels=</span>input_cluster_labels,
+      <span class="dt">out_labels=</span>output_cluster_labels
+    )
+  )
+}
+
+plot_clustering &lt;-<span class="st"> </span>function(prefix, input_matrix, inmate_cluster_flt, inmate_clusters_colors, inmate_cluster_labels) {
+  <span class="kw">png</span>(<span class="dt">file=</span><span class="kw">paste</span>(<span class="kw">tolower</span>(prefix), <span class="st">'inmate_clusters.png'</span>, <span class="dt">sep=</span><span class="st">'_'</span>), <span class="dt">width=</span><span class="dv">1500</span>, <span class="dt">height=</span><span class="dv">1500</span>)
+  <span class="kw">plot.new</span>()
+  <span class="kw">plot</span>(
+    input_matrix[,<span class="dv">1</span>],
+    input_matrix[,<span class="dv">2</span>],
+    <span class="dt">main=</span><span class="kw">paste</span>(<span class="st">'Death Row Inmate Clustering by Prior Occupations'</span>, <span class="kw">paste0</span>(<span class="st">'('</span>, prefix, <span class="st">')'</span>))
+  )
+  for (cluster_i in <span class="dv">1</span>:<span class="kw">length</span>(inmate_clusters_flt)) {
+    cluster_i_str &lt;-<span class="st"> </span><span class="kw">toString</span>(cluster_i)
+    <span class="kw">points</span>(
+      inmate_clusters_flt[[cluster_i_str]],
+      <span class="dt">col=</span>inmate_clusters_colors[cluster_i],
+      <span class="dt">bg=</span>inmate_clusters_colors[cluster_i],
+      <span class="dt">pch=</span><span class="dv">19</span>,
+      <span class="dt">cex=</span><span class="dv">5</span>,
+      <span class="dt">lwd=</span><span class="dv">2</span>
+    )
+  }
+  <span class="kw">text</span>(
+    input_matrix[, <span class="dv">1</span>],
+    input_matrix[, <span class="dv">2</span>],
+    inmate_cluster_labels,
+    <span class="dt">xlim=</span><span class="kw">c</span>(
+      <span class="kw">min</span>(input_matrix[, <span class="dv">1</span>]) *<span class="st"> </span>plot_scale,
+      <span class="kw">max</span>(input_matrix[, <span class="dv">1</span>]) *<span class="st"> </span>plot_scale
+    ),
+    <span class="dt">ylim=</span><span class="kw">c</span>(
+      <span class="kw">min</span>(input_matrix[, <span class="dv">2</span>]) *<span class="st"> </span>plot_scale,
+      <span class="kw">max</span>(input_matrix[, <span class="dv">2</span>]) *<span class="st"> </span>plot_scale
+    ),
+  )
+  <span class="kw">legend</span>(
+    <span class="st">'topleft'</span>,
+    <span class="dt">legend=</span><span class="kw">lapply</span>(<span class="kw">c</span>(<span class="dv">1</span>:<span class="kw">length</span>(inmate_clusters_colors)), function (x) <span class="kw">return</span>(<span class="kw">toString</span>(x))),
+    <span class="dt">fill=</span>inmate_clusters_colors,
+    <span class="dt">cex=</span><span class="fl">1.3</span>,
+    <span class="dt">pt.cex=</span><span class="dv">1</span>
+  )
+}
+
+plot_clusters_occupation_distributions &lt;-<span class="st"> </span>function(prefix, inmate_clusters_str, unique_prior_occupations) {
+  for (i in <span class="dv">1</span>:<span class="kw">length</span>(inmate_clusters_str)) {
+    cluster &lt;-<span class="st"> </span>inmate_clusters_str[[<span class="kw">toString</span>(i)]]
+    cluster_prior_occupations &lt;-<span class="st"> </span><span class="kw">c</span>()
+    for (inmate_prior_occupations in cluster) {
+      cluster_prior_occupations &lt;-<span class="st"> </span><span class="kw">c</span>(cluster_prior_occupations, inmate_prior_occupations)
+    }
+
+    prior_occupations_table &lt;-<span class="st"> </span><span class="kw">table</span>(<span class="kw">factor</span>(cluster_prior_occupations, <span class="dt">levels=</span>unique_prior_occupations))
+    prior_occupations_table &lt;-<span class="st"> </span>prior_occupations_table /<span class="st"> </span><span class="kw">sum</span>(prior_occupations_table) *<span class="st"> </span><span class="dv">100</span>
+
+    <span class="kw">png</span>(<span class="dt">file=</span><span class="kw">paste</span>(<span class="kw">tolower</span>(prefix), <span class="kw">toString</span>(i), <span class="st">'prior_occupation_distribution.png'</span>, <span class="dt">sep=</span><span class="st">'_'</span>), <span class="dt">width=</span><span class="dv">1500</span>, <span class="dt">height=</span><span class="dv">1500</span>)
+    <span class="kw">plot.new</span>()
+    <span class="kw">par</span>(
+      <span class="dt">mai=</span><span class="kw">c</span>(<span class="fl">3.0</span>, <span class="fl">1.0</span>, <span class="fl">1.0</span>, <span class="fl">1.0</span>)
+    )
+    <span class="kw">barplot</span>(
+      prior_occupations_table,
+      <span class="dt">col=</span><span class="kw">rainbow</span>(<span class="kw">length</span>(prior_occupations_table)),
+      <span class="dt">cex.names=</span><span class="fl">1.1</span>,
+      <span class="dt">las=</span><span class="dv">2</span>,
+      <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),
+      <span class="dt">axes=</span>F,
+      <span class="dt">border=</span><span class="ot">NA</span>
+    )
+    <span class="kw">axis</span>(<span class="dv">2</span>, <span class="dt">at=</span><span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">100</span>,<span class="dv">5</span>))
+    <span class="kw">grid</span>(<span class="dt">ny=</span><span class="dv">100</span>, <span class="dt">nx=</span><span class="ot">NA</span>)
+    <span class="kw">barplot</span>(
+      prior_occupations_table,
+      <span class="dt">col=</span><span class="kw">rainbow</span>(<span class="kw">length</span>(prior_occupations_table)),
+      <span class="dt">cex.names=</span><span class="fl">1.1</span>,
+      <span class="dt">las=</span><span class="dv">2</span>,
+      <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),
+      <span class="dt">axes=</span>F,
+      <span class="dt">add=</span>T,
+      <span class="dt">xlab=</span><span class="st">''</span>,
+      <span class="dt">ylab=</span><span class="kw">paste</span>(<span class="st">'Percentage of'</span>, <span class="kw">length</span>(cluster_prior_occupations), <span class="st">'listed Prior Occupations'</span>),
+      <span class="dt">main=</span><span class="kw">paste</span>(
+        <span class="st">'Prior Occupation Relative Frequency Distribution of'</span>,
+        <span class="kw">length</span>(cluster),
+        <span class="st">'Texas Death Row Inmate(s) for Cluster'</span>,
+        <span class="kw">toString</span>(i),
+        <span class="kw">paste0</span>(
+          <span class="st">'('</span>,
+          prefix,
+          <span class="st">')'</span>
+        )
+      ),
+      <span class="dt">border=</span><span class="ot">NA</span>
+    )
+    <span class="kw">mtext</span>(<span class="st">'Prior Occupation'</span>, <span class="dt">side=</span><span class="dv">1</span>, <span class="dt">line=</span><span class="dv">13</span>)
+    <span class="kw">dev.off</span>()
+  }
+}
+
+result &lt;-<span class="st"> </span><span class="kw">cluster_matrix</span>(<span class="st">'COUNT-AP'</span>, inmate_matrix_count, inmates_prior_occupations)
+inmate_clusters_flt &lt;-<span class="st"> </span>result$flt
+inmate_clusters_str &lt;-<span class="st"> </span>result$str
+inmate_clusters_colors &lt;-<span class="st"> </span>result$colors
+
+<span class="kw">plot_clusters_occupation_distributions</span>(<span class="st">'COUNT-AP'</span>, inmate_clusters_str, unique_prior_occupations)
+
+result &lt;-<span class="st"> </span><span class="kw">cluster_matrix</span>(<span class="st">'TFIDF-AP'</span>, inmate_matrix_tfidf, inmates_prior_occupations)
+inmate_clusters_flt &lt;-<span class="st"> </span>result$flt
+inmate_clusters_str &lt;-<span class="st"> </span>result$str
+inmate_clusters_colors &lt;-<span class="st"> </span>result$colors
+
+<span class="kw">plot_clusters_occupation_distributions</span>(<span class="st">'TFIDF-AP'</span>, inmate_clusters_str, unique_prior_occupations)
+
+result &lt;-<span class="st"> </span><span class="kw">cluster_matrix</span>(<span class="st">'COUNT-MDS-AP'</span>, inmate_matrix_count_mds, inmates_prior_occupations)
+inmate_clusters_flt &lt;-<span class="st"> </span>result$flt
+inmate_clusters_str &lt;-<span class="st"> </span>result$str
+inmate_clusters_colors &lt;-<span class="st"> </span>result$colors
+inmate_cluster_labels &lt;-<span class="st"> </span>result$in_labels
+inmate_clusters_labels &lt;-<span class="st"> </span>result$out_labels
+
+<span class="kw">plot_clustering</span>(<span class="st">'COUNT-MDS-AP'</span>, inmate_matrix_count_mds, inmate_clusters_flt, inmate_clusters_colors, inmate_cluster_labels)
+<span class="kw">plot_clusters_occupation_distributions</span>(<span class="st">'COUNT-MDS-AP'</span>, inmate_clusters_str, unique_prior_occupations)
+
+result &lt;-<span class="st"> </span><span class="kw">cluster_matrix</span>(<span class="st">'TFIDF-MDS-AP'</span>, inmate_matrix_tfidf_mds, inmates_prior_occupations)
+inmate_clusters_flt &lt;-<span class="st"> </span>result$flt
+inmate_clusters_str &lt;-<span class="st"> </span>result$str
+inmate_clusters_colors &lt;-<span class="st"> </span>result$colors
+inmate_cluster_labels &lt;-<span class="st"> </span>result$in_labels
+inmate_clusters_labels &lt;-<span class="st"> </span>result$out_labels
+
+<span class="kw">plot_clustering</span>(<span class="st">'TFIDF-MDS-AP'</span>, inmate_matrix_tfidf_mds, inmate_clusters_flt, inmate_clusters_colors, inmate_cluster_labels)
+<span class="kw">plot_clusters_occupation_distributions</span>(<span class="st">'TFIDF-MDS-AP'</span>, inmate_clusters_str, unique_prior_occupations)
+
+<span class="co"># -----------------------</span>
+<span class="co"># SVD</span>
+<span class="co"># -----------------------</span>
+
+inmate_matrix_tfidf_svd &lt;-<span class="st"> </span><span class="kw">svd</span>(inmate_matrix_tfidf)
+k &lt;-<span class="st"> </span><span class="dv">38</span>
+inmate_k_basis_vectors =<span class="st"> </span>inmate_matrix_tfidf_svd$u[, <span class="dv">1</span>:k]
+k_singular_values_matrix =<span class="st"> </span><span class="kw">diag</span>(inmate_matrix_tfidf_svd$d)[<span class="dv">1</span>:k, <span class="dv">1</span>:k]
+inmate_matrix_tfidf_svd_truncated &lt;-<span class="st"> </span>inmate_k_basis_vectors %*%<span class="st"> </span>k_singular_values_matrix %*%<span class="st"> </span><span class="kw">t</span>(inmate_matrix_tfidf_svd$v[, <span class="dv">1</span>:k])
+
+<span class="kw">png</span>(<span class="dt">file=</span><span class="st">'svd_explained_variance.png'</span>, <span class="dt">width=</span><span class="dv">1500</span>, <span class="dt">height=</span><span class="dv">1500</span>)
+<span class="kw">plot.new</span>()
+cumulativeVarianceExplained =<span class="st"> </span><span class="kw">cumsum</span>(inmate_matrix_tfidf_svd$d^<span class="dv">2</span> /<span class="st"> </span><span class="kw">sum</span>(inmate_matrix_tfidf_svd$d^<span class="dv">2</span>)) *<span class="st"> </span><span class="dv">100</span>
+<span class="kw">plot</span>(
+  cumulativeVarianceExplained,
+  <span class="dt">type=</span><span class="st">'o'</span>,
+  <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">100</span>),
+  <span class="dt">xlab=</span><span class="st">'Index'</span>,
+  <span class="dt">ylab=</span><span class="st">'Percent of Variability Explained'</span>,
+  <span class="dt">main=</span><span class="st">'Singular Value Decomposition'</span>
+)
+<span class="kw">axis</span>(<span class="dv">1</span>, <span class="dt">at=</span><span class="kw">seq</span>(<span class="dv">1</span>,<span class="kw">length</span>(inmate_matrix_tfidf_svd$d)))
+<span class="kw">abline</span>(<span class="dt">v=</span>k)
+<span class="kw">abline</span>(<span class="dt">h=</span><span class="fl">90.0</span>)
+
+bar_colors &lt;-<span class="st"> </span><span class="kw">c</span>()
+for (i in <span class="dv">1</span>:<span class="kw">length</span>(inmate_matrix_tfidf_svd$d)) {
+  if (i ==<span class="st"> </span>k) {
+    bar_colors &lt;-<span class="st"> </span><span class="kw">c</span>(bar_colors, <span class="st">'brown2'</span>)
+  } else {
+    bar_colors &lt;-<span class="st"> </span><span class="kw">c</span>(bar_colors, <span class="st">'chartreuse3'</span>)
+  }
+}
+<span class="kw">png</span>(
+  <span class="dt">file=</span><span class="st">'svd_singular_values.png'</span>,
+  <span class="dt">width=</span><span class="dv">1500</span>,
+  <span class="dt">height=</span><span class="dv">1500</span>,
+)
+<span class="kw">plot.new</span>()
+<span class="kw">barplot</span>(
+  inmate_matrix_tfidf_svd$d,
+  <span class="dt">names.arg=</span><span class="dv">1</span>:<span class="kw">length</span>(inmate_matrix_tfidf_svd$d),
+  <span class="dt">col=</span>bar_colors,
+  <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="kw">max</span>(inmate_matrix_tfidf_svd$d) +<span class="st"> </span><span class="dv">1</span>),
+  <span class="dt">border=</span><span class="ot">NA</span>,
+  <span class="dt">xlab=</span><span class="st">'Index'</span>,
+  <span class="dt">ylab=</span><span class="st">'Singular Value'</span>,
+  <span class="dt">main=</span><span class="st">'Singular Value Decomposition'</span>
+)
+
+result &lt;-<span class="st"> </span><span class="kw">cluster_matrix</span>(<span class="st">'TFIDF-SVD-AP'</span>, inmate_k_basis_vectors, inmates_prior_occupations)
+inmate_clusters_flt &lt;-<span class="st"> </span>result$flt
+inmate_clusters_str &lt;-<span class="st"> </span>result$str
+inmate_clusters_colors &lt;-<span class="st"> </span>result$colors
+inmate_cluster_labels &lt;-<span class="st"> </span>result$in_labels
+inmate_clusters_labels &lt;-<span class="st"> </span>result$out_labels
+
+if (k ==<span class="st"> </span><span class="dv">2</span>) {
+  <span class="kw">plot_clustering</span>(
+    <span class="st">'TFIDF-SVD-AP'</span>,
+    inmate_k_basis_vectors,
+    inmate_clusters_flt,
+    inmate_clusters_colors,
+    inmate_cluster_labels
+  )
+}
+<span class="kw">plot_clusters_occupation_distributions</span>(<span class="st">'TFIDF-SVD-AP'</span>, inmate_clusters_str, unique_prior_occupations)</code></pre></div>
+</div>
+<div class="post-footer">
+  <div class="display-left">
+    <h3 class="post-footer-cta">
+      Looking for more content? Click <a href="../posts.html">here</a> or return to the <a href="#top">top</a>.
+    </h3>
+  </div>
+  <div class="display-right text-align-right post-footer-copyright">
+    <h4>
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2015</span> David Lettier.
+    </h4>
+  </div>
+</div>
+<script>
+  (function () {
+    document.getElementById('copyrightYear').innerHTML = new Date().getFullYear();
+  })();
+</script>
+
+    </div>
+  </body>
+</html>
