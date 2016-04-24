@@ -4,7 +4,6 @@ import           Data.Maybe (fromMaybe)
 import qualified Data.Map as M
 import           Hakyll
 
-
 main :: IO ()
 main = hakyll $ do
   match ("images/*" .||. "images/*/*") $ do
@@ -33,39 +32,40 @@ main = hakyll $ do
       posts <- recentFirst =<< loadAll "posts/*"
       let count = length posts
       let postsCtx = mconcat [
-              listField "posts" postCtx (return posts),
-              constField "title" ((show count) ++ " Post" ++ (plural count) ++ " and Counting"),
-              titleField "title",
-              defaultContext
+              listField "posts" postCtx (return posts)
+              , constField "title" ((show count) ++ " Post" ++ (plural count) ++ " and Counting")
+              , titleField "title"
+              , defaultContext
             ]
       makeItem ""
         >>= loadAndApplyTemplate "templates/posts.html" postsCtx
         >>= loadAndApplyTemplate "templates/default.html" postsCtx
         >>= relativizeUrls
 
-  match "index.html" $ do
+  create ["index.html"] $ do
     route idRoute
     compile $ do
       post <- fmap head . recentFirst =<< loadAllSnapshots "posts/*" "content"
-      let indexCtx = mconcat [
-              listField "frontPage" postCtx (return [post]),
-              defaultContext
-            ]
-      getResourceBody
-        >>= applyAsTemplate indexCtx
-        >>= loadAndApplyTemplate "templates/default.html" indexCtx
+      loadAndApplyTemplate "templates/default.html" postCtx post
         >>= relativizeUrls
+        >>= changeIdentifier "index.html"
 
   match "templates/*" $ compile templateCompiler
 
+changeIdentifier :: Identifier -> Item a -> Compiler (Item a)
+changeIdentifier idt item = return (itemSetIdentifier idt item)
+
+itemSetIdentifier :: Identifier -> Item a -> Item a
+itemSetIdentifier x (Item _ i) = Item x i
+
 postCtx :: Context String
-postCtx = mconcat
-  [
-    metadataField,
-    dateField "date" "%Y/%m/%d",
-    defaultContext
+postCtx = mconcat [
+    metadataField
+    , dateField "date" "%Y/%m/%d"
+    , defaultContext
   ]
 
+plural :: Int -> String
 plural count
   | count > 1  = "s"
   | count <= 1 = ""

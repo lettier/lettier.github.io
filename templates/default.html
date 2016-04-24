@@ -3,9 +3,63 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta property="og:site_name" content="Lettier">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content=
+      $if(title)$
+        $if(author)$
+          "$title$ by $author$"
+        $else$
+          "$title$"
+        $endif$
+      $else$
+        "Lettier Blog"
+      $endif$
+    >
+    <meta property="og:image" content=
+      $if(jumbotron_image)$
+        "https://lettier.github.io$jumbotron_image$"
+      $else$
+        "https://lettier.github.io/images/jumbotron_image_default.jpg"
+      $endif$
+    >
+    <meta property="og:url" content=
+      $if(url)$
+        "https://lettier.github.io$url$"
+      $else$
+        "https://lettier.github.io"
+      $endif$
+    >
+    <meta property="og:description" content=
+      $if(description)$
+        "$description$"
+      $else$
+        $if(title)$
+          "$title$"
+        $else$
+          "Data science, machine learing, algorithms, and graphics programming."
+        $endif$
+      $endif$
+    >
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="author" content="$if(frontPage)$$for(frontPage)$$if(author)$$author$$endif$$endfor$$else$David Lettier$endif$">
-    <meta name="description" content="$if(frontPage)$$for(frontPage)$$title$$endfor$$else$$if(title)$$title$$else$Data science, machine intelligence, and graphics programming.$endif$$endif$">
+    <meta name="author" content=
+      $if(author)$
+        "$author$"
+      $else$
+        "David Lettier"
+      $endif$
+    >
+    <meta name="description" content=
+      $if(description)$
+        "$description$"
+      $else$
+        $if(title)$
+          "$title$"
+        $else$
+          "Data science, machine learing, algorithms, and graphics programming."
+        $endif$
+      $endif$
+    >
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <!--<link href='https://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>-->
     <!--<link href='https://fonts.googleapis.com/css?family=Roboto+Condensed:300' rel='stylesheet' type='text/css'>-->
@@ -15,7 +69,11 @@
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4fc2bc7a00a9352b"></script>
-    <title>$if(frontPage)$$for(frontPage)$$title$$if(author)$ by $author$$endif$$endfor$$else$$title$$if(author)$ by $author$$endif$$endif$</title>
+    $if(author)$
+      <title>$title$ by $author$</title>
+    $else$
+      <title>$title$</title>
+    $endif$
   </head>
   <body>
     <span name="top"></span>
@@ -50,25 +108,19 @@
       </div>
     </nav>
     <div class="jumbotron"
-      $if(frontPage)$
-        $for(frontPage)$
-          style="background-image: url('$jumbotron_image$');"
-        $endfor$
+      $if(jumbotron_image)$
+        style="background-image: url('$jumbotron_image$');"
       $else$
-        $if(jumbotron_image)$
-          style="background-image: url('$jumbotron_image$');"
-        $endif$
+        style="background-image: url('images/jumbotron_image_default.jpg');"
       $endif$
     >
       <div class="container vertical-center">
         <div class="jumbotron-text">
           <span class="jumbotron-text-background">
-            $if(frontPage)$
-              $for(frontPage)$
-                $title$
-              $endfor$
-            $else$
+            $if(title)$
               $title$
+            $else$
+              Home
             $endif$
           </span>
         </div>
