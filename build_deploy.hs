@@ -47,7 +47,7 @@ cabalBuild = shellEmpty $ combineCommands [clean, configure, build, rebuild]
   where clean = "cabal clean "
         configure = "cabal configure"
         build = "cabal build -j"
-        rebuild = "cabal rebuild -j"
+        rebuild = "cabal run rebuild -j"
 
 pushToHakyllBranch :: IO ExitCode
 pushToHakyllBranch = shellEmpty $ combineCommands [
