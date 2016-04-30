@@ -228,35 +228,40 @@ unique_prior_occupations_length &lt;-<span class="st"> </span><span class="kw">l
 <span class="co"># Prior Occupation Relative Frequency Chart</span>
 <span class="co"># -----------------------</span>
 
-prior_occupations_table &lt;-<span class="st"> </span><span class="kw">table</span>(prior_occupations_merged)
+reverse_table &lt;-<span class="st"> </span>function(t) { t[<span class="kw">sort</span>(<span class="kw">names</span>(t), <span class="dt">decreasing=</span>T)] }
+
+prior_occupations_table &lt;-<span class="st"> </span><span class="kw">reverse_table</span>(<span class="kw">table</span>(prior_occupations_merged))
 prior_occupations_table &lt;-<span class="st"> </span>prior_occupations_table /<span class="st"> </span><span class="kw">sum</span>(prior_occupations_table) *<span class="st"> </span><span class="dv">100</span>
 <span class="kw">png</span>(<span class="dt">file=</span><span class="st">'prior_occupation_relative_freq_dist.png'</span>, <span class="dt">width=</span><span class="dv">1500</span>, <span class="dt">height=</span><span class="dv">1500</span>)
 <span class="kw">par</span>(
-  <span class="dt">mai=</span><span class="kw">c</span>(<span class="fl">3.0</span>, <span class="fl">1.0</span>, <span class="fl">1.0</span>, <span class="fl">1.0</span>)
+  <span class="dt">mai=</span><span class="kw">c</span>(<span class="fl">2.0</span>, <span class="fl">3.0</span>, <span class="fl">1.0</span>, <span class="fl">1.0</span>)
 )
 <span class="kw">barplot</span>(
   prior_occupations_table,
+  <span class="dt">horiz=</span>T,
   <span class="dt">col=</span><span class="kw">rainbow</span>(<span class="kw">length</span>(prior_occupations_table)),
   <span class="dt">cex.names=</span><span class="fl">1.1</span>,
-  <span class="dt">las=</span><span class="dv">2</span>,
-  <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),
-  <span class="dt">axes=</span>F
+  <span class="dt">las=</span><span class="dv">1</span>,
+  <span class="dt">xlim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),
+  <span class="dt">axes=</span>T,
+  <span class="dt">border=</span><span class="ot">NA</span>
 )
-<span class="kw">axis</span>(<span class="dv">2</span>, <span class="dt">at=</span><span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">100</span>,<span class="dv">5</span>))
-<span class="kw">grid</span>(<span class="dt">ny=</span><span class="dv">100</span>, <span class="dt">nx=</span><span class="ot">NA</span>)
+<span class="kw">axis</span>(<span class="dv">1</span>, <span class="dt">at=</span><span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">100</span>,<span class="dv">5</span>))
+<span class="kw">grid</span>(<span class="dt">nx=</span><span class="dv">100</span>, <span class="dt">ny=</span><span class="ot">NA</span>)
 <span class="kw">barplot</span>(
   prior_occupations_table,
+  <span class="dt">horiz=</span>T,
   <span class="dt">col=</span><span class="kw">rainbow</span>(<span class="kw">length</span>(prior_occupations_table)),
   <span class="dt">cex.names=</span><span class="fl">1.1</span>,
-  <span class="dt">las=</span><span class="dv">2</span>,
-  <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),
-  <span class="dt">axes=</span>F,
+  <span class="dt">border=</span><span class="ot">NA</span>,
+  <span class="dt">las=</span><span class="dv">1</span>,
+  <span class="dt">xlim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),
+  <span class="dt">axes=</span>T,
   <span class="dt">add=</span>T,
-  <span class="dt">xlab=</span><span class="st">''</span>,
-  <span class="dt">ylab=</span><span class="kw">paste</span>(<span class="st">'Percentage of'</span>, total_prior_occupation_count, <span class="st">'listed Prior Occupations'</span>),
+  <span class="dt">xlab=</span><span class="kw">paste</span>(<span class="st">'Percentage of'</span>, total_prior_occupation_count, <span class="st">'listed Prior Occupations'</span>),
   <span class="dt">main=</span><span class="kw">paste</span>(<span class="st">'Prior Occupation Relative Frequency Distribution of'</span>, total_inmate_count, <span class="st">'Texas Death Row Inmates'</span>)
 )
-<span class="kw">mtext</span>(<span class="st">'Prior Occupation'</span>, <span class="dt">side=</span><span class="dv">1</span>, <span class="dt">line=</span><span class="dv">13</span>)</code></pre></div>
+<span class="kw">mtext</span>(<span class="st">'Prior Occupation'</span>, <span class="dt">side=</span><span class="dv">2</span>, <span class="dt">line=</span><span class="dv">13</span>)</code></pre></div>
 <div class="figure">
 <img src="../images/2016-02-17-text-mining-in-r-death-row-prior-occupations/prior_occupation_relative_freq_dist.png" alt="Prior Occupation Relative Frequency Distribution of 182 Texas Death Row Inmates" class="post-img post-img-fill" />
 <p class="caption">Prior Occupation Relative Frequency Distribution of 182 Texas Death Row Inmates</p>
@@ -480,34 +485,37 @@ inmate_cluster_labels &lt;-<span class="st"> </span>result$labels</code></pre></
       cluster_prior_occupations &lt;-<span class="st"> </span><span class="kw">c</span>(cluster_prior_occupations, inmate_prior_occupations)
     }
 
-    prior_occupations_table &lt;-<span class="st"> </span><span class="kw">table</span>(<span class="kw">factor</span>(cluster_prior_occupations, <span class="dt">levels=</span>unique_prior_occupations))
+    prior_occupations_table &lt;-<span class="st"> </span><span class="kw">reverse_table</span>(<span class="kw">table</span>(<span class="kw">factor</span>(cluster_prior_occupations, <span class="dt">levels=</span>unique_prior_occupations)))
     prior_occupations_table &lt;-<span class="st"> </span>prior_occupations_table /<span class="st"> </span><span class="kw">sum</span>(prior_occupations_table) *<span class="st"> </span><span class="dv">100</span>
 
     <span class="kw">png</span>(<span class="dt">file=</span><span class="kw">paste</span>(<span class="kw">tolower</span>(prefix), <span class="kw">toString</span>(i), <span class="st">'prior_occupation_distribution.png'</span>, <span class="dt">sep=</span><span class="st">'_'</span>), <span class="dt">width=</span><span class="dv">1500</span>, <span class="dt">height=</span><span class="dv">1500</span>)
     <span class="kw">plot.new</span>()
     <span class="kw">par</span>(
-      <span class="dt">mai=</span><span class="kw">c</span>(<span class="fl">3.0</span>, <span class="fl">1.0</span>, <span class="fl">1.0</span>, <span class="fl">1.0</span>)
+      <span class="dt">mai=</span><span class="kw">c</span>(<span class="fl">2.0</span>, <span class="fl">3.0</span>, <span class="fl">1.0</span>, <span class="fl">1.0</span>)
     )
     <span class="kw">barplot</span>(
       prior_occupations_table,
+      <span class="dt">horiz=</span>T,
       <span class="dt">col=</span><span class="kw">rainbow</span>(<span class="kw">length</span>(prior_occupations_table)),
       <span class="dt">cex.names=</span><span class="fl">1.1</span>,
-      <span class="dt">las=</span><span class="dv">2</span>,
-      <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),
-      <span class="dt">axes=</span>F
+      <span class="dt">las=</span><span class="dv">1</span>,
+      <span class="dt">xlim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),
+      <span class="dt">axes=</span>T,
+      <span class="dt">border=</span><span class="ot">NA</span>
     )
-    <span class="kw">axis</span>(<span class="dv">2</span>, <span class="dt">at=</span><span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">100</span>,<span class="dv">5</span>))
-    <span class="kw">grid</span>(<span class="dt">ny=</span><span class="dv">100</span>, <span class="dt">nx=</span><span class="ot">NA</span>)
+    <span class="kw">axis</span>(<span class="dv">1</span>, <span class="dt">at=</span><span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">100</span>,<span class="dv">5</span>))
+    <span class="kw">grid</span>(<span class="dt">nx=</span><span class="dv">100</span>, <span class="dt">ny=</span><span class="ot">NA</span>)
     <span class="kw">barplot</span>(
       prior_occupations_table,
+      <span class="dt">horiz=</span>T,
       <span class="dt">col=</span><span class="kw">rainbow</span>(<span class="kw">length</span>(prior_occupations_table)),
       <span class="dt">cex.names=</span><span class="fl">1.1</span>,
-      <span class="dt">las=</span><span class="dv">2</span>,
-      <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),
-      <span class="dt">axes=</span>F,
+      <span class="dt">las=</span><span class="dv">1</span>,
+      <span class="dt">xlim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),
+      <span class="dt">axes=</span>T,
       <span class="dt">add=</span>T,
-      <span class="dt">xlab=</span><span class="st">''</span>,
-      <span class="dt">ylab=</span><span class="kw">paste</span>(<span class="st">'Percentage of'</span>, <span class="kw">length</span>(cluster_prior_occupations), <span class="st">'listed Prior Occupations'</span>),
+      <span class="dt">ylab=</span><span class="st">''</span>,
+      <span class="dt">xlab=</span><span class="kw">paste</span>(<span class="st">'Percentage of'</span>, <span class="kw">length</span>(cluster_prior_occupations), <span class="st">'listed Prior Occupations'</span>),
       <span class="dt">main=</span><span class="kw">paste</span>(
         <span class="st">'Prior Occupation Relative Frequency Distribution of'</span>,
         <span class="kw">length</span>(cluster),
@@ -518,9 +526,10 @@ inmate_cluster_labels &lt;-<span class="st"> </span>result$labels</code></pre></
           prefix,
           <span class="st">')'</span>
         )
-      )
+      ),
+      <span class="dt">border=</span><span class="ot">NA</span>
     )
-    <span class="kw">mtext</span>(<span class="st">'Prior Occupation'</span>, <span class="dt">side=</span><span class="dv">1</span>, <span class="dt">line=</span><span class="dv">13</span>)
+    <span class="kw">mtext</span>(<span class="st">'Prior Occupation'</span>, <span class="dt">side=</span><span class="dv">2</span>, <span class="dt">line=</span><span class="dv">13</span>)
     <span class="kw">dev.off</span>()
   }
 }
@@ -1118,11 +1127,8 @@ csv_filename &lt;-<span class="st"> 'prior_occupations_dirty.csv'</span>
 
 if (!<span class="kw">file.exists</span>(csv_filename)) {
   page &lt;-<span class="st"> </span><span class="kw">read_html</span>(main_link)
-  page
   links &lt;-<span class="st"> </span><span class="kw">html_attr</span>(<span class="kw">html_nodes</span>(page, <span class="st">'a'</span>), <span class="st">'href'</span>)
-  links
   links &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">'^dr_info.*html$'</span>, links, <span class="dt">value=</span><span class="ot">TRUE</span>)
-  links
   prior_occupations_dirty &lt;-<span class="st"> </span><span class="kw">c</span>()
   for (link in links) {
     texts &lt;-<span class="st"> </span><span class="kw">read_html</span>(<span class="kw">paste</span>(base_link, link, <span class="dt">sep=</span><span class="st">''</span>)) %&gt;%<span class="st"> </span><span class="kw">html_nodes</span>(<span class="st">'p'</span>) %&gt;%<span class="st"> </span><span class="kw">html_text</span>()
@@ -1236,37 +1242,40 @@ unique_prior_occupations_length &lt;-<span class="st"> </span><span class="kw">l
 <span class="co"># Prior Occupation Relative Frequency Chart</span>
 <span class="co"># -----------------------</span>
 
-prior_occupations_table &lt;-<span class="st"> </span><span class="kw">table</span>(prior_occupations_merged)
+reverse_table &lt;-<span class="st"> </span>function(t) { t[<span class="kw">sort</span>(<span class="kw">names</span>(t), <span class="dt">decreasing=</span>T)] }
+
+prior_occupations_table &lt;-<span class="st"> </span><span class="kw">reverse_table</span>(<span class="kw">table</span>(prior_occupations_merged))
 prior_occupations_table &lt;-<span class="st"> </span>prior_occupations_table /<span class="st"> </span><span class="kw">sum</span>(prior_occupations_table) *<span class="st"> </span><span class="dv">100</span>
 <span class="kw">png</span>(<span class="dt">file=</span><span class="st">'prior_occupation_relative_freq_dist.png'</span>, <span class="dt">width=</span><span class="dv">1500</span>, <span class="dt">height=</span><span class="dv">1500</span>)
 <span class="kw">par</span>(
-  <span class="dt">mai=</span><span class="kw">c</span>(<span class="fl">3.0</span>, <span class="fl">1.0</span>, <span class="fl">1.0</span>, <span class="fl">1.0</span>)
+  <span class="dt">mai=</span><span class="kw">c</span>(<span class="fl">2.0</span>, <span class="fl">3.0</span>, <span class="fl">1.0</span>, <span class="fl">1.0</span>)
 )
 <span class="kw">barplot</span>(
   prior_occupations_table,
+  <span class="dt">horiz=</span>T,
   <span class="dt">col=</span><span class="kw">rainbow</span>(<span class="kw">length</span>(prior_occupations_table)),
   <span class="dt">cex.names=</span><span class="fl">1.1</span>,
-  <span class="dt">las=</span><span class="dv">2</span>,
-  <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),
-  <span class="dt">axes=</span>F,
+  <span class="dt">las=</span><span class="dv">1</span>,
+  <span class="dt">xlim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),
+  <span class="dt">axes=</span>T,
   <span class="dt">border=</span><span class="ot">NA</span>
 )
-<span class="kw">axis</span>(<span class="dv">2</span>, <span class="dt">at=</span><span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">100</span>,<span class="dv">5</span>))
-<span class="kw">grid</span>(<span class="dt">ny=</span><span class="dv">100</span>, <span class="dt">nx=</span><span class="ot">NA</span>)
+<span class="kw">axis</span>(<span class="dv">1</span>, <span class="dt">at=</span><span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">100</span>,<span class="dv">5</span>))
+<span class="kw">grid</span>(<span class="dt">nx=</span><span class="dv">100</span>, <span class="dt">ny=</span><span class="ot">NA</span>)
 <span class="kw">barplot</span>(
   prior_occupations_table,
+  <span class="dt">horiz=</span>T,
   <span class="dt">col=</span><span class="kw">rainbow</span>(<span class="kw">length</span>(prior_occupations_table)),
   <span class="dt">cex.names=</span><span class="fl">1.1</span>,
   <span class="dt">border=</span><span class="ot">NA</span>,
-  <span class="dt">las=</span><span class="dv">2</span>,
-  <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),
-  <span class="dt">axes=</span>F,
+  <span class="dt">las=</span><span class="dv">1</span>,
+  <span class="dt">xlim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),
+  <span class="dt">axes=</span>T,
   <span class="dt">add=</span>T,
-  <span class="dt">xlab=</span><span class="st">''</span>,
-  <span class="dt">ylab=</span><span class="kw">paste</span>(<span class="st">'Percentage of'</span>, total_prior_occupation_count, <span class="st">'listed Prior Occupations'</span>),
+  <span class="dt">xlab=</span><span class="kw">paste</span>(<span class="st">'Percentage of'</span>, total_prior_occupation_count, <span class="st">'listed Prior Occupations'</span>),
   <span class="dt">main=</span><span class="kw">paste</span>(<span class="st">'Prior Occupation Relative Frequency Distribution of'</span>, total_inmate_count, <span class="st">'Texas Death Row Inmates'</span>)
 )
-<span class="kw">mtext</span>(<span class="st">'Prior Occupation'</span>, <span class="dt">side=</span><span class="dv">1</span>, <span class="dt">line=</span><span class="dv">13</span>)
+<span class="kw">mtext</span>(<span class="st">'Prior Occupation'</span>, <span class="dt">side=</span><span class="dv">2</span>, <span class="dt">line=</span><span class="dv">13</span>)
 
 <span class="co"># -----------------------</span>
 <span class="co"># Inmate x Prior Occupations</span>
@@ -1328,7 +1337,8 @@ inmate_matrix_tfidf_l2_norm &lt;-<span class="st"> </span><span class="kw">matri
   <span class="dt">byrow=</span>T
 )
 
-<span class="co">#inmate_matrix_tfidf &lt;- inmate_matrix_tfidf_l2_norm</span>
+<span class="co"># Uncomment to use the L2 norm version of TF-IDF.</span>
+<span class="co"># inmate_matrix_tfidf &lt;- inmate_matrix_tfidf_l2_norm</span>
 
 <span class="co"># -----------------------</span>
 <span class="co"># MDS</span>
@@ -1604,35 +1614,37 @@ plot_clusters_occupation_distributions &lt;-<span class="st"> </span>function(pr
       cluster_prior_occupations &lt;-<span class="st"> </span><span class="kw">c</span>(cluster_prior_occupations, inmate_prior_occupations)
     }
 
-    prior_occupations_table &lt;-<span class="st"> </span><span class="kw">table</span>(<span class="kw">factor</span>(cluster_prior_occupations, <span class="dt">levels=</span>unique_prior_occupations))
+    prior_occupations_table &lt;-<span class="st"> </span><span class="kw">reverse_table</span>(<span class="kw">table</span>(<span class="kw">factor</span>(cluster_prior_occupations, <span class="dt">levels=</span>unique_prior_occupations)))
     prior_occupations_table &lt;-<span class="st"> </span>prior_occupations_table /<span class="st"> </span><span class="kw">sum</span>(prior_occupations_table) *<span class="st"> </span><span class="dv">100</span>
 
     <span class="kw">png</span>(<span class="dt">file=</span><span class="kw">paste</span>(<span class="kw">tolower</span>(prefix), <span class="kw">toString</span>(i), <span class="st">'prior_occupation_distribution.png'</span>, <span class="dt">sep=</span><span class="st">'_'</span>), <span class="dt">width=</span><span class="dv">1500</span>, <span class="dt">height=</span><span class="dv">1500</span>)
     <span class="kw">plot.new</span>()
     <span class="kw">par</span>(
-      <span class="dt">mai=</span><span class="kw">c</span>(<span class="fl">3.0</span>, <span class="fl">1.0</span>, <span class="fl">1.0</span>, <span class="fl">1.0</span>)
+      <span class="dt">mai=</span><span class="kw">c</span>(<span class="fl">2.0</span>, <span class="fl">3.0</span>, <span class="fl">1.0</span>, <span class="fl">1.0</span>)
     )
     <span class="kw">barplot</span>(
       prior_occupations_table,
+      <span class="dt">horiz=</span>T,
       <span class="dt">col=</span><span class="kw">rainbow</span>(<span class="kw">length</span>(prior_occupations_table)),
       <span class="dt">cex.names=</span><span class="fl">1.1</span>,
-      <span class="dt">las=</span><span class="dv">2</span>,
-      <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),
-      <span class="dt">axes=</span>F,
+      <span class="dt">las=</span><span class="dv">1</span>,
+      <span class="dt">xlim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),
+      <span class="dt">axes=</span>T,
       <span class="dt">border=</span><span class="ot">NA</span>
     )
-    <span class="kw">axis</span>(<span class="dv">2</span>, <span class="dt">at=</span><span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">100</span>,<span class="dv">5</span>))
-    <span class="kw">grid</span>(<span class="dt">ny=</span><span class="dv">100</span>, <span class="dt">nx=</span><span class="ot">NA</span>)
+    <span class="kw">axis</span>(<span class="dv">1</span>, <span class="dt">at=</span><span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">100</span>,<span class="dv">5</span>))
+    <span class="kw">grid</span>(<span class="dt">nx=</span><span class="dv">100</span>, <span class="dt">ny=</span><span class="ot">NA</span>)
     <span class="kw">barplot</span>(
       prior_occupations_table,
+      <span class="dt">horiz=</span>T,
       <span class="dt">col=</span><span class="kw">rainbow</span>(<span class="kw">length</span>(prior_occupations_table)),
       <span class="dt">cex.names=</span><span class="fl">1.1</span>,
-      <span class="dt">las=</span><span class="dv">2</span>,
-      <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),
-      <span class="dt">axes=</span>F,
+      <span class="dt">las=</span><span class="dv">1</span>,
+      <span class="dt">xlim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),
+      <span class="dt">axes=</span>T,
       <span class="dt">add=</span>T,
-      <span class="dt">xlab=</span><span class="st">''</span>,
-      <span class="dt">ylab=</span><span class="kw">paste</span>(<span class="st">'Percentage of'</span>, <span class="kw">length</span>(cluster_prior_occupations), <span class="st">'listed Prior Occupations'</span>),
+      <span class="dt">ylab=</span><span class="st">''</span>,
+      <span class="dt">xlab=</span><span class="kw">paste</span>(<span class="st">'Percentage of'</span>, <span class="kw">length</span>(cluster_prior_occupations), <span class="st">'listed Prior Occupations'</span>),
       <span class="dt">main=</span><span class="kw">paste</span>(
         <span class="st">'Prior Occupation Relative Frequency Distribution of'</span>,
         <span class="kw">length</span>(cluster),
@@ -1646,7 +1658,7 @@ plot_clusters_occupation_distributions &lt;-<span class="st"> </span>function(pr
       ),
       <span class="dt">border=</span><span class="ot">NA</span>
     )
-    <span class="kw">mtext</span>(<span class="st">'Prior Occupation'</span>, <span class="dt">side=</span><span class="dv">1</span>, <span class="dt">line=</span><span class="dv">13</span>)
+    <span class="kw">mtext</span>(<span class="st">'Prior Occupation'</span>, <span class="dt">side=</span><span class="dv">2</span>, <span class="dt">line=</span><span class="dv">13</span>)
     <span class="kw">dev.off</span>()
   }
 }

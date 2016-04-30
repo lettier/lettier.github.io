@@ -189,35 +189,40 @@ Let us begin by charting the relative frequency of prior occupations listed acro
 # Prior Occupation Relative Frequency Chart
 # -----------------------
 
-prior_occupations_table <- table(prior_occupations_merged)
+reverse_table <- function(t) { t[sort(names(t), decreasing=T)] }
+
+prior_occupations_table <- reverse_table(table(prior_occupations_merged))
 prior_occupations_table <- prior_occupations_table / sum(prior_occupations_table) * 100
 png(file='prior_occupation_relative_freq_dist.png', width=1500, height=1500)
 par(
-  mai=c(3.0, 1.0, 1.0, 1.0)
+  mai=c(2.0, 3.0, 1.0, 1.0)
 )
 barplot(
   prior_occupations_table,
+  horiz=T,
   col=rainbow(length(prior_occupations_table)),
   cex.names=1.1,
-  las=2,
-  ylim=c(0, 100),
-  axes=F
+  las=1,
+  xlim=c(0, 100),
+  axes=T,
+  border=NA
 )
-axis(2, at=seq(0,100,5))
-grid(ny=100, nx=NA)
+axis(1, at=seq(0,100,5))
+grid(nx=100, ny=NA)
 barplot(
   prior_occupations_table,
+  horiz=T,
   col=rainbow(length(prior_occupations_table)),
   cex.names=1.1,
-  las=2,
-  ylim=c(0, 100),
-  axes=F,
+  border=NA,
+  las=1,
+  xlim=c(0, 100),
+  axes=T,
   add=T,
-  xlab='',
-  ylab=paste('Percentage of', total_prior_occupation_count, 'listed Prior Occupations'),
+  xlab=paste('Percentage of', total_prior_occupation_count, 'listed Prior Occupations'),
   main=paste('Prior Occupation Relative Frequency Distribution of', total_inmate_count, 'Texas Death Row Inmates')
 )
-mtext('Prior Occupation', side=1, line=13)
+mtext('Prior Occupation', side=2, line=13)
 ```
 
 ![Prior Occupation Relative Frequency Distribution of 182 Texas Death Row Inmates](/images/2016-02-17-text-mining-in-r-death-row-prior-occupations/prior_occupation_relative_freq_dist.png){.post-img .post-img-fill}
@@ -483,34 +488,37 @@ plot_clusters_occupation_distributions <- function(prefix, inmate_clusters_str, 
       cluster_prior_occupations <- c(cluster_prior_occupations, inmate_prior_occupations)
     }
 
-    prior_occupations_table <- table(factor(cluster_prior_occupations, levels=unique_prior_occupations))
+    prior_occupations_table <- reverse_table(table(factor(cluster_prior_occupations, levels=unique_prior_occupations)))
     prior_occupations_table <- prior_occupations_table / sum(prior_occupations_table) * 100
 
     png(file=paste(tolower(prefix), toString(i), 'prior_occupation_distribution.png', sep='_'), width=1500, height=1500)
     plot.new()
     par(
-      mai=c(3.0, 1.0, 1.0, 1.0)
+      mai=c(2.0, 3.0, 1.0, 1.0)
     )
     barplot(
       prior_occupations_table,
+      horiz=T,
       col=rainbow(length(prior_occupations_table)),
       cex.names=1.1,
-      las=2,
-      ylim=c(0, 100),
-      axes=F
+      las=1,
+      xlim=c(0, 100),
+      axes=T,
+      border=NA
     )
-    axis(2, at=seq(0,100,5))
-    grid(ny=100, nx=NA)
+    axis(1, at=seq(0,100,5))
+    grid(nx=100, ny=NA)
     barplot(
       prior_occupations_table,
+      horiz=T,
       col=rainbow(length(prior_occupations_table)),
       cex.names=1.1,
-      las=2,
-      ylim=c(0, 100),
-      axes=F,
+      las=1,
+      xlim=c(0, 100),
+      axes=T,
       add=T,
-      xlab='',
-      ylab=paste('Percentage of', length(cluster_prior_occupations), 'listed Prior Occupations'),
+      ylab='',
+      xlab=paste('Percentage of', length(cluster_prior_occupations), 'listed Prior Occupations'),
       main=paste(
         'Prior Occupation Relative Frequency Distribution of',
         length(cluster),
@@ -521,9 +529,10 @@ plot_clusters_occupation_distributions <- function(prefix, inmate_clusters_str, 
           prefix,
           ')'
         )
-      )
+      ),
+      border=NA
     )
-    mtext('Prior Occupation', side=1, line=13)
+    mtext('Prior Occupation', side=2, line=13)
     dev.off()
   }
 }
@@ -1186,11 +1195,8 @@ csv_filename <- 'prior_occupations_dirty.csv'
 
 if (!file.exists(csv_filename)) {
   page <- read_html(main_link)
-  page
   links <- html_attr(html_nodes(page, 'a'), 'href')
-  links
   links <- grep('^dr_info.*html$', links, value=TRUE)
-  links
   prior_occupations_dirty <- c()
   for (link in links) {
     texts <- read_html(paste(base_link, link, sep='')) %>% html_nodes('p') %>% html_text()
@@ -1304,37 +1310,40 @@ unique_prior_occupations_length <- length(unique_prior_occupations)
 # Prior Occupation Relative Frequency Chart
 # -----------------------
 
-prior_occupations_table <- table(prior_occupations_merged)
+reverse_table <- function(t) { t[sort(names(t), decreasing=T)] }
+
+prior_occupations_table <- reverse_table(table(prior_occupations_merged))
 prior_occupations_table <- prior_occupations_table / sum(prior_occupations_table) * 100
 png(file='prior_occupation_relative_freq_dist.png', width=1500, height=1500)
 par(
-  mai=c(3.0, 1.0, 1.0, 1.0)
+  mai=c(2.0, 3.0, 1.0, 1.0)
 )
 barplot(
   prior_occupations_table,
+  horiz=T,
   col=rainbow(length(prior_occupations_table)),
   cex.names=1.1,
-  las=2,
-  ylim=c(0, 100),
-  axes=F,
+  las=1,
+  xlim=c(0, 100),
+  axes=T,
   border=NA
 )
-axis(2, at=seq(0,100,5))
-grid(ny=100, nx=NA)
+axis(1, at=seq(0,100,5))
+grid(nx=100, ny=NA)
 barplot(
   prior_occupations_table,
+  horiz=T,
   col=rainbow(length(prior_occupations_table)),
   cex.names=1.1,
   border=NA,
-  las=2,
-  ylim=c(0, 100),
-  axes=F,
+  las=1,
+  xlim=c(0, 100),
+  axes=T,
   add=T,
-  xlab='',
-  ylab=paste('Percentage of', total_prior_occupation_count, 'listed Prior Occupations'),
+  xlab=paste('Percentage of', total_prior_occupation_count, 'listed Prior Occupations'),
   main=paste('Prior Occupation Relative Frequency Distribution of', total_inmate_count, 'Texas Death Row Inmates')
 )
-mtext('Prior Occupation', side=1, line=13)
+mtext('Prior Occupation', side=2, line=13)
 
 # -----------------------
 # Inmate x Prior Occupations
@@ -1396,7 +1405,8 @@ inmate_matrix_tfidf_l2_norm <- matrix(
   byrow=T
 )
 
-#inmate_matrix_tfidf <- inmate_matrix_tfidf_l2_norm
+# Uncomment to use the L2 norm version of TF-IDF.
+# inmate_matrix_tfidf <- inmate_matrix_tfidf_l2_norm
 
 # -----------------------
 # MDS
@@ -1672,35 +1682,37 @@ plot_clusters_occupation_distributions <- function(prefix, inmate_clusters_str, 
       cluster_prior_occupations <- c(cluster_prior_occupations, inmate_prior_occupations)
     }
 
-    prior_occupations_table <- table(factor(cluster_prior_occupations, levels=unique_prior_occupations))
+    prior_occupations_table <- reverse_table(table(factor(cluster_prior_occupations, levels=unique_prior_occupations)))
     prior_occupations_table <- prior_occupations_table / sum(prior_occupations_table) * 100
 
     png(file=paste(tolower(prefix), toString(i), 'prior_occupation_distribution.png', sep='_'), width=1500, height=1500)
     plot.new()
     par(
-      mai=c(3.0, 1.0, 1.0, 1.0)
+      mai=c(2.0, 3.0, 1.0, 1.0)
     )
     barplot(
       prior_occupations_table,
+      horiz=T,
       col=rainbow(length(prior_occupations_table)),
       cex.names=1.1,
-      las=2,
-      ylim=c(0, 100),
-      axes=F,
+      las=1,
+      xlim=c(0, 100),
+      axes=T,
       border=NA
     )
-    axis(2, at=seq(0,100,5))
-    grid(ny=100, nx=NA)
+    axis(1, at=seq(0,100,5))
+    grid(nx=100, ny=NA)
     barplot(
       prior_occupations_table,
+      horiz=T,
       col=rainbow(length(prior_occupations_table)),
       cex.names=1.1,
-      las=2,
-      ylim=c(0, 100),
-      axes=F,
+      las=1,
+      xlim=c(0, 100),
+      axes=T,
       add=T,
-      xlab='',
-      ylab=paste('Percentage of', length(cluster_prior_occupations), 'listed Prior Occupations'),
+      ylab='',
+      xlab=paste('Percentage of', length(cluster_prior_occupations), 'listed Prior Occupations'),
       main=paste(
         'Prior Occupation Relative Frequency Distribution of',
         length(cluster),
@@ -1714,7 +1726,7 @@ plot_clusters_occupation_distributions <- function(prefix, inmate_clusters_str, 
       ),
       border=NA
     )
-    mtext('Prior Occupation', side=1, line=13)
+    mtext('Prior Occupation', side=2, line=13)
     dev.off()
   }
 }
