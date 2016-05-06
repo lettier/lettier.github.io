@@ -198,6 +198,10 @@ pre code {
   max-width: 100%;
 }
 
+.post-img-small {
+  margin-bottom: 20px;
+}
+
 .post-list {
   padding-left: 0px;
 }
