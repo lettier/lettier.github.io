@@ -49,6 +49,10 @@ a > i {
   font-weight: normal;
 }
 
+p {
+  margin: 15px 0px 15px 0px;
+}
+
 p > i {
   margin-right: 4px;
 }
