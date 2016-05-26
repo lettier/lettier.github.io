@@ -11,8 +11,12 @@ The full source code to this post can be found on [GitHub](https://github.com/le
 ## Data Types
 
 ```haskell
---            Vertex Label  Neighbors Distance Predecessor
-data Vertex = Vertex [Char] [[Char]]  Int      [Char]       deriving (Show)
+data Vertex = Vertex {
+                          vertexLabel :: [Char]
+                        , vertexNeighbors :: [[Char]]
+                        , vertexDistance :: Int
+                        , vertexPredecessor :: [Char]
+                      } deriving (Show)
 
 -- We define a graph as a list of vertexes.
 -- Each vertex is a label, an adjacency list (neighbors),
@@ -25,41 +29,13 @@ We will begin by modeling a graph as a list of vertexes which themselves hold th
 ## Getters
 
 ```haskell
--- Takes a vertex and returns a string.
--- [Char] is a list of characters (a string).
-vertexLabel :: Vertex -> [Char]
--- Pattern match on the vertex label which is the first Vertex parameter.
-vertexLabel (Vertex x _ _ _) = x
-
------------------------------------------------------------------------------
-
-vertexDistance :: Vertex -> Int
--- Pattern match on the vertex distance.
-vertexDistance (Vertex _ _ x _) = x
-
------------------------------------------------------------------------------
-
-vertexPredecessor :: Vertex -> [Char]
--- Pattern match on the vertex predecessor label.
-vertexPredecessor (Vertex _ _ _ x) = x
-
------------------------------------------------------------------------------
-
-vertexNeighbors :: Vertex -> [[Char]]
--- Empty neighbor list.
-vertexNeighbors (Vertex _ [] _ _) = []
--- If we have one or more neighbor labels, return the first along with the rest.
-vertexNeighbors (Vertex _ (x:y) _ _) = x : y
-
------------------------------------------------------------------------------
-
 -- Takes in a vertex, a list of vertexes, and returns true or false.
 vertexInVertexes :: Vertex -> [Vertex] -> Bool
 -- Given an empty list of vertices, return false.
 vertexInVertexes _ [] = False
--- If the labels match, return true, otherwise keep searching through the rest of the vertexes.
--- `x` is the first vertex in the list and `y` is the rest of the list.
-vertexInVertexes (Vertex label _ _ _) (x:y) = vertexLabel x == label || vertexInVertexes (Vertex label [] 0 "") y
+-- Reduce the list of vertexes to a bool.
+-- If at least one vertex label in the list matches the input vertex label, the result will be true.
+vertexInVertexes Vertex {vertexLabel = label} (x:y) = foldl (\ acc x -> vertexLabel x == label || acc) False (x:y)
 
 -----------------------------------------------------------------------------
 
@@ -72,7 +48,7 @@ graphVertexes (Graph (x:y)) [] = x : y
 graphVertexes (Graph (x:y)) keys = filter (\ z -> vertexLabel z `elem` keys) (x:y)
 ```
 
-For convenience, we will define six functions for extracting what we need out of a vertex or a graph.
+For convenience, we will define two functions for extracting what we need out of a vertex or a graph.
 
 ## Breadth-First Search (BFS)
 
@@ -217,28 +193,28 @@ printGraph (Graph (x:y)) = do
 To better visualize the BFS tree, we define a function that pretty prints the vertexes of a graph.
 
 ```haskell
-  a --- b -   - f --- h
-  -     -  - -  -     -
-  -     -   e   -     -
-  -     -  - -  -     -
-  c --- d -   - g --- i
+a --- b -   - f --- h
+-     -  - -  -     -
+-     -   e   -     -
+-     -  - -  -     -
+c --- d -   - g --- i
 
-  /trees git:master ❯❯❯ runhaskell bfs.hs
-  Vertex "e" ["b","d","f","g"] 0 ""
-  Vertex "b" ["a","d","e"] 1 "e"
-  Vertex "d" ["b","c","e"] 1 "e"
-  Vertex "f" ["e","g","h"] 1 "e"
-  Vertex "g" ["e","f","i"] 1 "e"
-  Vertex "a" ["b","c"] 2 "b"
-  Vertex "c" ["a","d"] 2 "d"
-  Vertex "h" ["f","i"] 2 "f"
-  Vertex "i" ["g","h"] 2 "g"
+/trees git:master ❯❯❯ runhaskell bfs.hs
+Vertex {vertexLabel = "e", vertexNeighbors = ["b","d","f","g"], vertexDistance = 0, vertexPredecessor = ""}
+Vertex {vertexLabel = "b", vertexNeighbors = ["a","d","e"], vertexDistance = 1, vertexPredecessor = "e"}
+Vertex {vertexLabel = "d", vertexNeighbors = ["b","c","e"], vertexDistance = 1, vertexPredecessor = "e"}
+Vertex {vertexLabel = "f", vertexNeighbors = ["e","g","h"], vertexDistance = 1, vertexPredecessor = "e"}
+Vertex {vertexLabel = "g", vertexNeighbors = ["e","f","i"], vertexDistance = 1, vertexPredecessor = "e"}
+Vertex {vertexLabel = "a", vertexNeighbors = ["b","c"], vertexDistance = 2, vertexPredecessor = "b"}
+Vertex {vertexLabel = "c", vertexNeighbors = ["a","d"], vertexDistance = 2, vertexPredecessor = "d"}
+Vertex {vertexLabel = "h", vertexNeighbors = ["f","i"], vertexDistance = 2, vertexPredecessor = "f"}
+Vertex {vertexLabel = "i", vertexNeighbors = ["g","h"], vertexDistance = 2, vertexPredecessor = "g"}
 
-  a.2 --- b.1 -   - f.1 --- h.2
-               - -
-               e.0
-               - -
-  c.2 --- d.1 -   - g.1 --- i.2
+a.2 --- b.1 -   - f.1 --- h.2
+              - -
+              e.0
+              - -
+c.2 --- d.1 -   - g.1 --- i.2
 ```
 
 ## Wrap-up

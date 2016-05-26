@@ -78,8 +78,12 @@
 <div class="post-body">
   <p>The full source code to this post can be found on <a href="https://github.com/lettier/interviewquestions/blob/master/graphs/bfs.hs">GitHub</a>.</p>
 <h2 id="data-types">Data Types</h2>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">--            Vertex Label  Neighbors Distance Predecessor</span>
-<span class="kw">data</span> <span class="dt">Vertex</span> <span class="fu">=</span> <span class="dt">Vertex</span> [<span class="dt">Char</span>] [[<span class="dt">Char</span>]]  <span class="dt">Int</span>      [<span class="dt">Char</span>]       <span class="kw">deriving</span> (<span class="dt">Show</span>)
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Vertex</span> <span class="fu">=</span> <span class="dt">Vertex</span> {
+<span class="ot">                          vertexLabel ::</span> [<span class="dt">Char</span>]
+                        ,<span class="ot"> vertexNeighbors ::</span> [[<span class="dt">Char</span>]]
+                        ,<span class="ot"> vertexDistance ::</span> <span class="dt">Int</span>
+                        ,<span class="ot"> vertexPredecessor ::</span> [<span class="dt">Char</span>]
+                      } <span class="kw">deriving</span> (<span class="dt">Show</span>)
 
 <span class="co">-- We define a graph as a list of vertexes.</span>
 <span class="co">-- Each vertex is a label, an adjacency list (neighbors),</span>
@@ -87,41 +91,13 @@
 <span class="kw">data</span> <span class="dt">Graph</span> <span class="fu">=</span> <span class="dt">Graph</span> [<span class="dt">Vertex</span>] <span class="kw">deriving</span> (<span class="dt">Show</span>)</code></pre></div>
 <p>We will begin by modeling a graph as a list of vertexes which themselves hold the edges in adjacency lists.</p>
 <h2 id="getters">Getters</h2>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Takes a vertex and returns a string.</span>
-<span class="co">-- [Char] is a list of characters (a string).</span>
-<span class="ot">vertexLabel ::</span> <span class="dt">Vertex</span> <span class="ot">-&gt;</span> [<span class="dt">Char</span>]
-<span class="co">-- Pattern match on the vertex label which is the first Vertex parameter.</span>
-vertexLabel (<span class="dt">Vertex</span> x _ _ _) <span class="fu">=</span> x
-
-<span class="fu">-----------------------------------------------------------------------------</span>
-
-<span class="ot">vertexDistance ::</span> <span class="dt">Vertex</span> <span class="ot">-&gt;</span> <span class="dt">Int</span>
-<span class="co">-- Pattern match on the vertex distance.</span>
-vertexDistance (<span class="dt">Vertex</span> _ _ x _) <span class="fu">=</span> x
-
-<span class="fu">-----------------------------------------------------------------------------</span>
-
-<span class="ot">vertexPredecessor ::</span> <span class="dt">Vertex</span> <span class="ot">-&gt;</span> [<span class="dt">Char</span>]
-<span class="co">-- Pattern match on the vertex predecessor label.</span>
-vertexPredecessor (<span class="dt">Vertex</span> _ _ _ x) <span class="fu">=</span> x
-
-<span class="fu">-----------------------------------------------------------------------------</span>
-
-<span class="ot">vertexNeighbors ::</span> <span class="dt">Vertex</span> <span class="ot">-&gt;</span> [[<span class="dt">Char</span>]]
-<span class="co">-- Empty neighbor list.</span>
-vertexNeighbors (<span class="dt">Vertex</span> _ [] _ _) <span class="fu">=</span> []
-<span class="co">-- If we have one or more neighbor labels, return the first along with the rest.</span>
-vertexNeighbors (<span class="dt">Vertex</span> _ (x<span class="fu">:</span>y) _ _) <span class="fu">=</span> x <span class="fu">:</span> y
-
-<span class="fu">-----------------------------------------------------------------------------</span>
-
-<span class="co">-- Takes in a vertex, a list of vertexes, and returns true or false.</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Takes in a vertex, a list of vertexes, and returns true or false.</span>
 <span class="ot">vertexInVertexes ::</span> <span class="dt">Vertex</span> <span class="ot">-&gt;</span> [<span class="dt">Vertex</span>] <span class="ot">-&gt;</span> <span class="dt">Bool</span>
 <span class="co">-- Given an empty list of vertices, return false.</span>
 vertexInVertexes _ [] <span class="fu">=</span> <span class="dt">False</span>
-<span class="co">-- If the labels match, return true, otherwise keep searching through the rest of the vertexes.</span>
-<span class="co">-- `x` is the first vertex in the list and `y` is the rest of the list.</span>
-vertexInVertexes (<span class="dt">Vertex</span> label _ _ _) (x<span class="fu">:</span>y) <span class="fu">=</span> vertexLabel x <span class="fu">==</span> label <span class="fu">||</span> vertexInVertexes (<span class="dt">Vertex</span> label [] <span class="dv">0</span> <span class="st">&quot;&quot;</span>) y
+<span class="co">-- Reduce the list of vertexes to a bool.</span>
+<span class="co">-- If at least one vertex label in the list matches the input vertex label, the result will be true.</span>
+vertexInVertexes <span class="dt">Vertex</span> {vertexLabel <span class="fu">=</span> label} (x<span class="fu">:</span>y) <span class="fu">=</span> foldl (\ acc x <span class="ot">-&gt;</span> vertexLabel x <span class="fu">==</span> label <span class="fu">||</span> acc) <span class="dt">False</span> (x<span class="fu">:</span>y)
 
 <span class="fu">-----------------------------------------------------------------------------</span>
 
@@ -132,7 +108,7 @@ graphVertexes (<span class="dt">Graph</span> []) _ <span class="fu">=</span> []
 graphVertexes (<span class="dt">Graph</span> (x<span class="fu">:</span>y)) [] <span class="fu">=</span> x <span class="fu">:</span> y
 <span class="co">-- The vertex label is an element in the list of labels (keys).</span>
 graphVertexes (<span class="dt">Graph</span> (x<span class="fu">:</span>y)) keys <span class="fu">=</span> filter (\ z <span class="ot">-&gt;</span> vertexLabel z <span class="ot">`elem`</span> keys) (x<span class="fu">:</span>y)</code></pre></div>
-<p>For convenience, we will define six functions for extracting what we need out of a vertex or a graph.</p>
+<p>For convenience, we will define two functions for extracting what we need out of a vertex or a graph.</p>
 <h2 id="breadth-first-search-bfs">Breadth-First Search (BFS)</h2>
 <p><a href="https://www.cs.usfca.edu/~galles/visualization/BFS.html">BFS</a> is a way to traverse or travel a graph and output a tree (a spanning tree if the graph is connected). The output tree being a sub-graph with a root vertex, no cycles, and includes every vertex (reachable from the root) in the graph but not necessarily all of the graph’s edges. This tree grows out from the start vertex or root. Each vertex in each branch of the tree lists the distance back to the root (start vertex). Applications for BFS include determining if there is a path from vertex A to B and finding the shortest path from A to vertex B in unweighted graphs.</p>
 <p>We start at a certain vertex (making it the root) and look at its edges. For each edge, we write down the neighboring vertex. Before we leave, we take each neighbor vertex and set its distance to one more than the current distance. We also set the parent or predecessor vertex as the current vertex we are standing on. Just before we are done with the current vertex, we need to add all of its neighbors (minus any we added before) to a queue or waiting line.</p>
@@ -226,28 +202,28 @@ printGraph (<span class="dt">Graph</span> (x<span class="fu">:</span>y)) <span c
   printGraph (<span class="dt">Graph</span> y)
   return ()</code></pre></div>
 <p>To better visualize the BFS tree, we define a function that pretty prints the vertexes of a graph.</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  a <span class="fu">---</span> b <span class="fu">-</span>   <span class="fu">-</span> f <span class="fu">---</span> h
-  <span class="fu">-</span>     <span class="fu">-</span>  <span class="fu">-</span> <span class="fu">-</span>  <span class="fu">-</span>     <span class="fu">-</span>
-  <span class="fu">-</span>     <span class="fu">-</span>   e   <span class="fu">-</span>     <span class="fu">-</span>
-  <span class="fu">-</span>     <span class="fu">-</span>  <span class="fu">-</span> <span class="fu">-</span>  <span class="fu">-</span>     <span class="fu">-</span>
-  c <span class="fu">---</span> d <span class="fu">-</span>   <span class="fu">-</span> g <span class="fu">---</span> i
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">a <span class="fu">---</span> b <span class="fu">-</span>   <span class="fu">-</span> f <span class="fu">---</span> h
+<span class="fu">-</span>     <span class="fu">-</span>  <span class="fu">-</span> <span class="fu">-</span>  <span class="fu">-</span>     <span class="fu">-</span>
+<span class="fu">-</span>     <span class="fu">-</span>   e   <span class="fu">-</span>     <span class="fu">-</span>
+<span class="fu">-</span>     <span class="fu">-</span>  <span class="fu">-</span> <span class="fu">-</span>  <span class="fu">-</span>     <span class="fu">-</span>
+c <span class="fu">---</span> d <span class="fu">-</span>   <span class="fu">-</span> g <span class="fu">---</span> i
 
-  <span class="fu">/</span>trees git<span class="fu">:</span>master ❯❯❯ runhaskell bfs<span class="fu">.</span>hs
-  <span class="dt">Vertex</span> <span class="st">&quot;e&quot;</span> [<span class="st">&quot;b&quot;</span>,<span class="st">&quot;d&quot;</span>,<span class="st">&quot;f&quot;</span>,<span class="st">&quot;g&quot;</span>] <span class="dv">0</span> <span class="st">&quot;&quot;</span>
-  <span class="dt">Vertex</span> <span class="st">&quot;b&quot;</span> [<span class="st">&quot;a&quot;</span>,<span class="st">&quot;d&quot;</span>,<span class="st">&quot;e&quot;</span>] <span class="dv">1</span> <span class="st">&quot;e&quot;</span>
-  <span class="dt">Vertex</span> <span class="st">&quot;d&quot;</span> [<span class="st">&quot;b&quot;</span>,<span class="st">&quot;c&quot;</span>,<span class="st">&quot;e&quot;</span>] <span class="dv">1</span> <span class="st">&quot;e&quot;</span>
-  <span class="dt">Vertex</span> <span class="st">&quot;f&quot;</span> [<span class="st">&quot;e&quot;</span>,<span class="st">&quot;g&quot;</span>,<span class="st">&quot;h&quot;</span>] <span class="dv">1</span> <span class="st">&quot;e&quot;</span>
-  <span class="dt">Vertex</span> <span class="st">&quot;g&quot;</span> [<span class="st">&quot;e&quot;</span>,<span class="st">&quot;f&quot;</span>,<span class="st">&quot;i&quot;</span>] <span class="dv">1</span> <span class="st">&quot;e&quot;</span>
-  <span class="dt">Vertex</span> <span class="st">&quot;a&quot;</span> [<span class="st">&quot;b&quot;</span>,<span class="st">&quot;c&quot;</span>] <span class="dv">2</span> <span class="st">&quot;b&quot;</span>
-  <span class="dt">Vertex</span> <span class="st">&quot;c&quot;</span> [<span class="st">&quot;a&quot;</span>,<span class="st">&quot;d&quot;</span>] <span class="dv">2</span> <span class="st">&quot;d&quot;</span>
-  <span class="dt">Vertex</span> <span class="st">&quot;h&quot;</span> [<span class="st">&quot;f&quot;</span>,<span class="st">&quot;i&quot;</span>] <span class="dv">2</span> <span class="st">&quot;f&quot;</span>
-  <span class="dt">Vertex</span> <span class="st">&quot;i&quot;</span> [<span class="st">&quot;g&quot;</span>,<span class="st">&quot;h&quot;</span>] <span class="dv">2</span> <span class="st">&quot;g&quot;</span>
+<span class="fu">/</span>trees git<span class="fu">:</span>master ❯❯❯ runhaskell bfs<span class="fu">.</span>hs
+<span class="dt">Vertex</span> {vertexLabel <span class="fu">=</span> <span class="st">&quot;e&quot;</span>, vertexNeighbors <span class="fu">=</span> [<span class="st">&quot;b&quot;</span>,<span class="st">&quot;d&quot;</span>,<span class="st">&quot;f&quot;</span>,<span class="st">&quot;g&quot;</span>], vertexDistance <span class="fu">=</span> <span class="dv">0</span>, vertexPredecessor <span class="fu">=</span> <span class="st">&quot;&quot;</span>}
+<span class="dt">Vertex</span> {vertexLabel <span class="fu">=</span> <span class="st">&quot;b&quot;</span>, vertexNeighbors <span class="fu">=</span> [<span class="st">&quot;a&quot;</span>,<span class="st">&quot;d&quot;</span>,<span class="st">&quot;e&quot;</span>], vertexDistance <span class="fu">=</span> <span class="dv">1</span>, vertexPredecessor <span class="fu">=</span> <span class="st">&quot;e&quot;</span>}
+<span class="dt">Vertex</span> {vertexLabel <span class="fu">=</span> <span class="st">&quot;d&quot;</span>, vertexNeighbors <span class="fu">=</span> [<span class="st">&quot;b&quot;</span>,<span class="st">&quot;c&quot;</span>,<span class="st">&quot;e&quot;</span>], vertexDistance <span class="fu">=</span> <span class="dv">1</span>, vertexPredecessor <span class="fu">=</span> <span class="st">&quot;e&quot;</span>}
+<span class="dt">Vertex</span> {vertexLabel <span class="fu">=</span> <span class="st">&quot;f&quot;</span>, vertexNeighbors <span class="fu">=</span> [<span class="st">&quot;e&quot;</span>,<span class="st">&quot;g&quot;</span>,<span class="st">&quot;h&quot;</span>], vertexDistance <span class="fu">=</span> <span class="dv">1</span>, vertexPredecessor <span class="fu">=</span> <span class="st">&quot;e&quot;</span>}
+<span class="dt">Vertex</span> {vertexLabel <span class="fu">=</span> <span class="st">&quot;g&quot;</span>, vertexNeighbors <span class="fu">=</span> [<span class="st">&quot;e&quot;</span>,<span class="st">&quot;f&quot;</span>,<span class="st">&quot;i&quot;</span>], vertexDistance <span class="fu">=</span> <span class="dv">1</span>, vertexPredecessor <span class="fu">=</span> <span class="st">&quot;e&quot;</span>}
+<span class="dt">Vertex</span> {vertexLabel <span class="fu">=</span> <span class="st">&quot;a&quot;</span>, vertexNeighbors <span class="fu">=</span> [<span class="st">&quot;b&quot;</span>,<span class="st">&quot;c&quot;</span>], vertexDistance <span class="fu">=</span> <span class="dv">2</span>, vertexPredecessor <span class="fu">=</span> <span class="st">&quot;b&quot;</span>}
+<span class="dt">Vertex</span> {vertexLabel <span class="fu">=</span> <span class="st">&quot;c&quot;</span>, vertexNeighbors <span class="fu">=</span> [<span class="st">&quot;a&quot;</span>,<span class="st">&quot;d&quot;</span>], vertexDistance <span class="fu">=</span> <span class="dv">2</span>, vertexPredecessor <span class="fu">=</span> <span class="st">&quot;d&quot;</span>}
+<span class="dt">Vertex</span> {vertexLabel <span class="fu">=</span> <span class="st">&quot;h&quot;</span>, vertexNeighbors <span class="fu">=</span> [<span class="st">&quot;f&quot;</span>,<span class="st">&quot;i&quot;</span>], vertexDistance <span class="fu">=</span> <span class="dv">2</span>, vertexPredecessor <span class="fu">=</span> <span class="st">&quot;f&quot;</span>}
+<span class="dt">Vertex</span> {vertexLabel <span class="fu">=</span> <span class="st">&quot;i&quot;</span>, vertexNeighbors <span class="fu">=</span> [<span class="st">&quot;g&quot;</span>,<span class="st">&quot;h&quot;</span>], vertexDistance <span class="fu">=</span> <span class="dv">2</span>, vertexPredecessor <span class="fu">=</span> <span class="st">&quot;g&quot;</span>}
 
-  a<span class="fu">.</span><span class="dv">2</span> <span class="fu">---</span> b<span class="fu">.</span><span class="dv">1</span> <span class="fu">-</span>   <span class="fu">-</span> f<span class="fu">.</span><span class="dv">1</span> <span class="fu">---</span> h<span class="fu">.</span><span class="dv">2</span>
-               <span class="fu">-</span> <span class="fu">-</span>
-               e<span class="fu">.</span><span class="dv">0</span>
-               <span class="fu">-</span> <span class="fu">-</span>
-  c<span class="fu">.</span><span class="dv">2</span> <span class="fu">---</span> d<span class="fu">.</span><span class="dv">1</span> <span class="fu">-</span>   <span class="fu">-</span> g<span class="fu">.</span><span class="dv">1</span> <span class="fu">---</span> i<span class="fu">.</span><span class="dv">2</span></code></pre></div>
+a<span class="fu">.</span><span class="dv">2</span> <span class="fu">---</span> b<span class="fu">.</span><span class="dv">1</span> <span class="fu">-</span>   <span class="fu">-</span> f<span class="fu">.</span><span class="dv">1</span> <span class="fu">---</span> h<span class="fu">.</span><span class="dv">2</span>
+              <span class="fu">-</span> <span class="fu">-</span>
+              e<span class="fu">.</span><span class="dv">0</span>
+              <span class="fu">-</span> <span class="fu">-</span>
+c<span class="fu">.</span><span class="dv">2</span> <span class="fu">---</span> d<span class="fu">.</span><span class="dv">1</span> <span class="fu">-</span>   <span class="fu">-</span> g<span class="fu">.</span><span class="dv">1</span> <span class="fu">---</span> i<span class="fu">.</span><span class="dv">2</span></code></pre></div>
 <h2 id="wrap-up">Wrap-up</h2>
 <p>Using Haskell, we defined a graph as a list of vertexes and a vertex as a data structure consisting of a label, an adjacency list, a distance to the root, and a parent vertex label. Our BFS function traversed our input graph recursively and output a BFS tree. For each vertex in the output tree, it specifies how far away from the root it is and its parent vertex.</p>
 </div>
