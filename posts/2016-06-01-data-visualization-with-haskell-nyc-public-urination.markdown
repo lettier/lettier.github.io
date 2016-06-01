@@ -8,7 +8,7 @@ author: David Lettier
 
 # 3-1-1 Complaints
 
-Found amoung NYC's
+Found among NYC's
 [OpenData](https://nycopendata.socrata.com/)
 is the <i>3-1-1 service requests from 2010 to present</i>
 [data set](https://nycopendata.socrata.com/Social-Services/311-Service-Requests-from-2010-to-Present/erm2-nwe9).
@@ -188,11 +188,21 @@ Spikes occur in late summer and falloffs occur during fall and winter months.
 2015 saw the largest spike in September with just over 100 recorded complaints.
 2011 had a large spike in the early part of the year.
 
-Future work would involve testing some hypotheses inspired by the data visualization performed above.
-The biggest question is whether or not the amount of complaints is a consequence of the weather.
-Or is it because of tourism with more people possibly visiting during the warmer seasons?
-Another explanation could be the amount of outdoor events held during the summer months.
-Maybe the counts are tied in some part to the amount of public restrooms located throughout the five boroughs?
+Future work would involve testing a collection of questions inspired by the data visualization performed above.
+Some pertain to the cyclic pattern while others address why Manhattan has the most complaint counts.
+
+* Are the complaints a consequence of the weather?
+* Is tourism is to blame with possibly more people visiting during the warmer months?
+* Do the complaints increase due to the outdoor events held during the summer months?
+* Are the counts tied in some part to the amount of public restrooms located throughout the five boroughs?
+* Does Manhattan have more watchful citizens then the other boroughs?
+* Is it that Manhattan provides more opportune spots with lower risks of discovery?
+* Does Manhattan attract more unruly behavior?
+* Why are there no spikes during two of the largest outdoor
+events--[New Year's Eve](http://cityroom.blogs.nytimes.com/2008/12/31/times-square-bathroom-relief-at-midnight/)
+and the
+[Macy's Thanksgiving Day Parade](http://www.newyork.com/articles/attractions/when-you-just-gotta-go-at-the-macys-thanksgiving-day-parade-27240/)--which
+occur in typically cold weather?
 
 # Appendix
 
@@ -369,8 +379,8 @@ complaintsCountByCreatedDatesAtDay = complaintsCountByCreatedDatesAtTrunc AtDay
 
 -------------------------------------------------------------------------------
 
-boroughsPopSizes :: [ComplaintEntry] -> [(String, Int)]
-boroughsPopSizes complaints = zip boroughNames popSizes2015
+boroughsPopSizes :: [(String, Int)]
+boroughsPopSizes = zip boroughNames popSizes2015
   where
     boroughNames = ["BRONX", "BROOKLYN", "MANHATTAN", "QUEENS", "STATEN ISLAND"]
     --              Bronx    Brookly  Manhatt  Queens   SI

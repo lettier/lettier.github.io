@@ -77,7 +77,7 @@
 </div>
 <div class="post-body">
   <h1 id="complaints">3-1-1 Complaints</h1>
-<p>Found amoung NYC’s <a href="https://nycopendata.socrata.com/">OpenData</a> is the <i>3-1-1 service requests from 2010 to present</i> <a href="https://nycopendata.socrata.com/Social-Services/311-Service-Requests-from-2010-to-Present/erm2-nwe9">data set</a>.</p>
+<p>Found among NYC’s <a href="https://nycopendata.socrata.com/">OpenData</a> is the <i>3-1-1 service requests from 2010 to present</i> <a href="https://nycopendata.socrata.com/Social-Services/311-Service-Requests-from-2010-to-Present/erm2-nwe9">data set</a>.</p>
 <blockquote>
 In New York City, 3-1-1 is used by city officials as one of several sources of measurement and information about the performance of city services. Important dates in the history of New York’s 3-1-1 service include December 20, 2005, when it received its record high of 240,000 calls, due to the first day of the 2005 New York City transit strike, and June 20, 2007, when it received its 50 millionth call.
 <footer>
@@ -198,7 +198,17 @@ New York City is often referred to collectively as the five boroughs; the term i
 <p>Comparing the 2015 estimated population sizes against the 2015 complaint borough counts, we see that the relative population and complaint count proportions are not entirely related.</p>
 <h1 id="wrap-up">Wrap-Up</h1>
 <p>Using Haskell, we queried, processed, and visualized 2,678 3-1-1 <i>Urinating in Public</i> complaints recorded between 2010 and 2016. A definite cyclic pattern can be seen from year to year. Spikes occur in late summer and falloffs occur during fall and winter months. 2015 saw the largest spike in September with just over 100 recorded complaints. 2011 had a large spike in the early part of the year.</p>
-<p>Future work would involve testing some hypotheses inspired by the data visualization performed above. The biggest question is whether or not the amount of complaints is a consequence of the weather. Or is it because of tourism with more people possibly visiting during the warmer seasons? Another explanation could be the amount of outdoor events held during the summer months. Maybe the counts are tied in some part to the amount of public restrooms located throughout the five boroughs?</p>
+<p>Future work would involve testing a collection of questions inspired by the data visualization performed above. Some pertain to the cyclic pattern while others address why Manhattan has the most complaint counts.</p>
+<ul>
+<li>Are the complaints a consequence of the weather?</li>
+<li>Is tourism is to blame with possibly more people visiting during the warmer months?</li>
+<li>Do the complaints increase due to the outdoor events held during the summer months?</li>
+<li>Are the counts tied in some part to the amount of public restrooms located throughout the five boroughs?</li>
+<li>Does Manhattan have more watchful citizens then the other boroughs?</li>
+<li>Is it that Manhattan provides more opportune spots with lower risks of discovery?</li>
+<li>Does Manhattan attract more unruly behavior?</li>
+<li>Why are there no spikes during two of the largest outdoor events–<a href="http://cityroom.blogs.nytimes.com/2008/12/31/times-square-bathroom-relief-at-midnight/">New Year’s Eve</a> and the <a href="http://www.newyork.com/articles/attractions/when-you-just-gotta-go-at-the-macys-thanksgiving-day-parade-27240/">Macy’s Thanksgiving Day Parade</a>–which occur in typically cold weather?</li>
+</ul>
 <h1 id="appendix">Appendix</h1>
 <p>Below you will find some supplementary material.</p>
 <h2 id="full-source-code">Full Source Code</h2>
@@ -369,8 +379,8 @@ complaintsCountByCreatedDatesAtDay <span class="fu">=</span> complaintsCountByCr
 
 <span class="fu">-------------------------------------------------------------------------------</span>
 
-<span class="ot">boroughsPopSizes ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [(<span class="dt">String</span>, <span class="dt">Int</span>)]
-boroughsPopSizes complaints <span class="fu">=</span> zip boroughNames popSizes2015
+<span class="ot">boroughsPopSizes ::</span> [(<span class="dt">String</span>, <span class="dt">Int</span>)]
+boroughsPopSizes <span class="fu">=</span> zip boroughNames popSizes2015
   <span class="kw">where</span>
     boroughNames <span class="fu">=</span> [<span class="st">&quot;BRONX&quot;</span>, <span class="st">&quot;BROOKLYN&quot;</span>, <span class="st">&quot;MANHATTAN&quot;</span>, <span class="st">&quot;QUEENS&quot;</span>, <span class="st">&quot;STATEN ISLAND&quot;</span>]
     <span class="co">--              Bronx    Brookly  Manhatt  Queens   SI</span>

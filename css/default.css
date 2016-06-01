@@ -338,7 +338,7 @@ pre code {
 
 @media (max-width: 1024px) {
   .jumbotron-text {
-    font-size: 300%;
+    font-size: 66px;
   }
 
   .post-preview-cell {
@@ -349,7 +349,7 @@ pre code {
 
 @media (max-width: 980px) {
   .jumbotron-text {
-    font-size: 290%;
+    font-size: 52px;
   }
 }
 
@@ -367,11 +367,16 @@ pre code {
     width:  357px;
     height: 357px;
   }
+
+  .jumbotron-text {
+    font-size: 52px;
+  }
 }
 
 @media (max-width: 425px) {
   .jumbotron-text {
-    font-size: 245%;
+    font-size: 50px;
+    width: 95%;
   }
 
   .post-preview-image {
@@ -419,10 +424,6 @@ pre code {
 }
 
 @media (max-width: 375px) {
-  .jumbotron-text {
-    width: 100%;
-  }
-
   .post-preview-cell {
     width:  345px;
     height: 345px;
@@ -430,10 +431,6 @@ pre code {
 }
 
 @media (max-width: 360px) {
-  .jumbotron-text {
-    width: 100%;
-  }
-
   .post-preview-cell {
     width:  330px;
     height: 330px;
@@ -441,10 +438,6 @@ pre code {
 }
 
 @media (max-width: 320px) {
-  .jumbotron-text {
-    font-size: 240%;
-  }
-
   .nav-icon-second-last {
     margin-right: 0px;
   }
