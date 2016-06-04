@@ -173,7 +173,14 @@ New York City is often referred to collectively as the five boroughs; the term i
 </div>
 <p>We can see that Manhattan had the most with Brooklyn, Queens, the Bronx, and Staten Island coming in at second, third, and four respectively.</p>
 <h2 id="borough-population-sizes">Borough Population Sizes</h2>
-<p>To make the borough counts more interesting we will also chart their population sizes. The U.S. Census Bureau <a href="http://www1.nyc.gov/site/planning/data-maps/nyc-population/current-future-populations.page">estimated</a> the 2015 population sizes as <code>1,455,444</code>, <code>2,636,735</code>, <code>1,644,518</code>, <code>2,339,150</code>, and <code>474,558</code> for the Bronx, Brooklyn, Manhattan, Queens, and Staten Island respectively.</p>
+<p>To make the borough counts more interesting we will also chart their population sizes. The U.S. Census Bureau <a href="http://www1.nyc.gov/site/planning/data-maps/nyc-population/current-future-populations.page">estimated</a> the 2015 population sizes as:</p>
+<ul>
+<li>Bronx <code>1,455,444</code></li>
+<li>Brooklyn <code>2,636,735</code></li>
+<li>Manhattan <code>1,644,518</code></li>
+<li>Queens <code>2,339,150</code></li>
+<li>Staten Island <code>474,558</code></li>
+</ul>
 <div class="figure">
 <img src="../images/2016-06-01-data-visualization-with-haskell-nyc-public-urination/boroughsPopSizes.png" class="post-img post-img-small post-img-limit" />
 
@@ -196,6 +203,15 @@ New York City is often referred to collectively as the five boroughs; the term i
 
 </div>
 <p>Comparing the 2015 estimated population sizes against the 2015 complaint borough counts, we see that the relative population and complaint count proportions are not entirely related.</p>
+<h1 id="by-day-of-the-week">By Day of the Week</h1>
+<p>The last visualization is the complaint counts per the day of the week.</p>
+<h2 id="box-plot">Box Plot</h2>
+<p>Haskell Chart does not have an out-of-the-box solution for <a href="http://www.itl.nist.gov/div898/handbook/eda/section3/boxplot.htm">box plots</a>. However, we can re-purpose its candlestick chart interface. We will use the bucketed by day counts and for each day of the week, we will collect the counts–that fell on that day–in a list. Each day of the week will have its own list of counts–the counts found as we scan through the day buckets (Jan 1 2010, Jan 2 2010, …, May 28 2016, May 29, 2016, etc.) With the counts sorted, for each day of the week, we will calculate the min, lower quartile (25%), median (50%), upper quartile (75%), and the max.</p>
+<div class="figure">
+<img src="../images/2016-06-01-data-visualization-with-haskell-nyc-public-urination/complaintCountsPerDayOfWeek.png" class="post-img post-img-small post-img-limit" />
+
+</div>
+<p>Sunday starts at <code>0</code> and the rest of the days of the week follow (Monday at <code>1</code>, Tuesday at <code>2</code>, etc.). We see that Tuesday and Wednesday have the largest “middle 50” ranging from zero to two. Thursday has a max of eight–the same eight seen in the September 2015 spike. All have a min of zero.</p>
 <h1 id="wrap-up">Wrap-Up</h1>
 <p>Using Haskell, we queried, processed, and visualized 2,678 3-1-1 <i>Urinating in Public</i> complaints recorded between 2010 and 2016. A definite cyclic pattern can be seen from year to year. Spikes occur in late summer and falloffs occur during fall and winter months. 2015 saw the largest spike in September with just over 100 recorded complaints. 2011 had a large spike in the early part of the year.</p>
 <p>Future work would involve testing a collection of questions inspired by the data visualization performed above. Some pertain to the cyclic pattern while others address why Manhattan has the most complaint counts.</p>
@@ -229,6 +245,7 @@ New York City is often referred to collectively as the five boroughs; the term i
 <span class="kw">import </span><span class="dt">Control.Lens</span>
 <span class="kw">import </span><span class="dt">Data.Fixed</span>
 <span class="kw">import </span><span class="dt">Data.Time</span>
+<span class="kw">import </span><span class="dt">Data.Dates</span>
 <span class="kw">import </span><span class="dt">Data.Hashable</span>
 <span class="kw">import </span><span class="dt">Data.Hashable.Time</span>
 <span class="kw">import qualified</span> <span class="dt">Data.List</span> <span class="kw">as</span> <span class="dt">DL</span>
@@ -275,6 +292,7 @@ main <span class="fu">=</span> <span class="kw">do</span>
   print <span class="fu">$</span> length complaints
   print <span class="fu">$</span> minCreatedDate complaints
   print <span class="fu">$</span> maxCreatedDate complaints
+  renderableToFile def <span class="st">&quot;./charts/complaintCountsPerDayOfWeek.png&quot;</span>  (chartDaysOfWeekComplaintCounts complaints)
   renderableToFile def <span class="st">&quot;./charts/boroughsPopSizes.png&quot;</span>             (chartBoroughsPopSizes complaints)
   renderableToFile def <span class="st">&quot;./charts/yearMonthCounts.png&quot;</span>              (chartComplaintsCountByYearMonth complaints)
   renderableToFile def <span class="st">&quot;./charts/yearMonthCounts2015.png&quot;</span>          (chartComplaintsCountByYearMonth2015 complaints)
@@ -326,6 +344,9 @@ createdDates2015 <span class="fu">=</span> complaintEntryValuesWFilter filterCre
 <span class="ot">yearMonths ::</span> [<span class="dt">String</span>] <span class="ot">-&gt;</span> [<span class="dt">String</span>]
 yearMonths <span class="fu">=</span> map (take <span class="dv">7</span>)
 
+<span class="ot">daysOfWeek ::</span> [<span class="dt">String</span>]
+daysOfWeek <span class="fu">=</span> [<span class="st">&quot;Sunday&quot;</span>, <span class="st">&quot;Monday&quot;</span>, <span class="st">&quot;Tuesday&quot;</span>, <span class="st">&quot;Wednesday&quot;</span>, <span class="st">&quot;Thursday&quot;</span>, <span class="st">&quot;Friday&quot;</span>, <span class="st">&quot;Saturday&quot;</span>]
+
 <span class="ot">createdDatesYearMonths ::</span> ([<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [<span class="dt">String</span>]) <span class="ot">-&gt;</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [<span class="dt">String</span>]
 createdDatesYearMonths _ [] <span class="fu">=</span> []
 createdDatesYearMonths f (x<span class="fu">:</span>y)<span class="fu">=</span> yearMonths <span class="fu">$</span> f (x<span class="fu">:</span>y)
@@ -350,23 +371,23 @@ minCreatedDate (x<span class="fu">:</span>y) <span class="fu">=</span> minMaxCre
 maxCreatedDate []    <span class="fu">=</span> <span class="st">&quot;&quot;</span>
 maxCreatedDate (x<span class="fu">:</span>y) <span class="fu">=</span> minMaxCreatedDate maximum (x<span class="fu">:</span>y)
 
-<span class="ot">complaintsCountByString ::</span> (<span class="dt">Hashable</span> k, <span class="dt">Ord</span> k) <span class="ot">=&gt;</span> ([<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [k]) <span class="ot">-&gt;</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [(k, <span class="dt">Int</span>)]
-complaintsCountByString f <span class="fu">=</span> DL.sortOn fst <span class="fu">.</span> DHM.assocs <span class="fu">.</span> stringCounts <span class="fu">.</span> f
+<span class="ot">complaintsCountByHashable ::</span> (<span class="dt">Hashable</span> k, <span class="dt">Ord</span> k) <span class="ot">=&gt;</span> ([<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [k]) <span class="ot">-&gt;</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [(k, <span class="dt">Int</span>)]
+complaintsCountByHashable f <span class="fu">=</span> DL.sortOn fst <span class="fu">.</span> DHM.assocs <span class="fu">.</span> hashableCounts <span class="fu">.</span> f
 
 <span class="ot">complaintsCountByBoroughs ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [(<span class="dt">String</span>, <span class="dt">Int</span>)]
-complaintsCountByBoroughs <span class="fu">=</span> complaintsCountByString boroughs
+complaintsCountByBoroughs <span class="fu">=</span> complaintsCountByHashable boroughs
 
 <span class="ot">complaintsCountByBoroughs2015 ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [(<span class="dt">String</span>, <span class="dt">Int</span>)]
-complaintsCountByBoroughs2015 <span class="fu">=</span> complaintsCountByString boroughs2015
+complaintsCountByBoroughs2015 <span class="fu">=</span> complaintsCountByHashable boroughs2015
 
 <span class="ot">complaintsCountByYearMonth ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [(<span class="dt">String</span>, <span class="dt">Int</span>)]
-complaintsCountByYearMonth <span class="fu">=</span> complaintsCountByString createdDatesYearMonthsAll
+complaintsCountByYearMonth <span class="fu">=</span> complaintsCountByHashable createdDatesYearMonthsAll
 
 <span class="ot">complaintsCountByYearMonth2015 ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [(<span class="dt">String</span>, <span class="dt">Int</span>)]
-complaintsCountByYearMonth2015 <span class="fu">=</span> complaintsCountByString createdDatesYearMonths2015
+complaintsCountByYearMonth2015 <span class="fu">=</span> complaintsCountByHashable createdDatesYearMonths2015
 
 <span class="ot">complaintsCountByCreatedDatesAtTrunc ::</span> <span class="dt">DTFmtTrunc</span> <span class="ot">-&gt;</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [(<span class="dt">LocalTime</span>, <span class="dt">Int</span>)]
-complaintsCountByCreatedDatesAtTrunc trunc <span class="fu">=</span> complaintsCountByString createdDates'
+complaintsCountByCreatedDatesAtTrunc trunc <span class="fu">=</span> complaintsCountByHashable createdDates'
   <span class="kw">where</span>
 <span class="ot">    createdDates' ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [<span class="dt">LocalTime</span>]
     createdDates' <span class="fu">=</span> map (dateTimeStringToLocalTime trunc) <span class="fu">.</span> createdDates
@@ -376,6 +397,23 @@ complaintsCountByCreatedDatesAtMonth <span class="fu">=</span> complaintsCountBy
 
 <span class="ot">complaintsCountByCreatedDatesAtDay ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [(<span class="dt">LocalTime</span>, <span class="dt">Int</span>)]
 complaintsCountByCreatedDatesAtDay <span class="fu">=</span> complaintsCountByCreatedDatesAtTrunc <span class="dt">AtDay</span>
+
+<span class="ot">complaintsCountsPerDayOfWeek ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> [(<span class="dt">String</span>, [<span class="dt">Int</span>])]
+complaintsCountsPerDayOfWeek (x<span class="fu">:</span>y) <span class="fu">=</span> daysOfWeekCounts
+  <span class="kw">where</span>
+    complaints <span class="fu">=</span> (x<span class="fu">:</span>y)
+    dayCounts <span class="fu">=</span> complaintsCountByCreatedDatesAtDay complaints
+
+<span class="ot">    localTimeToDayOfWeek ::</span> <span class="dt">LocalTime</span> <span class="ot">-&gt;</span> <span class="dt">String</span>
+    localTimeToDayOfWeek lt <span class="fu">=</span> show <span class="fu">$</span> dateWeekDay <span class="fu">$</span> dayToDateTime <span class="fu">$</span> localDay lt
+
+<span class="ot">    filterDayOfWeek ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> [(<span class="dt">LocalTime</span>, <span class="dt">Int</span>)] <span class="ot">-&gt;</span> [(<span class="dt">LocalTime</span>, <span class="dt">Int</span>)]
+    filterDayOfWeek s <span class="fu">=</span> filter (\ x <span class="ot">-&gt;</span> localTimeToDayOfWeek (fst x) <span class="fu">==</span> s)
+
+<span class="ot">    dayOfWeekCount ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> [<span class="dt">Int</span>]
+    dayOfWeekCount s <span class="fu">=</span> map snd <span class="fu">$</span> filterDayOfWeek s dayCounts
+
+    daysOfWeekCounts <span class="fu">=</span> map (\ x <span class="ot">-&gt;</span> (x, dayOfWeekCount x)) daysOfWeek
 
 <span class="fu">-------------------------------------------------------------------------------</span>
 
@@ -420,7 +458,7 @@ barChart titles layoutTitle counts color <span class="fu">=</span> toRenderable 
 <span class="ot">chartBoroughsPopSizes ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> <span class="dt">Renderable</span> ()
 chartBoroughsPopSizes complaints <span class="fu">=</span> barChart titles layoutTitle counts color
   <span class="kw">where</span>
-    counts <span class="fu">=</span> boroughsPopSizes complaints
+    counts <span class="fu">=</span> boroughsPopSizes
     titles <span class="fu">=</span> [<span class="st">&quot;Borough Population Size&quot;</span>]
     layoutTitle <span class="fu">=</span> <span class="st">&quot;2015 Estimated NYC Borough Population Sizes&quot;</span>
     color  <span class="fu">=</span> blueviolet
@@ -501,6 +539,57 @@ chartComplaintsCountByCreatedDatesAtMonthDay complaints <span class="fu">=</span
 
 <span class="fu">-------------------------------------------------------------------------------</span>
 
+<span class="ot">chartDaysOfWeekComplaintCounts ::</span> [<span class="dt">ComplaintEntry</span>] <span class="ot">-&gt;</span> <span class="dt">Renderable</span> ()
+chartDaysOfWeekComplaintCounts complaints <span class="fu">=</span> toRenderable layout
+  <span class="kw">where</span>
+    layout <span class="fu">=</span>    layout_title <span class="fu">.~</span> threeOneOneLayoutTitle
+              <span class="fu">$</span> layout_plots <span class="fu">.~</span> [toPlot candleChart]
+              <span class="fu">$</span> def
+
+    daysOfWeekCounts <span class="fu">=</span> complaintsCountsPerDayOfWeek complaints
+
+<span class="ot">    makeCandle ::</span> (<span class="dt">String</span>, [<span class="dt">Int</span>]) <span class="ot">-&gt;</span> <span class="dt">Candle</span> <span class="dt">Int</span> <span class="dt">Int</span>
+    makeCandle dayOfWeekcounts <span class="fu">=</span> <span class="dt">Candle</span> xIndex low open med close high
+      <span class="kw">where</span>
+        dayOfWeek   <span class="fu">=</span> fst dayOfWeekcounts
+        counts      <span class="fu">=</span> DL.sort <span class="fu">$</span> snd dayOfWeekcounts
+        xIndex      <span class="fu">=</span> <span class="kw">case</span> DL.elemIndex dayOfWeek daysOfWeek <span class="kw">of</span>
+                        <span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="dv">0</span>
+                        <span class="dt">Just</span> i  <span class="ot">-&gt;</span> i
+        low         <span class="fu">=</span> minimum counts
+
+        open        <span class="fu">=</span> <span class="kw">case</span> median <span class="fu">$</span> take index counts <span class="kw">of</span>
+                        <span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="dv">0</span>
+                        <span class="dt">Just</span> m  <span class="ot">-&gt;</span> fst m
+
+        medianIndex <span class="fu">=</span> <span class="kw">case</span> median counts <span class="kw">of</span>
+                        <span class="dt">Nothing</span> <span class="ot">-&gt;</span> (<span class="dv">0</span>, <span class="dv">0</span>)
+                        <span class="dt">Just</span> m  <span class="ot">-&gt;</span> m
+        med         <span class="fu">=</span> fst medianIndex
+        index       <span class="fu">=</span> snd medianIndex
+
+        close       <span class="fu">=</span> <span class="kw">case</span> median <span class="fu">$</span> drop (index <span class="fu">+</span> <span class="dv">1</span>) counts <span class="kw">of</span>
+                        <span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="dv">0</span>
+                        <span class="dt">Just</span> m  <span class="ot">-&gt;</span> fst m
+
+        high        <span class="fu">=</span> maximum counts
+
+    candles <span class="fu">=</span> map makeCandle daysOfWeekCounts
+
+    candleChart <span class="fu">=</span>   plot_candle_line_style      <span class="fu">.~</span> (    line_width <span class="fu">.~</span> <span class="dv">7</span>
+                                                      <span class="fu">$</span> line_color <span class="fu">.~</span> opaque mediumaquamarine
+                                                      <span class="fu">$</span> def
+                                                   )
+                  <span class="fu">$</span> plot_candle_fill            <span class="fu">.~</span> <span class="dt">True</span>
+                  <span class="fu">$</span> plot_candle_rise_fill_style <span class="fu">.~</span> (fill_color <span class="fu">.~</span> opaque mediumaquamarine <span class="fu">$</span> def)
+                  <span class="fu">$</span> plot_candle_tick_length     <span class="fu">.~</span> <span class="dv">1</span>
+                  <span class="fu">$</span> plot_candle_width           <span class="fu">.~</span> <span class="dv">10</span>
+                  <span class="fu">$</span> plot_candle_values          <span class="fu">.~</span> candles
+                  <span class="fu">$</span> plot_candle_title           <span class="fu">.~</span> <span class="st">&quot;Complaint Counts per Day of Week (Sunday = 0)&quot;</span>
+                  <span class="fu">$</span> def
+
+<span class="fu">-------------------------------------------------------------------------------</span>
+
 <span class="ot">complaintsURL ::</span> <span class="dt">String</span>
 complaintsURL <span class="fu">=</span> <span class="st">&quot;https://data.cityofnewyork.us/resource/fhrw-4uyv.json&quot;</span>
 
@@ -540,25 +629,26 @@ getComplaintsFromURL <span class="fu">=</span> <span class="kw">do</span>
 
 <span class="fu">-------------------------------------------------------------------------------</span>
 
-<span class="ot">stringCounts' ::</span> (<span class="dt">Hashable</span> k, <span class="dt">Ord</span> k) <span class="ot">=&gt;</span> [k] <span class="ot">-&gt;</span> <span class="dt">DHM.Map</span> k <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">DHM.Map</span> k <span class="dt">Int</span>
-stringCounts' []    mpIn <span class="fu">=</span> mpIn
-stringCounts' (x<span class="fu">:</span>y) mpIn <span class="fu">=</span> stringCounts' y mpOut
-  <span class="kw">where</span> value <span class="fu">=</span> <span class="kw">case</span> DHM.lookup x mpIn <span class="kw">of</span>
-                  <span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="dv">0</span>
-                  <span class="dt">Just</span> v  <span class="ot">-&gt;</span> v <span class="fu">+</span> <span class="dv">1</span>
-        mpOut <span class="fu">=</span> DHM.insert x value mpIn
+<span class="ot">hashableCounts' ::</span> (<span class="dt">Hashable</span> k, <span class="dt">Ord</span> k) <span class="ot">=&gt;</span> [k] <span class="ot">-&gt;</span> <span class="dt">DHM.Map</span> k <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">DHM.Map</span> k <span class="dt">Int</span>
+hashableCounts' []    mpIn <span class="fu">=</span> mpIn
+hashableCounts' (x<span class="fu">:</span>y) mpIn <span class="fu">=</span> hashableCounts' y mpOut
+  <span class="kw">where</span>
+    value <span class="fu">=</span> <span class="kw">case</span> DHM.lookup x mpIn <span class="kw">of</span>
+              <span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="dv">0</span>
+              <span class="dt">Just</span> v  <span class="ot">-&gt;</span> v <span class="fu">+</span> <span class="dv">1</span>
+    mpOut <span class="fu">=</span> DHM.insert x value mpIn
 
-<span class="ot">stringCounts ::</span> (<span class="dt">Hashable</span> k, <span class="dt">Ord</span> k) <span class="ot">=&gt;</span> [k] <span class="ot">-&gt;</span> <span class="dt">DHM.Map</span> k <span class="dt">Int</span>
-stringCounts []    <span class="fu">=</span> DHM.empty
-stringCounts (x<span class="fu">:</span>y) <span class="fu">=</span> stringCounts' (x<span class="fu">:</span>y) DHM.empty
+<span class="ot">hashableCounts ::</span> (<span class="dt">Hashable</span> k, <span class="dt">Ord</span> k) <span class="ot">=&gt;</span> [k] <span class="ot">-&gt;</span> <span class="dt">DHM.Map</span> k <span class="dt">Int</span>
+hashableCounts []    <span class="fu">=</span> DHM.empty
+hashableCounts (x<span class="fu">:</span>y) <span class="fu">=</span> hashableCounts' (x<span class="fu">:</span>y) DHM.empty
 
 <span class="kw">data</span> <span class="dt">DTFmtTrunc</span> <span class="fu">=</span> <span class="dt">AtMonth</span> <span class="fu">|</span> <span class="dt">AtDay</span> <span class="fu">|</span> <span class="dt">AtSecond</span> <span class="kw">deriving</span> (<span class="dt">Enum</span>)
 
 <span class="ot">dateTimeStringToLocalTime ::</span> <span class="dt">DTFmtTrunc</span> <span class="ot">-&gt;</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">LocalTime</span>
 dateTimeStringToLocalTime trunc s <span class="fu">=</span> <span class="kw">case</span> trunc <span class="kw">of</span>
-                                    <span class="dt">AtMonth</span>  <span class="ot">-&gt;</span> <span class="dt">LocalTime</span> fg' midnight
-                                    <span class="dt">AtDay</span>    <span class="ot">-&gt;</span> <span class="dt">LocalTime</span> fg  midnight
-                                    <span class="dt">AtSecond</span> <span class="ot">-&gt;</span> <span class="dt">LocalTime</span> fg  tod
+                                      <span class="dt">AtMonth</span>  <span class="ot">-&gt;</span> <span class="dt">LocalTime</span> fg' midnight
+                                      <span class="dt">AtDay</span>    <span class="ot">-&gt;</span> <span class="dt">LocalTime</span> fg  midnight
+                                      <span class="dt">AtSecond</span> <span class="ot">-&gt;</span> <span class="dt">LocalTime</span> fg  tod
   <span class="kw">where</span>
         <span class="co">--  1234567890123456789</span>
         <span class="co">-- &quot;2016-04-18T19:42:20.000&quot;</span>
@@ -570,34 +660,32 @@ dateTimeStringToLocalTime trunc s <span class="fu">=</span> <span class="kw">cas
         second <span class="fu">=</span> read (take <span class="dv">2</span> <span class="fu">$</span> drop <span class="dv">17</span> s)<span class="ot"> ::</span> <span class="dt">Pico</span>
         fg  <span class="fu">=</span> fromGregorian year month day
         fg' <span class="fu">=</span> fromGregorian year month <span class="dv">01</span>
-        tod <span class="fu">=</span> <span class="dt">TimeOfDay</span> hour minute second</code></pre></div>
-<p>Below is the <code>.cabal</code> file.</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">name<span class="fu">:</span>                nyc<span class="fu">-</span>public<span class="fu">-</span>urination<span class="fu">-</span>complaints
-version<span class="fu">:</span>             <span class="fl">0.0</span><span class="fu">.</span><span class="fl">0.1</span>
-author<span class="fu">:</span>              <span class="dt">David</span> <span class="dt">Lettier</span>
-category<span class="fu">:</span>            <span class="dt">Data</span>
-build<span class="fu">-</span><span class="kw">type</span><span class="fu">:</span>          <span class="dt">Simple</span>
-cabal<span class="fu">-</span>version<span class="fu">:</span>       <span class="fu">&gt;=</span><span class="fl">1.10</span>
-executable nyc<span class="fu">-</span>public<span class="fu">-</span>urination<span class="fu">-</span>complaints
-  main<span class="fu">-</span>is<span class="fu">:</span>             Main.hs
-  build<span class="fu">-</span>depends<span class="fu">:</span>      base <span class="fu">&gt;=</span><span class="fl">4.8</span> <span class="fu">&amp;&amp;</span> <span class="fu">&lt;</span><span class="fl">4.9</span>
-                    , wreq
-                    , lens
-                    , aeson
-                    , containers
-                    , time
-                    , hashable
-                    , hashable<span class="fu">-</span>time
-                    , bytestring
-                    , directory
-                    , hashmap <span class="fu">==</span> <span class="fl">1.3</span><span class="fu">.*</span>
-                    , <span class="dt">Chart</span> <span class="fu">==</span> <span class="fl">1.7</span><span class="fu">.*</span>
-                    , cairo <span class="fu">==</span> <span class="fl">0.13</span><span class="fu">.*</span>
-                    , <span class="dt">Chart</span><span class="fu">-</span>cairo <span class="fu">==</span> <span class="fl">1.7</span><span class="fu">.*</span>
-                    , colour
-                    , <span class="kw">data</span><span class="fu">-</span>default<span class="fu">-</span><span class="kw">class</span>
-  hs<span class="fu">-</span>source<span class="fu">-</span>dirs<span class="fu">:</span>      src
-  default<span class="fu">-</span>language<span class="fu">:</span>    <span class="dt">Haskell2010</span></code></pre></div>
+        tod <span class="fu">=</span> <span class="dt">TimeOfDay</span> hour minute second
+
+<span class="ot">median ::</span> (<span class="dt">Ord</span> a) <span class="ot">=&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Maybe</span> (a, <span class="dt">Int</span>)
+median []    <span class="fu">=</span>  <span class="dt">Nothing</span>
+median (x<span class="fu">:</span>y) <span class="fu">=</span> quickSelect midEven (x<span class="fu">:</span>y) <span class="fu">&gt;&gt;=</span> (\x <span class="ot">-&gt;</span> <span class="dt">Just</span> (x, midEven))
+  <span class="kw">where</span>
+    midEven <span class="fu">=</span> length (x<span class="fu">:</span>y) <span class="ot">`div`</span> <span class="dv">2</span>
+
+<span class="ot">quickSelect ::</span> (<span class="dt">Ord</span> a) <span class="ot">=&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Maybe</span> a
+quickSelect _ []        <span class="fu">=</span> <span class="dt">Nothing</span>
+quickSelect n _
+  <span class="fu">|</span> n <span class="fu">&lt;</span> <span class="dv">0</span>               <span class="fu">=</span> <span class="dt">Nothing</span>
+quickSelect n (pivot<span class="fu">:</span>y) <span class="fu">=</span> <span class="kw">case</span> found <span class="kw">of</span>
+                            <span class="dt">True</span>  <span class="ot">-&gt;</span>  <span class="dt">Just</span> pivot
+                            <span class="dt">False</span> <span class="ot">-&gt;</span>  <span class="kw">case</span> goHigher <span class="kw">of</span>
+                                        <span class="dt">True</span>  <span class="ot">-&gt;</span> quickSelect (n <span class="fu">-</span> (length (pivot<span class="fu">:</span>lower))) higher
+                                        <span class="dt">False</span> <span class="ot">-&gt;</span> quickSelect n lower
+  <span class="kw">where</span>
+    lower       <span class="fu">=</span> filter (<span class="fu">&lt;=</span> pivot) y
+    higher      <span class="fu">=</span> filter (<span class="fu">&gt;</span> pivot) y
+    partitioned <span class="fu">=</span> lower <span class="fu">++</span> (pivot<span class="fu">:</span>higher)
+    found       <span class="fu">=</span> partitioned <span class="fu">!!</span> n <span class="fu">==</span> pivot
+    pivotIndex  <span class="fu">=</span> <span class="kw">case</span> DL.elemIndex pivot partitioned <span class="kw">of</span>
+                    <span class="dt">Nothing</span> <span class="ot">-&gt;</span> error <span class="st">&quot;Pivot not found.&quot;</span>
+                    <span class="dt">Just</span> a  <span class="ot">-&gt;</span> a
+    goHigher    <span class="fu">=</span> n <span class="fu">&gt;</span> pivotIndex</code></pre></div>
 </div>
 <div class="post-footer">
   <div class="display-left">

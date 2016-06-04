@@ -155,8 +155,13 @@ We can see that Manhattan had the most with Brooklyn, Queens, the Bronx, and Sta
 
 To make the borough counts more interesting we will also chart their population sizes.
 The U.S. Census Bureau [estimated](http://www1.nyc.gov/site/planning/data-maps/nyc-population/current-future-populations.page)
-the 2015 population sizes as `1,455,444`, `2,636,735`, `1,644,518`, `2,339,150`, and `474,558`
-for the Bronx, Brooklyn, Manhattan, Queens, and Staten Island respectively.
+the 2015 population sizes as:
+
+* Bronx `1,455,444`
+* Brooklyn `2,636,735`
+* Manhattan `1,644,518`
+* Queens `2,339,150`
+* Staten Island `474,558`
 
 ![](/images/2016-06-01-data-visualization-with-haskell-nyc-public-urination/boroughsPopSizes.png){.post-img .post-img-small .post-img-limit}
 
@@ -179,6 +184,27 @@ The 2015 borough counts have roughly the same proportion as the borough counts a
 
 Comparing the 2015 estimated population sizes against the 2015 complaint borough counts,
 we see that the relative population and complaint count proportions are not entirely related.
+
+# By Day of the Week
+
+The last visualization is the complaint counts per the day of the week.
+
+## Box Plot
+
+Haskell Chart does not have an out-of-the-box solution for [box plots](http://www.itl.nist.gov/div898/handbook/eda/section3/boxplot.htm).
+However, we can re-purpose its candlestick chart interface.
+We will use the bucketed by day counts and for each day of the week, we will collect the counts--that fell on that day--in a list.
+Each day of the week will have its own list of counts--the counts found as we scan through the day buckets
+(Jan 1 2010, Jan 2 2010, ..., May 28 2016, May 29, 2016, etc.)
+With the counts sorted, for each day of the week, we will calculate the
+min, lower quartile (25%), median (50%), upper quartile (75%), and the max.
+
+![](/images/2016-06-01-data-visualization-with-haskell-nyc-public-urination/complaintCountsPerDayOfWeek.png){.post-img .post-img-small .post-img-limit}
+
+Sunday starts at `0` and the rest of the days of the week follow (Monday at `1`, Tuesday at `2`, etc.).
+We see that Tuesday and Wednesday have the largest "middle 50" ranging from zero to two.
+Thursday has a max of eight--the same eight seen in the September 2015 spike.
+All have a min of zero.
 
 # Wrap-Up
 
@@ -229,6 +255,7 @@ import Network.Wreq
 import Control.Lens
 import Data.Fixed
 import Data.Time
+import Data.Dates
 import Data.Hashable
 import Data.Hashable.Time
 import qualified Data.List as DL
@@ -275,6 +302,7 @@ main = do
   print $ length complaints
   print $ minCreatedDate complaints
   print $ maxCreatedDate complaints
+  renderableToFile def "./charts/complaintCountsPerDayOfWeek.png"  (chartDaysOfWeekComplaintCounts complaints)
   renderableToFile def "./charts/boroughsPopSizes.png"             (chartBoroughsPopSizes complaints)
   renderableToFile def "./charts/yearMonthCounts.png"              (chartComplaintsCountByYearMonth complaints)
   renderableToFile def "./charts/yearMonthCounts2015.png"          (chartComplaintsCountByYearMonth2015 complaints)
@@ -326,6 +354,9 @@ createdDates2015 = complaintEntryValuesWFilter filterCreatedDate2015 created_dat
 yearMonths :: [String] -> [String]
 yearMonths = map (take 7)
 
+daysOfWeek :: [String]
+daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+
 createdDatesYearMonths :: ([ComplaintEntry] -> [String]) -> [ComplaintEntry] -> [String]
 createdDatesYearMonths _ [] = []
 createdDatesYearMonths f (x:y)= yearMonths $ f (x:y)
@@ -350,23 +381,23 @@ maxCreatedDate :: [ComplaintEntry] -> String
 maxCreatedDate []    = ""
 maxCreatedDate (x:y) = minMaxCreatedDate maximum (x:y)
 
-complaintsCountByString :: (Hashable k, Ord k) => ([ComplaintEntry] -> [k]) -> [ComplaintEntry] -> [(k, Int)]
-complaintsCountByString f = DL.sortOn fst . DHM.assocs . stringCounts . f
+complaintsCountByHashable :: (Hashable k, Ord k) => ([ComplaintEntry] -> [k]) -> [ComplaintEntry] -> [(k, Int)]
+complaintsCountByHashable f = DL.sortOn fst . DHM.assocs . hashableCounts . f
 
 complaintsCountByBoroughs :: [ComplaintEntry] -> [(String, Int)]
-complaintsCountByBoroughs = complaintsCountByString boroughs
+complaintsCountByBoroughs = complaintsCountByHashable boroughs
 
 complaintsCountByBoroughs2015 :: [ComplaintEntry] -> [(String, Int)]
-complaintsCountByBoroughs2015 = complaintsCountByString boroughs2015
+complaintsCountByBoroughs2015 = complaintsCountByHashable boroughs2015
 
 complaintsCountByYearMonth :: [ComplaintEntry] -> [(String, Int)]
-complaintsCountByYearMonth = complaintsCountByString createdDatesYearMonthsAll
+complaintsCountByYearMonth = complaintsCountByHashable createdDatesYearMonthsAll
 
 complaintsCountByYearMonth2015 :: [ComplaintEntry] -> [(String, Int)]
-complaintsCountByYearMonth2015 = complaintsCountByString createdDatesYearMonths2015
+complaintsCountByYearMonth2015 = complaintsCountByHashable createdDatesYearMonths2015
 
 complaintsCountByCreatedDatesAtTrunc :: DTFmtTrunc -> [ComplaintEntry] -> [(LocalTime, Int)]
-complaintsCountByCreatedDatesAtTrunc trunc = complaintsCountByString createdDates'
+complaintsCountByCreatedDatesAtTrunc trunc = complaintsCountByHashable createdDates'
   where
     createdDates' :: [ComplaintEntry] -> [LocalTime]
     createdDates' = map (dateTimeStringToLocalTime trunc) . createdDates
@@ -376,6 +407,23 @@ complaintsCountByCreatedDatesAtMonth = complaintsCountByCreatedDatesAtTrunc AtMo
 
 complaintsCountByCreatedDatesAtDay :: [ComplaintEntry] -> [(LocalTime, Int)]
 complaintsCountByCreatedDatesAtDay = complaintsCountByCreatedDatesAtTrunc AtDay
+
+complaintsCountsPerDayOfWeek :: [ComplaintEntry] -> [(String, [Int])]
+complaintsCountsPerDayOfWeek (x:y) = daysOfWeekCounts
+  where
+    complaints = (x:y)
+    dayCounts = complaintsCountByCreatedDatesAtDay complaints
+
+    localTimeToDayOfWeek :: LocalTime -> String
+    localTimeToDayOfWeek lt = show $ dateWeekDay $ dayToDateTime $ localDay lt
+
+    filterDayOfWeek :: String -> [(LocalTime, Int)] -> [(LocalTime, Int)]
+    filterDayOfWeek s = filter (\ x -> localTimeToDayOfWeek (fst x) == s)
+
+    dayOfWeekCount :: String -> [Int]
+    dayOfWeekCount s = map snd $ filterDayOfWeek s dayCounts
+
+    daysOfWeekCounts = map (\ x -> (x, dayOfWeekCount x)) daysOfWeek
 
 -------------------------------------------------------------------------------
 
@@ -420,7 +468,7 @@ barChart titles layoutTitle counts color = toRenderable layout
 chartBoroughsPopSizes :: [ComplaintEntry] -> Renderable ()
 chartBoroughsPopSizes complaints = barChart titles layoutTitle counts color
   where
-    counts = boroughsPopSizes complaints
+    counts = boroughsPopSizes
     titles = ["Borough Population Size"]
     layoutTitle = "2015 Estimated NYC Borough Population Sizes"
     color  = blueviolet
@@ -501,6 +549,57 @@ chartComplaintsCountByCreatedDatesAtMonthDay complaints = lineChart plots
 
 -------------------------------------------------------------------------------
 
+chartDaysOfWeekComplaintCounts :: [ComplaintEntry] -> Renderable ()
+chartDaysOfWeekComplaintCounts complaints = toRenderable layout
+  where
+    layout =    layout_title .~ threeOneOneLayoutTitle
+              $ layout_plots .~ [toPlot candleChart]
+              $ def
+
+    daysOfWeekCounts = complaintsCountsPerDayOfWeek complaints
+
+    makeCandle :: (String, [Int]) -> Candle Int Int
+    makeCandle dayOfWeekcounts = Candle xIndex low open med close high
+      where
+        dayOfWeek   = fst dayOfWeekcounts
+        counts      = DL.sort $ snd dayOfWeekcounts
+        xIndex      = case DL.elemIndex dayOfWeek daysOfWeek of
+                        Nothing -> 0
+                        Just i  -> i
+        low         = minimum counts
+
+        open        = case median $ take index counts of
+                        Nothing -> 0
+                        Just m  -> fst m
+
+        medianIndex = case median counts of
+                        Nothing -> (0, 0)
+                        Just m  -> m
+        med         = fst medianIndex
+        index       = snd medianIndex
+
+        close       = case median $ drop (index + 1) counts of
+                        Nothing -> 0
+                        Just m  -> fst m
+
+        high        = maximum counts
+
+    candles = map makeCandle daysOfWeekCounts
+
+    candleChart =   plot_candle_line_style      .~ (    line_width .~ 7
+                                                      $ line_color .~ opaque mediumaquamarine
+                                                      $ def
+                                                   )
+                  $ plot_candle_fill            .~ True
+                  $ plot_candle_rise_fill_style .~ (fill_color .~ opaque mediumaquamarine $ def)
+                  $ plot_candle_tick_length     .~ 1
+                  $ plot_candle_width           .~ 10
+                  $ plot_candle_values          .~ candles
+                  $ plot_candle_title           .~ "Complaint Counts per Day of Week (Sunday = 0)"
+                  $ def
+
+-------------------------------------------------------------------------------
+
 complaintsURL :: String
 complaintsURL = "https://data.cityofnewyork.us/resource/fhrw-4uyv.json"
 
@@ -540,25 +639,26 @@ getComplaintsFromURL = do
 
 -------------------------------------------------------------------------------
 
-stringCounts' :: (Hashable k, Ord k) => [k] -> DHM.Map k Int -> DHM.Map k Int
-stringCounts' []    mpIn = mpIn
-stringCounts' (x:y) mpIn = stringCounts' y mpOut
-  where value = case DHM.lookup x mpIn of
-                  Nothing -> 0
-                  Just v  -> v + 1
-        mpOut = DHM.insert x value mpIn
+hashableCounts' :: (Hashable k, Ord k) => [k] -> DHM.Map k Int -> DHM.Map k Int
+hashableCounts' []    mpIn = mpIn
+hashableCounts' (x:y) mpIn = hashableCounts' y mpOut
+  where
+    value = case DHM.lookup x mpIn of
+              Nothing -> 0
+              Just v  -> v + 1
+    mpOut = DHM.insert x value mpIn
 
-stringCounts :: (Hashable k, Ord k) => [k] -> DHM.Map k Int
-stringCounts []    = DHM.empty
-stringCounts (x:y) = stringCounts' (x:y) DHM.empty
+hashableCounts :: (Hashable k, Ord k) => [k] -> DHM.Map k Int
+hashableCounts []    = DHM.empty
+hashableCounts (x:y) = hashableCounts' (x:y) DHM.empty
 
 data DTFmtTrunc = AtMonth | AtDay | AtSecond deriving (Enum)
 
 dateTimeStringToLocalTime :: DTFmtTrunc -> String -> LocalTime
 dateTimeStringToLocalTime trunc s = case trunc of
-                                    AtMonth  -> LocalTime fg' midnight
-                                    AtDay    -> LocalTime fg  midnight
-                                    AtSecond -> LocalTime fg  tod
+                                      AtMonth  -> LocalTime fg' midnight
+                                      AtDay    -> LocalTime fg  midnight
+                                      AtSecond -> LocalTime fg  tod
   where
         --  1234567890123456789
         -- "2016-04-18T19:42:20.000"
@@ -571,35 +671,29 @@ dateTimeStringToLocalTime trunc s = case trunc of
         fg  = fromGregorian year month day
         fg' = fromGregorian year month 01
         tod = TimeOfDay hour minute second
-```
 
-Below is the `.cabal` file.
+median :: (Ord a) => [a] -> Maybe (a, Int)
+median []    =  Nothing
+median (x:y) = quickSelect midEven (x:y) >>= (\x -> Just (x, midEven))
+  where
+    midEven = length (x:y) `div` 2
 
-```haskell
-name:                nyc-public-urination-complaints
-version:             0.0.0.1
-author:              David Lettier
-category:            Data
-build-type:          Simple
-cabal-version:       >=1.10
-executable nyc-public-urination-complaints
-  main-is:             Main.hs
-  build-depends:      base >=4.8 && <4.9
-                    , wreq
-                    , lens
-                    , aeson
-                    , containers
-                    , time
-                    , hashable
-                    , hashable-time
-                    , bytestring
-                    , directory
-                    , hashmap == 1.3.*
-                    , Chart == 1.7.*
-                    , cairo == 0.13.*
-                    , Chart-cairo == 1.7.*
-                    , colour
-                    , data-default-class
-  hs-source-dirs:      src
-  default-language:    Haskell2010
+quickSelect :: (Ord a) => Int -> [a] -> Maybe a
+quickSelect _ []        = Nothing
+quickSelect n _
+  | n < 0               = Nothing
+quickSelect n (pivot:y) = case found of
+                            True  ->  Just pivot
+                            False ->  case goHigher of
+                                        True  -> quickSelect (n - (length (pivot:lower))) higher
+                                        False -> quickSelect n lower
+  where
+    lower       = filter (<= pivot) y
+    higher      = filter (> pivot) y
+    partitioned = lower ++ (pivot:higher)
+    found       = partitioned !! n == pivot
+    pivotIndex  = case DL.elemIndex pivot partitioned of
+                    Nothing -> error "Pivot not found."
+                    Just a  -> a
+    goHigher    = n > pivotIndex
 ```
