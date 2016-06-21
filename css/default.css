@@ -30,9 +30,10 @@ a, a:visited, a:focus, a:active {
   text-decoration: none;
   color: #67DE8B;
   transition: color 0.5s ease;
+  cursor: pointer;
 }
 
-a:hover {
+a:hover, a:focus {
   text-decoration: none;
   color: #C7F9D6;
 }
@@ -113,6 +114,7 @@ pre code {
 }
 
 .nav-right {
+  display: -webkit-flex;
   display: flex;
   float: right;
 }
@@ -123,7 +125,7 @@ pre code {
   margin-right: 10px;
 }
 
-.nav-link:hover {
+.nav-link:hover, .nav-link:focus {
   border-bottom-color: #67DE8B;
 }
 
@@ -142,17 +144,13 @@ pre code {
   padding-top: 15px;
   color: white;
   padding-bottom: 15px;
-  /*margin-right: 20px;*/
   font-size: 30px;
   line-height: 20px;
   cursor: pointer;
-  /*border-bottom: 4px solid #424B54;
-  transition: border-bottom-color 0.5s ease;
-  */
   margin-top: 1px;
 }
 
-.nav-icon:hover {
+.nav-icon:hover, .nav-icon:focus {
   border-bottom-color: #67DE8B;
 }
 
@@ -170,7 +168,7 @@ pre code {
   transition: border-color 0.5s ease;
 }
 
-.nav-icon-container:hover .nav-icon-dot {
+.nav-icon-container:hover .nav-icon-dot, .nav-icon-container:focus .nav-icon-dot {
   border-color: #67DE8B;
 }
 
@@ -178,16 +176,11 @@ pre code {
   position: relative;
   top: 11px;
   padding-bottom: 20.5px;
-  /*margin-right: 20px;*/
   line-height: 20px;
   cursor: pointer;
-  /*
-  border-bottom: 5px solid #424B54;
-  transition: border-bottom-color 0.5s ease;
-  */
 }
 
-.lettier-icon:hover {
+.lettier-icon:hover, .lettier-icon:focus {
   border-bottom-color: #67DE8B;
 }
 
@@ -196,41 +189,41 @@ pre code {
   height: auto;
 }
 
-.pulser {
-  animation-name: pulse;
+.shaker {
+  animation-name: shake;
   animation-iteration-count: infinite;
   animation-direction: normal;
   animation-delay: 0s;
   animation-duration: 3s;
 }
 
-@keyframes pulse {
+@keyframes shake {
   0% {
     transform: scale(1.0);
     animation-timing-function: ease-in;
-    filter: blur(0);
-    -webkit-filter: blur(0);
-    transform: translate(0, 0, 0);
-    -webkit-transform: translate(0, 0, 0);
+    -webkit-filter: blur(0px);
+    -webkit-transform: translate(0px, 0px, 0px);
+    filter: blur(0px);
+    transform: translate(0px, 0px, 0px);
   }
   5% {
-    transform: scale(1.1);
+    transform: translate(0px, 2px) rotate(20deg);
     animation-timing-function: ease-out;
   }
   10% {
-    transform: scale(1.0);
+    transform: translate(0px, 0px) rotate(0deg);
     animation-timing-function: ease-in;
   }
   50% {
-    transform: scale(1.0);
+    transform: translate(0px, 0px) rotate(0deg);
     animation-timing-function: ease-in;
   }
   70% {
-    transform: scale(1.1);
+    transform: translate(0px, 2px) rotate(-20deg);
     animation-timing-function: ease-out;
   }
   75% {
-    transform: scale(1.0);
+    transform: translate(0px, 0px) rotate(0deg);
     animation-timing-function: ease-in;
   }
 }
@@ -285,12 +278,14 @@ pre code {
 
 .post-list {
   padding-left: 0px;
+  display: -webkit-inline-flex;
   display: inline-flex;
   flex-direction: row;
   flex-wrap: wrap;
 }
 
 .post-list-item {
+  display: -webkit-inline-flex;
   display: inline-flex;
   margin-left: 3px;
   margin-bottom: 3px;
@@ -301,8 +296,20 @@ pre code {
   height: 375px;
   background-size: cover;
   text-align: right;
-  color: whitesmoke;
+}
+
+.post-preview-cell-text-container {
   padding: 30px;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  color: whitesmoke;
+  transition: color 0.5s ease, border-bottom 0.5s ease, background-color 0.5s ease;
+}
+
+.post-preview-cell-text-container:hover, .post-preview-cell-text-container:focus {
+  background-color: rgba(103, 222, 139, 0.9);
+  color: white;
 }
 
 .post-preview-cell-text {
@@ -317,10 +324,11 @@ pre code {
 }
 
 .post-header {
+  display: block;
   text-align: right;
   font-size: 20px;
   line-height: normal;
-  margin-bottom: 80px;
+  margin-bottom: 130px;
 }
 
 .post-body {
@@ -345,7 +353,7 @@ pre code {
   transition: border-left-color 0.5s ease;
 }
 
-.post-footer-cta:hover {
+.post-footer-cta:hover, .post-footer-cta:focus {
   border-left-color: #67DE8B;
 }
 
@@ -462,9 +470,20 @@ pre code {
 }
 
 @media (max-width: 425px) {
+  .navbar {
+    margin-bottom: 0px;
+    margin-top: 20px
+  }
+
+  .navbar-fixed-top {
+    top: auto;
+    bottom: 0px;
+  }
+
   .jumbotron-text {
     font-size: 50px;
     width: 95%;
+    top: 0px;
   }
 
   .post-preview-image {
