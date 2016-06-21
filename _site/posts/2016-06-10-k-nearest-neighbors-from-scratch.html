@@ -44,7 +44,7 @@
             <div class="nav-icon-container">
               <a href="../posts.html" title="Posts">
                 <div>
-                  <i class="fa fa-th-large nav-icon pulser"></i>
+                  <i class="fa fa-th-large nav-icon shaker"></i>
                 </div>
                 <div class="nav-icon-dot">
                 </div>
@@ -156,7 +156,6 @@
     <div class="container page-container">
       <div class="post-header">
   <div class="display-left">
-    <div class="addthis_sharing_toolbox"></div>
   </div>
   <div class="display-right date-author">
     <p>2016/06/10 &nbsp; <i class="fa fa-calendar"></i></p>
@@ -325,7 +324,7 @@ The best choice of k depends upon the data; generally, larger values of k reduce
     <span class="op">}</span>
   )<span class="op">;</span>
 }<span class="op">;</span></code></pre></div>
-<p>Taking the <code>classsCount</code> object (<code>{yellow: 3, blue: 2, ...}</code>), we turn it into an array of arrays (<code>[[&quot;yellow&quot;, 3], [&quot;blue&quot;, 2], ...]</code>). To determine the <code>classs</code> (color type) of the current dot, we find the <code>best</code>/max or largest count in the array of arrays. The <code>best</code> function will return say <code>[&quot;yellow&quot;, 3]</code> and the <code>first</code> function will return just <code>&quot;yellow&quot;</code>. With the current dot classified, we publish a <code>classified</code> message that will be consumed elsewhere in the demo.</p>
+<p>Taking the <code>classsCount</code> object (<code>{yellow: 3, blue: 2, ...}</code>), we turn it into an array of arrays (<code>[[&quot;yellow&quot;, 3],</code> <code>[&quot;blue&quot;, 2], ...]</code>). To determine the <code>classs</code> (color type) of the current dot, we find the <code>best</code>/max or largest count in the array of arrays. The <code>best</code> function will return say <code>[&quot;yellow&quot;, 3]</code> and the <code>first</code> function will return just <code>&quot;yellow&quot;</code>. With the current dot classified, we publish a <code>classified</code> message that will be consumed elsewhere in the demo.</p>
 <h1 id="putting-it-all-together">Putting it all Together</h1>
 <div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">KNN</span>.<span class="va">prototype</span>.<span class="at">_cycle</span> <span class="op">=</span> <span class="kw">function</span> () <span class="op">{</span>
   <span class="kw">this</span>.<span class="at">_distances</span>()<span class="op">;</span>
@@ -345,9 +344,10 @@ The best choice of k depends upon the data; generally, larger values of k reduce
 </div>
 <div class="post-footer">
   <div class="display-left">
-    <h3 class="post-footer-cta">
-      Looking for more content? Click <a href="../posts.html" title="posts">posts</a> or return to the <a href="#top" title="top">top</a>.
-    </h3>
+    <h2 class="post-footer-cta">
+      Don't miss out&mdash;click <a href="../posts.html" title="posts">posts</a> for more content.
+      <!--Return to the <a href="#top" title="top">top</a>.-->
+    </h2>
   </div>
   <div class="display-right text-align-right post-footer-copyright">
     <h4>
@@ -362,6 +362,7 @@ The best choice of k depends upon the data; generally, larger values of k reduce
 </script>
 
     </div>
+    <div class="share-toolbox addthis_sharing_toolbox"></div>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4fc2bc7a00a9352b"></script>

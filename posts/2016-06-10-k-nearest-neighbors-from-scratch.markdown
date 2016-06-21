@@ -253,7 +253,8 @@ After doing this for each unknown plant, you can finally label each.
 };
 ```
 
-Taking the `classsCount` object (`{yellow: 3, blue: 2, ...}`), we turn it into an array of arrays (`[["yellow", 3], ["blue", 2], ...]`).
+Taking the `classsCount` object (`{yellow: 3, blue: 2, ...}`), we turn it into an array of arrays
+(`[["yellow", 3], ` `["blue", 2], ...]`).
 To determine the `classs` (color type) of the current dot, we find the `best`/max or largest count in the array of arrays.
 The `best` function will return say `["yellow", 3]` and the `first` function will return just `"yellow"`.
 With the current dot classified, we publish a `classified` message that will be consumed elsewhere in the demo.
