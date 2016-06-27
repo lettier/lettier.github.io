@@ -5,6 +5,7 @@ preview_image: /images/2016-06-10-k-nearest-neighbors-from-scratch/preview_image
 description: Using JavaScript, we implement the k-Nearest Neighbors algorithm from the bottom up.
 author: David Lettier
 ---
+<!--https://pixabay.com/en/tulips-flowers-yellow-beautiful-15155/-->
 
 # Demo and Codebase
 
@@ -288,3 +289,6 @@ This most-seen-class type becomes the class type for your unclassified data poin
 
 We discussed the details of the k-Nearest Neighbors algorithm using a fictitious story about classifying unknown plants.
 Along the way we looked at how each step is implemented in the [interactive demo](http://www.lettier.com/knearestneighbors/).
+
+Now that you have seen how a supervised classification algorithm works, take a look at
+[K-Means from Scratch](/posts/2016-04-24-k-means-from-scratch.html)--an unsupervised clustering method for unlabeled data.

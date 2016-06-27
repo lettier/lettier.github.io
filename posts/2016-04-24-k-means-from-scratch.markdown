@@ -7,12 +7,23 @@ description: Using vanilla JavaScript, we build an interactive k-means clusterin
 author: David Lettier
 ---
 
-The K-Means cluster application we will be building can be found [here](http://lettier.com/kmeans).
-The source code for the project is on [GitHub](https://github.com/lettier/interactivekmeans).
+# Demo and Codebase
 
-## K-Means
+![](/images/2016-04-24-k-means-from-scratch/demo.gif){.post-img .post-img-limit .post-img-small}
+
+If you would like to play with the k-means clustering algorithm in your browser,
+try out the visually interactive [demo](http://www.lettier.com/kmeans).
+All of the code for the demo is hosted on [GitHub](https://github.com/lettier/interactivekmeans).
+Stars are always appreciated.
+
+# K-Means
 
 An unsupervised machine learning technique that clusters (hopefully) similar items/data-points given.
+The entire algorithm consists of three major steps:
+
+* Initialization
+* Assignment
+* Update
 
 <blockquote>
 K-means clustering aims to partition `n` observations into `k` clusters in which each
@@ -20,23 +31,28 @@ observation belongs to the cluster with the nearest mean, serving as a prototype
 <footer>[K-Means Clustering, Wikipedia](https://en.wikipedia.org/wiki/K-means_clustering)</footer>
 </blockquote>
 
-One of the caveats with K-Means is that you must know (or guess) the number of clusters `k` before clustering.
+One of the caveats with k-means is that you must know (or guess) the number of clusters `k` before clustering.
 
-### Mean Initialization
+## Mean Initialization
 
-At the start of the algorithm you must initialize the means' features/coordinates in the X dimensional space your data-points reside in.
+At the start of the algorithm you must initialize the means' features/coordinates in the X dimensional space your data points reside in.
 For example, the features/dimensions for fruit could be:
-```JavaScript
+
+```javaScript
 [circumfrence, height, volume, sugar grams, ...]
 ```
 
-We will offer two initialization methods for our K-Means object.
-Other methods include randomly choosing `k` data-points as the starting means and `k-means++`.
+We will offer two initialization methods for our k-means object:
 
-#### Random
+* Random
+* The Fouad Khan Method
+
+Other methods include randomly choosing `k` data points as the starting means and `k-means++`.
+
+### Random
 
 The first method randomly scatters the `k` means throughout the feature space making sure not to go outside the bounds
-of the input data-points.
+of the input data points.
 
 ```javascript
 KMeans.prototype.initializeMeansMethod0 = function () {
@@ -62,9 +78,13 @@ KMeans.prototype.initializeMeansMethod0 = function () {
 };
 ```
 
-#### Fouad Khan
+### The Fouad Khan Method
 
-The paper for this method can be found [here](https://www.academia.edu/5988806/An_initial_seed_selection_algorithm_for_k-means_clustering_of_georeferenced_data_to_improve_replicability_of_cluster_assignments_for_mapping_application).
+The following initialization method is outlined in
+<!--
+https://www.academia.edu/5988806/An_initial_seed_selection_algorithm_for_k-means_clustering_of_georeferenced_data_to_improve_replicability_of_cluster_assignments_for_mapping_application
+-->
+[Fouad Khan's paper](http://bit.ly/28XOO5y).
 
 ```javascript
 KMeans.prototype.initializeMeansMethod1 = function () {
@@ -100,11 +120,11 @@ We will begin by defining all of our variables upfront at the start of the metho
   }
 ```
 
-The algorithm starts off with finding the magnitude (length of the [vector](https://www.mathsisfun.com/algebra/vectors.html)
-from the origin to the data-point) of each data-point.
-We then sort these data-points by their magnitudes where the first is the closest to the origin and the last if the farthest away.
+The algorithm starts off with finding the magnitude--length of the [vector](https://www.mathsisfun.com/algebra/vectors.html)
+from the origin `[0,0]` to the data point--of each data point.
+We then sort these data points by their magnitudes where the first is the closest to the origin and the last is the farthest away.
 
-If we have no data-points, just return.
+If we have no data points, just return.
 If we only have one, just set it as the mean.
 
 ```javascript
@@ -132,15 +152,15 @@ If we only have one, just set it as the mean.
   );
 ```
 
-Now we take these data-points, sorted by their magnitudes, and compute the euclidean distance between each of them.
+Now we take these data points, sorted by their magnitudes, and compute the euclidean distance between each of them.
 
 ```javascript
 d0 <---distance---> d1 <---distance---> d2 <---distance---> ... dn-1
 ```
 
-And similarly with the magnitudes, we sort the data-points `di` by the distance to their next neighbor `di+1` but in descending order.
+And similarly with the magnitudes, we sort the data points `di` by the distance to their next neighbor `di+1` but in descending order.
 
-So say we have three data-points:
+So say we have three data points:
 
 ```javascript
 d0:
@@ -186,7 +206,7 @@ Note that we remember the index they had in the `magnitudeSortedDataPoints`.
   upperBoundIndexes = upperBoundIndexes.sort(function (a, b){ return a - b; });
 ```
 
-Using the sorted consecutive data-points' distances, we now need to gather the upper and lower cluster bounds.
+Using the sorted consecutive data points' distances, we now need to gather the upper and lower cluster bounds.
 The upper bounds are the first `k-1` `magnitudeSortedDataPoints` indexes in the `sortedConsecutiveDataPointDistances`
 plus the last index in `magnitudeSortedDataPoints`.
 With the upper bound indexes added, we sort them in ascending order.
@@ -228,8 +248,8 @@ For convenience we'll create an array of arrays such that each array is `[upper 
 ```
 
 We can now compute the mean of the features between each upper and lower bound where each upper and lower bound is
-one of the input data-points. For each pair, the mean of their features become the initial means we will use to
-cluster all of the data-points.
+one of the input data points. For each pair, the mean of their features become the initial means we will use to
+cluster all of the data points.
 
 <blockquote>
 The methodology discussed above simply draws the cluster boundaries at points in the data where
@@ -237,7 +257,7 @@ the gap between consecutive data values is the highest or the data has deepest "
 <footer>Fouad Khan</footer>
 </blockquote>
 
-To make this initialization method more concrete, imagine we have the following six data-points:
+To make this initialization method more concrete, imagine we have the following six data points:
 
 ```javascript
 "dataPoints":[
@@ -274,7 +294,10 @@ To make this initialization method more concrete, imagine we have the following 
 ]
 ```
 
-The magnitudes have already been filled out and they have been sorted.
+![Data points' Magnitudes](/images/2016-04-24-k-means-from-scratch/means_init_0.svg){.post-img .post-img-fill}
+
+The magnitudes have already been calculated and the data points have been sorted in ascending order by their `magnitude`.
+Notice the large gap between the `[3,4]` and `[10,11]` magnitudes.
 
 ```javascript
 "dataPoints":[
@@ -317,10 +340,11 @@ The magnitudes have already been filled out and they have been sorted.
 ]
 ```
 
-We computed the distances between each and sort them by their `distanceToNext`.
+![Data points' Distances to Next](/images/2016-04-24-k-means-from-scratch/means_init_1.svg){.post-img .post-img-fill}
 
-Now say our `k` is two such that we want to cluster these data-points into two clusters.
-Notice the large gap between `[3,4]` and `[10,11]`.
+We compute the distances between each and sort them by their `distanceToNext`.
+
+Now say our `k` is two such that we want to cluster these data points into two clusters.
 
 ```javascript
 "upperBoundDataPoints":[
@@ -340,6 +364,7 @@ Notice the large gap between `[3,4]` and `[10,11]`.
 ```
 
 We identify `k-1` highest distances, sort by `index` in ascending order, and add in the last index.
+Recall that the highest distance-to-next was `[3,4]` and the last index was `5` for the data point `[12,13]`.
 These are our `upperBoundDataPoints`.
 
 ```javascript
@@ -359,8 +384,9 @@ These are our `upperBoundDataPoints`.
 ]
 ```
 
-The lower bound indexes are the first one and then the `index + 1` for all upper bound indexes <i>expect</i> the last one
+The lower bound indexes are the first one (index `0`) and then the `index + 1` for all upper bound indexes <i>expect</i> the last one
 (in this case index five). So indexes `0` and `2 + 1 = 3`.
+Recall that index `0` was the data point closest to the origin.
 
 ```javascript
 "upperLowerBoundDataPoints":[
@@ -397,6 +423,8 @@ The lower bound indexes are the first one and then the `index + 1` for all upper
 
 Now we couple the upper with its lower bound counterpart.
 
+![Upper and Lower Bounds](/images/2016-04-24-k-means-from-scratch/means_init_2.svg){.post-img .post-img-fill}
+
 ```javascript
 "means":[
   {
@@ -419,7 +447,7 @@ meant 1:
   [(12 + 10)/2, (13 + 11)/2]
 ```
 
-Note that the means in this case happen to correspond to the two data-points:
+Note that the means in this case happen to correspond to the two data points:
 
 ```javascript
 "dataPoints":[
@@ -440,12 +468,11 @@ Note that the means in this case happen to correspond to the two data-points:
 
 which are the two points across the large cap and in between their closest neighbors.
 
-![Initialized Means Visualization](/images/2016-04-24-k-means-from-scratch/mean_init.jpg){.post-img .post-img-fill}
+![Initialized Means](/images/2016-04-24-k-means-from-scratch/means_init.svg){.post-img .post-img-fill}
 
+## Assignment
 
-### Assignment
-
-With out means initialized, we can begin assigning them to each data-point.
+With our means initialized, we can begin assigning them to each data point.
 
 ```javascript
 KMeans.prototype.assignmentStep = function () {
@@ -471,12 +498,12 @@ KMeans.prototype.assignmentStep = function () {
 };
 ```
 
-Each data-point is assigned to its closest mean based on the euclidean distance from it to the mean.
-We keep track of the assignment by setting the mean ID on the data-point object. Each mean has a unique identifier.
+Each data point is assigned to its closest mean based on the euclidean distance from it to the mean.
+We keep track of the assignment by setting the mean ID on the data point object. Each mean has a unique identifier.
 
-### Update
+## Update
 
-With every data-point assigned to a mean, we can now update each mean's features based on the data-points assigned to each one.
+With every data point assigned to a mean, we can now update each mean's features based on the data points assigned to each one.
 
 ```javascript
 KMeans.prototype.updateStep = function () {
@@ -519,13 +546,13 @@ KMeans.prototype.updateStep = function () {
 };
 ```
 
-First we reset the clusters and then cluster each data-point based on its mean ID.
-With the clusters populated, we compute the mean of all the features of all the data-points per cluster.
+First we reset the clusters and then cluster each data point based on its mean ID.
+With the clusters populated, we compute the mean of all the features of all the data points per cluster.
 For each cluster, these averaged features become the new features/coordinates of the mean.
 Each time this is called, the means will move across the dimensional space until the updates no longer change.
 When no changes occur we can say the algorithm converged.
 
-### Iterate
+## Iterate
 
 ```javascript
 KMeans.prototype.iterate = function () {
@@ -556,28 +583,28 @@ KMeans.prototype.iterate = function () {
 ```
 
 Each iteration involves one assignment step and one update step.
-Remember that each assignment step assigns each data-point to its closest mean and that each
-update steps moves the mean based on the average features of all the data-points in its cluster.
+Remember that each assignment step assigns each data point to its closest mean and that each
+update steps moves the mean based on the average features of all the data points in its cluster.
 
-So that we do not hang the browser while K-Means runs, we perform the iterations by queuing requested animation frames.
+So that we do not hang the browser while k-means runs, we perform the iterations by queuing requested animation frames.
 This allows the application to still be responsive while we progress towards convergence (or max iterations, whichever comes first).
 While we are not explicitly doing any actual animation each call, the `onIterate` function callback is called.
 When the `KMeans` object is used in `canvas.js`, the `onIterate` callback does update the visual means' positions and
 the dots' cluster membership colors.
-This allows the user to see K-Means progress instead of just seeing the final result after the stop criteria is met.
+This allows the user to see k-means progress instead of just seeing the final result after the stop criteria is met.
 Another approach would be to use `setTimeout`.
 
-## Silhouette Coefficient Metric
+# Silhouette Coefficient Metric
 
-Even though K-Means is unsupervised we can still check its solution using the silhouette coefficient metric.
-Not all cluster configurations produced by K-Means will be the most optimal or even remotely correct.
+Even though k-means is unsupervised we can still check its solution using the silhouette coefficient metric.
+Not all cluster configurations produced by k-means will be the most optimal or even remotely correct.
 This is especially the case when the wrong `k` is chosen.
 
 The silhouette coefficient for a single data point is `s = (b - a) / max(b, a)` where `a` is the mean
-distance between a data-point and its cluster members and `b` is the mean distance between a data-point and the cluster members
-of the nearest cluster closest to the data-point's cluster.
+distance between a data point and its cluster members and `b` is the mean distance between a data point and the cluster members
+of the nearest cluster closest to the data point's cluster.
 
-### Constructor
+## Constructor
 
 ```javascript
 function SilhouetteCoefficient(params) {
@@ -589,9 +616,13 @@ function SilhouetteCoefficient(params) {
 
 The constructor requires three functions:
 
-* one to return the cluster members for a data-point,
-* one to return the cluster members of the nearest cluster to the cluster a data-point is assigned to,
-* and a distance function.
+* One to return the cluster members for a data point
+* One to return the cluster members of the nearest cluster to the cluster a data point is assigned to
+* One to calculate the distance
+
+## The Formula
+
+Recall that the formula for the Silhouette Coefficient is `s = (b - a) / max(b, a)`.
 
 ### A
 
@@ -626,10 +657,10 @@ SilhouetteCoefficient.prototype.s = function (a, b) {
 };
 ```
 
-### Multiple Data Points
+## Multiple Data Points
 
-To compute the silhouette coefficient for multiple data-points we must compute it for each, sum them, and then
-divide by the number of data-points given.
+To compute the silhouette coefficient for multiple data points we must compute it for each, sum them, and then
+divide by the number of data points given.
 
 ```javascript
 SilhouetteCoefficient.prototype.dataPoints = function (dataPoints, onComplete) {
@@ -671,24 +702,24 @@ SilhouetteCoefficient.prototype.dataPoints = function (dataPoints, onComplete) {
 
 The `cycle` function is the workhorse. It runs with each call to `requestAnimationFrame`.
 By using `requestAnimationFrame` our calls to `cycle` will queue and thus not lock up the browser window.
-You will notice that even after K-Means finishes, the `silhouetteCoefficient` takes a bit longer to update
+You will notice that even after k-means finishes, the `silhouetteCoefficient` takes a bit longer to update
 but you can still interact with the dots.
 
-### Cases
+## Cases
 
-![Perfect score when k equals the amount of data-points.](/images/2016-04-24-k-means-from-scratch/10_perfect.jpg){.post-img .post-img-fill}
+![Perfect score when k equals the amount of data points.](/images/2016-04-24-k-means-from-scratch/10_perfect.jpg){.post-img .post-img-fill}
 
-An average score of one across all data-points indicates that the data is perfectly clustered.
-As shown above, when `k` equals the number of data-points (10 in this case) you get a perfect silhouette coefficient score.
+An average score of one across all data points indicates that the data is perfectly clustered.
+As shown above, when `k` equals the number of data points (10 in this case) you get a perfect silhouette coefficient score.
 However, this is clearly not 10 clusters but rather just one cluster.
 
-![Imperfect score when k is one but the amount of data-points is larger.](/images/2016-04-24-k-means-from-scratch/10_neg_one.jpg){.post-img .post-img-fill}
+![Imperfect score when k is one but the amount of data points is larger.](/images/2016-04-24-k-means-from-scratch/10_neg_one.jpg){.post-img .post-img-fill}
 
 If we change `k` to one, you would expect to still receive a perfect score (the circle is clustered nicely)
 but instead we get the absolute lowest score of `-1`.
-When `k = 1` but the `dataPoints.length > k`, the `b` in `s = (b - a)/max(b, a)` is zero making `s = -1` for each data-point.
-This is because there are no data-points in the nearest cluster to the cluster the data-point belongs to since that cluster, that
-the data-point belongs to, <i>is the only cluster</i>.
+When `k = 1` but the `dataPoints.length > k`, the `b` in `s = (b - a)/max(b, a)` is zero making `s = -1` for each data point.
+This is because there are no data points in the nearest cluster to the cluster the data point belongs to since that cluster, that
+the data point belongs to, <i>is the only cluster</i>.
 
 So if you suspect that your data is truly just one cluster and you have more than one sample, the silhouette coefficient is not for you.
 
@@ -698,12 +729,15 @@ Clearly we have two perfect clusters and we appropriately set `k = 2`.
 However, we only received a score of roughly `0.95` versus the `1` you would have expected.
 The score was high but not perfect even though our clusters were.
 
-## Wrap-up
+# Wrap-up
 
-Using plain vanilla JavaScript, we built the K-Means algorithm from scratch as well as the silhouette coefficient metric.
+Using plain vanilla JavaScript, we built the k-means algorithm from scratch as well as the silhouette coefficient metric.
 We discussed different mean initialization techniques and went into depth about Fouad Kahn's approach.
-The assignment and update steps were discussed where the data-points are assigned to their closest means and the means
-are updated by averaging the features of their currently assigned data-points.
-To not lock up our interface we used `requestAnimationFrame` and cycled our iterations for both K-Means and the silhouette coefficient metric.
+The assignment and update steps were discussed where the data points are assigned to their closest means and the means
+are updated by averaging the features of their currently assigned data points.
+To not lock up our interface we used `requestAnimationFrame` and cycled our iterations for both k-means and the silhouette coefficient metric.
 Lastly, we discussed one way of determining how well our data is clustered using the silhouette coefficient metric and went over some
 unintuitive cases.
+
+Clustering is a viable technique when you have unlabeled data but if you have labeled data take a look at
+[K-Nearest Neighbors from Scratch](2016-06-10-k-nearest-neighbors-from-scratch.html)--a supervised clustering method.

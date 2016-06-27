@@ -5,6 +5,7 @@ preview_image: /images/2016-04-29-breadth-first-search-in-haskell/preview_image.
 description: Using Haskell, we implement the breadth-first search algorithm.
 author: David Lettier
 ---
+<!--https://pixabay.com/static/uploads/photo/2015/01/30/18/26/spider-web-617769_960_720.jpg-->
 
 The full source code to this post can be found on [GitHub](https://github.com/lettier/interviewquestions/blob/master/graphs/bfs.hs).
 

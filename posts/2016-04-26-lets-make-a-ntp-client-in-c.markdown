@@ -6,6 +6,7 @@ description: Using C, we build a Network Time Protocol client capable of getting
   current time from a remote NTP server.
 author: David Lettier
 ---
+<!--https://pixabay.com/en/clock-railway-station-station-clock-1314411/-->
 
 The source file for this project is hosted on [GitHub](https://github.com/lettier/ntpclient/blob/master/source/c/main.c).
 There is also an identical version but in [Python](https://github.com/lettier/ntpclient/blob/master/source/python/ntpclient.py).

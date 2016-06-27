@@ -5,6 +5,7 @@ preview_image: /images/2016-06-01-data-visualization-with-haskell-nyc-public-uri
 description: Using Haskell, we collect, process, and chart NYC 3-1-1 urinating in public complaints.
 author: David Lettier
 ---
+<!--https://pixabay.com/en/new-york-map-new-york-city-945240/-->
 
 # 3-1-1 Complaints
 

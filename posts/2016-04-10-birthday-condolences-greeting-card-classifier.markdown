@@ -4,6 +4,7 @@ jumbotron_image: /images/2016-04-10-birthday-condolences-greeting-card-classifie
 preview_image: /images/2016-04-10-birthday-condolences-greeting-card-classifier/preview_image.jpg
 author: David Lettier
 ---
+<!--https://commons.wikimedia.org/wiki/File:GreetingCards3.jpg-->
 
 It is late and your cart of greeting cards just fell over mixing birthday and sympathy cards all over the floor.
 Unfortunately, you cannot go home until you restock the card shelves.

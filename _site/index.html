@@ -165,7 +165,8 @@
   </div>
 </div>
 <div class="post-body">
-  <h1 id="demo-and-codebase">Demo and Codebase</h1>
+  <!--https://pixabay.com/en/tulips-flowers-yellow-beautiful-15155/-->
+<h1 id="demo-and-codebase">Demo and Codebase</h1>
 <p>If you would like to play with the k-Nearest Neighbors algorithm in your browser, try out the visually interactive <a href="http://www.lettier.com/knearestneighbors">demo</a>. All of the code for the demo is hosted on <a href="https://github.com/lettier/interactiveknn">GitHub</a>. Stars are always appreciated.</p>
 <h1 id="the-scenario">The Scenario</h1>
 <p>Say you have a garden that is host to many different kinds of plants. Each plant’s location in the garden is based on two of its features. The west to east direction of the garden corresponds to the diameter of the plant’s flower while the south to north direction relates to the length of the plant’s leaf. Each plant in the garden has been carefully labeled with a small tag stuck in the dirt located near its base.</p>
@@ -341,6 +342,7 @@ The best choice of k depends upon the data; generally, larger values of k reduce
 <p>The first step is to compute all of the needed distances between classified and unclassified data points. Next, for each unclassified data point, you sort its distances in ascending order. These sorted distances from 0 up to but not including k become the unclassified data point’s k-Nearest Neighbors. Looking at only a data point’s k-Nearest Neighbors, you count how many times you see each known class type. Once counted, you sort the class types by their counts and take the class type with the biggest count. This most-seen-class type becomes the class type for your unclassified data point.</p>
 <h1 id="wrap-up">Wrap-up</h1>
 <p>We discussed the details of the k-Nearest Neighbors algorithm using a fictitious story about classifying unknown plants. Along the way we looked at how each step is implemented in the <a href="http://www.lettier.com/knearestneighbors/">interactive demo</a>.</p>
+<p>Now that you have seen how a supervised classification algorithm works, take a look at <a href="../posts/2016-04-24-k-means-from-scratch.html">K-Means from Scratch</a>–an unsupervised clustering method for unlabeled data.</p>
 </div>
 <div class="post-footer">
   <div class="display-left">

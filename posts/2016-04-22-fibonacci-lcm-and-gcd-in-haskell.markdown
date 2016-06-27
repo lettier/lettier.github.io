@@ -4,6 +4,7 @@ jumbotron_image: /images/2016-04-22-fibonacci-lcm-and-gcd-in-haskell/jumbotron_i
 preview_image: /images/2016-04-22-fibonacci-lcm-and-gcd-in-haskell/preview_image.jpg
 author: David Lettier
 ---
+<!--https://pixabay.com/en/abstract-fractal-formula-math-1022198/-->
 
 The following three problems: the Fibonacci sequence, Least Common Multiple, and the Greatest Common Divisor are potential problems one
 may be asked to solve during a technical interview.
