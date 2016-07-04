@@ -5,7 +5,7 @@ preview_image: /images/2016-07-04-haskell-to-javascript/preview_image.jpg
 description: Using Reflex-FRP, we generate a stylized push button interface widget written in Haskell and playable in a web browser.
 author: David Lettier
 ---
-<!--https://pixabay.com/en/elevator-buttons-numbers-926058/-->
+<!--https://pixabay.com/en/black-button-communication-control-21166/-->
 
 # Preview
 
@@ -13,9 +13,11 @@ Below you see the stylized push button we will create with Haskell.
 
 ![](/images/2016-07-04-haskell-to-javascript/demo.gif){.post-img .post-img-limit .post-img-small}
 
+Notice how the button class and its inner contents change with every mouse click.
+
 # Setup
 
-In order to establish our build pipeline, we will need setup our environment with a few tools, directories, and project files.
+In order to establish our build pipeline, we will need to setup our environment with a few tools, directories, and project files.
 
 ## Stack
 
@@ -263,7 +265,7 @@ touch app/Main.hs
 ```
 
 This language extension allows us to take a string literal such as `"Some text."` and use it for arguments that require type
-`String`, `Text`, or `[Char]` (a `['l','i','s','t']` or array of characters).
+`ByteString`, `Text`, or `String/[Char]` (a `['l','i','s','t']` or array of characters).
 
 ```haskell
 import Lib
@@ -273,7 +275,7 @@ import qualified Data.Map as Map
 ```
 
 The first import is our own project library that we will define in `src/Lib.hs` later on.
-The two `Reflex` and `Reflext.Dom` imports are related to the [Reflex-FRP](https://github.com/reflex-frp) project.
+The two `Reflex` and `Reflex.Dom` imports are related to the [Reflex-FRP](https://github.com/reflex-frp) project.
 These two packages together will help us write Haskell code that will translate to JavaScript and HTML.
 The last import--`Map`--allows us to define hash tables with keys and values.
 
@@ -382,7 +384,7 @@ bodyElement = el "div" $ onOffButton
 This language extension allows us to do something like this:
 
 ```haskell
-somFuncZero = do
+someFuncZero = do
   rec
     a <- someFuncOne b
     b <- someFuncTwo a
@@ -641,4 +643,4 @@ Using an array of tools and the Haskell programming language, we built a push bu
 All of our Haskell source code was transpiled to HTML and JavaScript.
 
 If you enjoyed programming in Haskell, be sure to read
-[Breadth-First Search in Haskell](posts/2016-04-29-breadth-first-search-in-haskell.html).
+[Breadth-First Search in Haskell](/posts/2016-04-29-breadth-first-search-in-haskell.html).

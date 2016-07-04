@@ -165,15 +165,16 @@
   </div>
 </div>
 <div class="post-body">
-  <!--https://pixabay.com/en/elevator-buttons-numbers-926058/-->
+  <!--https://pixabay.com/en/black-button-communication-control-21166/-->
 <h1 id="preview">Preview</h1>
 <p>Below you see the stylized push button we will create with Haskell.</p>
 <div class="figure">
 <img src="../images/2016-07-04-haskell-to-javascript/demo.gif" class="post-img post-img-limit post-img-small" />
 
 </div>
+<p>Notice how the button class and its inner contents change with every mouse click.</p>
 <h1 id="setup">Setup</h1>
-<p>In order to establish our build pipeline, we will need setup our environment with a few tools, directories, and project files.</p>
+<p>In order to establish our build pipeline, we will need to setup our environment with a few tools, directories, and project files.</p>
 <h2 id="stack">Stack</h2>
 <p><a href="https://github.com/commercialhaskell/stack">Stack</a> will handle all of our Haskell environment needs from installing the compiler to managing our Haskell dependencies. The instructions contain all of the <a href="http://docs.haskellstack.org/en/stable/install_and_upgrade/#installupgrade">installation</a> information you will need.</p>
 <p>For a general Linux installation you could do:</p>
@@ -329,12 +330,12 @@ This is the command line front end to the Simple build system. When given the pa
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">cd</span> ~/onOffButton
 <span class="kw">touch</span> app/Main.hs</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE OverloadedStrings #-}</span></code></pre></div>
-<p>This language extension allows us to take a string literal such as <code>&quot;Some text.&quot;</code> and use it for arguments that require type <code>String</code>, <code>Text</code>, or <code>[Char]</code> (a <code>['l','i','s','t']</code> or array of characters).</p>
+<p>This language extension allows us to take a string literal such as <code>&quot;Some text.&quot;</code> and use it for arguments that require type <code>ByteString</code>, <code>Text</code>, or <code>String/[Char]</code> (a <code>['l','i','s','t']</code> or array of characters).</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Lib</span>
 <span class="kw">import </span><span class="dt">Reflex</span>
 <span class="kw">import </span><span class="dt">Reflex.Dom</span>
 <span class="kw">import qualified</span> <span class="dt">Data.Map</span> <span class="kw">as</span> <span class="dt">Map</span></code></pre></div>
-<p>The first import is our own project library that we will define in <code>src/Lib.hs</code> later on. The two <code>Reflex</code> and <code>Reflext.Dom</code> imports are related to the <a href="https://github.com/reflex-frp">Reflex-FRP</a> project. These two packages together will help us write Haskell code that will translate to JavaScript and HTML. The last import–<code>Map</code>–allows us to define hash tables with keys and values.</p>
+<p>The first import is our own project library that we will define in <code>src/Lib.hs</code> later on. The two <code>Reflex</code> and <code>Reflex.Dom</code> imports are related to the <a href="https://github.com/reflex-frp">Reflex-FRP</a> project. These two packages together will help us write Haskell code that will translate to JavaScript and HTML. The last import–<code>Map</code>–allows us to define hash tables with keys and values.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">main ::</span> <span class="dt">IO</span> ()
 main <span class="fu">=</span> mainWidgetWithHead headElement bodyElement</code></pre></div>
 <p>This is the entry or starting point of our application. The first line defines its output as an empty <code>IO</code> context or input-output monad unit. Think of <code>()</code> as <code>void</code>. The second line equates the <code>main</code> function to <code>mainWidgetWithHead</code> which takes two arguments. The first argument is the HTML head section <code>&lt;head&gt;&lt;!--...--&gt;&lt;/head&gt;</code> while the second argument defines the HTML body section <code>&lt;body&gt;&lt;!--...--&gt;&lt;/body&gt;</code>.</p>
@@ -389,7 +390,7 @@ bodyElement <span class="fu">=</span> el <span class="st">&quot;div&quot;</span>
 <h3 id="lib">Lib</h3>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE RecursiveDo #-}</span></code></pre></div>
 <p>This language extension allows us to do something like this:</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">somFuncZero <span class="fu">=</span> <span class="kw">do</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">someFuncZero <span class="fu">=</span> <span class="kw">do</span>
   rec
     a <span class="ot">&lt;-</span> someFuncOne b
     b <span class="ot">&lt;-</span> someFuncTwo a
@@ -562,7 +563,7 @@ button <span class="kw">{</span>
 <span class="kw">&lt;/html&gt;</span></code></pre></div>
 <h1 id="wrap-up">Wrap-up</h1>
 <p>Using an array of tools and the Haskell programming language, we built a push button interface for a web browser. All of our Haskell source code was transpiled to HTML and JavaScript.</p>
-<p>If you enjoyed programming in Haskell, be sure to read <a href="posts/2016-04-29-breadth-first-search-in-haskell.html">Breadth-First Search in Haskell</a>.</p>
+<p>If you enjoyed programming in Haskell, be sure to read <a href="../posts/2016-04-29-breadth-first-search-in-haskell.html">Breadth-First Search in Haskell</a>.</p>
 </div>
 <div class="post-footer">
   <div class="display-left">
