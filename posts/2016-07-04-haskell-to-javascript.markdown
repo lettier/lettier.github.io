@@ -349,6 +349,11 @@ Our `bodyElement` function takes no arguments and creates a parent `div` element
 Here is `app/Main.hs` in its entirety.
 
 ```haskell
+{-
+  David Lettier (C) 2016.
+  http://www.lettier.com/
+-}
+
 {-# LANGUAGE OverloadedStrings #-}
 
 import Lib
@@ -490,6 +495,11 @@ These icons will show up on the face of the button and will swap with each butto
 Here is `src/Lib.hs` in its entirety.
 
 ```haskell
+{-
+  David Lettier (C) 2016.
+  http://www.lettier.com/
+-}
+
 {-# LANGUAGE RecursiveDo #-}
 
 module Lib (
