@@ -363,7 +363,12 @@ bodyElement <span class="fu">=</span> el <span class="st">&quot;div&quot;</span>
   <span class="kw">&lt;/div&gt;</span>
 <span class="co">&lt;!--...-&gt;</span></code></pre></div>
 <p>Here is <code>app/Main.hs</code> in its entirety.</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE OverloadedStrings #-}</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">{-</span>
+<span class="co">  David Lettier (C) 2016.</span>
+<span class="co">  http://www.lettier.com/</span>
+<span class="co">-}</span>
+
+<span class="ot">{-# LANGUAGE OverloadedStrings #-}</span>
 
 <span class="kw">import </span><span class="dt">Lib</span>
 <span class="kw">import </span><span class="dt">Reflex</span>
@@ -440,7 +445,12 @@ onOffButton <span class="fu">=</span> <span class="kw">do</span></code></pre></d
   return ()</code></pre></div>
 <p>Similar to the <code>cssClassDynamic</code>, we define the dynamic inner HTML based on the <code>x</code> value extracted from <code>toggleDynamic</code>. <code>True</code> evaluates to the Font Awesome icon <code>fa-circle-o-notch</code> while <code>False</code> evaluates to the Font Awesome icon <code>fa-power-off</code>. These icons will show up on the face of the button and will swap with each button press.</p>
 <p>Here is <code>src/Lib.hs</code> in its entirety.</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE RecursiveDo #-}</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">{-</span>
+<span class="co">  David Lettier (C) 2016.</span>
+<span class="co">  http://www.lettier.com/</span>
+<span class="co">-}</span>
+
+<span class="ot">{-# LANGUAGE RecursiveDo #-}</span>
 
 <span class="kw">module</span> <span class="dt">Lib</span> (
   onOffButton
@@ -563,7 +573,7 @@ button <span class="kw">{</span>
 <span class="kw">&lt;/html&gt;</span></code></pre></div>
 <h1 id="wrap-up">Wrap-up</h1>
 <p>Using an array of tools and the Haskell programming language, we built a push button interface for a web browser. All of our Haskell source code was transpiled to HTML and JavaScript.</p>
-<p>If you enjoyed programming in Haskell, be sure to read <a href="../posts/2016-04-29-breadth-first-search-in-haskell.html">Breadth-First Search in Haskell</a>.</p>
+<p>If you enjoyed programming in Haskell, be sure to read <a href="../posts/2016-07-15-building-a-haskell-web-api.html">Building a Haskell Web API</a>.</p>
 </div>
 <div class="post-footer">
   <div class="display-left">

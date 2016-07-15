@@ -349,6 +349,11 @@ Our `bodyElement` function takes no arguments and creates a parent `div` element
 Here is `app/Main.hs` in its entirety.
 
 ```haskell
+{-
+  David Lettier (C) 2016.
+  http://www.lettier.com/
+-}
+
 {-# LANGUAGE OverloadedStrings #-}
 
 import Lib
@@ -490,6 +495,11 @@ These icons will show up on the face of the button and will swap with each butto
 Here is `src/Lib.hs` in its entirety.
 
 ```haskell
+{-
+  David Lettier (C) 2016.
+  http://www.lettier.com/
+-}
+
 {-# LANGUAGE RecursiveDo #-}
 
 module Lib (
@@ -643,4 +653,4 @@ Using an array of tools and the Haskell programming language, we built a push bu
 All of our Haskell source code was transpiled to HTML and JavaScript.
 
 If you enjoyed programming in Haskell, be sure to read
-[Breadth-First Search in Haskell](/posts/2016-04-29-breadth-first-search-in-haskell.html).
+[Building a Haskell Web API](/posts/2016-07-15-building-a-haskell-web-api.html).

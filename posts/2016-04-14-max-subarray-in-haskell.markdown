@@ -217,7 +217,7 @@ Line four defines `sub_max_cur` as `sub_max`, passed to the function, plus the f
 Let us run through this using `[1,-2,3,4,-1,1]`.
 
 ```haskell
-1) max_cont_sum [1,-2,3,4,-1,1] 0 0 = max_cont_sum [-2,3,4-1,1] 1 1
+1) max_cont_sum [1,-2,3,4,-1,1] 0 0 = max_cont_sum [-2,3,4,-1,1] 1 1
 2)   where sub_max_cur = 0 + 1
 
 1) max_cont_sum [-2,3,4,-1,1] 1 1 = max_cont_sum [3,4,-1,1] 0 1
