@@ -260,6 +260,10 @@ pre code {
   line-height: 2.5;
 }
 
+.figure {
+  text-align: center;
+}
+
 .post-img {
   margin-top: 20px;
 }
@@ -344,6 +348,7 @@ pre code {
 .post-footer {
   width: 100%;
   margin-top: 50px;
+  clear: both;
 }
 
 .post-footer-cta {
