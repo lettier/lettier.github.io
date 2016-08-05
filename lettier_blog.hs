@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+
 import           Data.Monoid (mappend)
 import           Data.Maybe (fromMaybe)
 import qualified Data.Map as M
