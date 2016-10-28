@@ -2,6 +2,7 @@
 title: Fibonacci, LCM and GCD in Haskell
 jumbotron_image: /images/2016-04-22-fibonacci-lcm-and-gcd-in-haskell/jumbotron_image.jpg
 preview_image: /images/2016-04-22-fibonacci-lcm-and-gcd-in-haskell/preview_image.jpg
+description: Using Haskell, we implement the Fibonacci sequence, Least Common Multiple (LCM), and the Greatest Common Divisor (GCD).
 author: David Lettier
 ---
 <!--https://pixabay.com/en/abstract-fractal-formula-math-1022198/-->

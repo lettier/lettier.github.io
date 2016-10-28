@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+  <title>Lettier Blog RSS Feed</title>
+  <description>RSS feed for https://lettier.github.io.</description>
+  <link>https://lettier.github.io/rss.xml</link>
+  <atom:link href="https://lettier.github.io/rss.xml" rel="self" type="application/rss+xml"></atom:link>
+  <copyright>Copyright David Lettier (C) 2016. All rights reserved.</copyright>
+  
+  <item>
+    
+    <media:content url="https://lettier.github.io/images/2016-10-25-tf-idf-vsm-vs-bm25-with-vuejs/preview_image.jpg"></media:content>
+    
+    <title>TF-IDF VSM vs BM25 with Vue.js</title>
+    
+    <dc:creator>David Lettier</dc:creator>
+    
+    <pubDate>Tue, 25 Oct 2016 00:00:00 EST</pubDate>
+    <description>Using Vue.js, we build a JavaScript based search engine capable of using tf-idf VSM and Okapi BM25 simultaneously.</description>
+    <link>https://lettier.github.io/posts/2016-10-25-tf-idf-vsm-vs-bm25-with-vuejs.html</link>
+    <guid>https://lettier.github.io/posts/2016-10-25-tf-idf-vsm-vs-bm25-with-vuejs.html</guid>
+  </item>
+  
+  <item>
+    
+    <media:content url="https://lettier.github.io/images/2016-10-10-data-mining-hacker-news-front-vs-back/preview_image.jpg"></media:content>
+    
+    <title>Data Mining Hacker News: Front vs Back</title>
+    
+    <dc:creator>David Lettier</dc:creator>
+    
+    <pubDate>Mon, 10 Oct 2016 00:00:00 EST</pubDate>
+    <description>Using Haskell, R, Python, SQLite, and Elasticsearch, we data mine Hacker News front page stories and their back page counterparts for patterns.</description>
+    <link>https://lettier.github.io/posts/2016-10-10-data-mining-hacker-news-front-vs-back.html</link>
+    <guid>https://lettier.github.io/posts/2016-10-10-data-mining-hacker-news-front-vs-back.html</guid>
+  </item>
+  
+  <item>
+    
+    <media:content url="https://lettier.github.io/images/2016-08-15-making-movie-monad/preview_image.jpg"></media:content>
+    
+    <title>Making Movie Monad</title>
+    
+    <dc:creator>David Lettier</dc:creator>
+    
+    <pubDate>Mon, 15 Aug 2016 00:00:00 EST</pubDate>
+    <description>Using Haskell's Blaze, Fay, and Clay, we build an Electron desktop video player application.</description>
+    <link>https://lettier.github.io/posts/2016-08-15-making-movie-monad.html</link>
+    <guid>https://lettier.github.io/posts/2016-08-15-making-movie-monad.html</guid>
+  </item>
+  
+  <item>
+    
+    <media:content url="https://lettier.github.io/images/2016-08-05-matthews-correlation-coefficient/preview_image.jpg"></media:content>
+    
+    <title>Matthews Correlation Coefficient</title>
+    
+    <dc:creator>David Lettier</dc:creator>
+    
+    <pubDate>Fri, 05 Aug 2016 00:00:00 EST</pubDate>
+    <description>Using a fictitious scenario, we explore the Matthews Correlation Coefficient quality measure of binary classification.</description>
+    <link>https://lettier.github.io/posts/2016-08-05-matthews-correlation-coefficient.html</link>
+    <guid>https://lettier.github.io/posts/2016-08-05-matthews-correlation-coefficient.html</guid>
+  </item>
+  
+  <item>
+    
+    <media:content url="https://lettier.github.io/images/2016-07-15-building-a-haskell-web-api/preview_image.jpg"></media:content>
+    
+    <title>Building a Haskell Web API</title>
+    
+    <dc:creator>David Lettier</dc:creator>
+    
+    <pubDate>Fri, 15 Jul 2016 00:00:00 EST</pubDate>
+    <description>Using the Snap framework, we build a web server API that creates, reads, updates, and deletes web bookmarks.</description>
+    <link>https://lettier.github.io/posts/2016-07-15-building-a-haskell-web-api.html</link>
+    <guid>https://lettier.github.io/posts/2016-07-15-building-a-haskell-web-api.html</guid>
+  </item>
+  
+  <item>
+    
+    <media:content url="https://lettier.github.io/images/2016-07-04-haskell-to-javascript/preview_image.jpg"></media:content>
+    
+    <title>Haskell to JavaScript</title>
+    
+    <dc:creator>David Lettier</dc:creator>
+    
+    <pubDate>Mon, 04 Jul 2016 00:00:00 EST</pubDate>
+    <description>Using Reflex-FRP, we generate a stylized push button interface widget written in Haskell and playable in a web browser.</description>
+    <link>https://lettier.github.io/posts/2016-07-04-haskell-to-javascript.html</link>
+    <guid>https://lettier.github.io/posts/2016-07-04-haskell-to-javascript.html</guid>
+  </item>
+  
+  <item>
+    
+    <media:content url="https://lettier.github.io/images/2016-06-10-k-nearest-neighbors-from-scratch/preview_image.png"></media:content>
+    
+    <title>k-Nearest Neighbors from Scratch</title>
+    
+    <dc:creator>David Lettier</dc:creator>
+    
+    <pubDate>Fri, 10 Jun 2016 00:00:00 EST</pubDate>
+    <description>Using JavaScript, we implement the k-Nearest Neighbors algorithm from the bottom up.</description>
+    <link>https://lettier.github.io/posts/2016-06-10-k-nearest-neighbors-from-scratch.html</link>
+    <guid>https://lettier.github.io/posts/2016-06-10-k-nearest-neighbors-from-scratch.html</guid>
+  </item>
+  
+  <item>
+    
+    <media:content url="https://lettier.github.io/images/2016-06-01-data-visualization-with-haskell-nyc-public-urination/preview_image.jpg"></media:content>
+    
+    <title>Data Visualization with Haskell: NYC Public Urination</title>
+    
+    <dc:creator>David Lettier</dc:creator>
+    
+    <pubDate>Wed, 01 Jun 2016 00:00:00 EST</pubDate>
+    <description>Using Haskell, we collect, process, and chart NYC 3-1-1 urinating in public complaints.</description>
+    <link>https://lettier.github.io/posts/2016-06-01-data-visualization-with-haskell-nyc-public-urination.html</link>
+    <guid>https://lettier.github.io/posts/2016-06-01-data-visualization-with-haskell-nyc-public-urination.html</guid>
+  </item>
+  
+  <item>
+    
+    <media:content url="https://lettier.github.io/images/2016-05-12-make-a-html5-canvas-game-with-physics/preview_image.jpg"></media:content>
+    
+    <title>Make a HTML5 Canvas Game with Physics</title>
+    
+    <dc:creator>David Lettier</dc:creator>
+    
+    <pubDate>Thu, 12 May 2016 00:00:00 EST</pubDate>
+    <description>Using FuntionalJS, PhysicsJS, PubSubJS, and EaselJS, we develop a HTML5 canvas game called Dubul Rubul.</description>
+    <link>https://lettier.github.io/posts/2016-05-12-make-a-html5-canvas-game-with-physics.html</link>
+    <guid>https://lettier.github.io/posts/2016-05-12-make-a-html5-canvas-game-with-physics.html</guid>
+  </item>
+  
+  <item>
+    
+    <media:content url="https://lettier.github.io/images/2016-04-29-breadth-first-search-in-haskell/preview_image.jpg"></media:content>
+    
+    <title>Breadth-First Search in Haskell</title>
+    
+    <dc:creator>David Lettier</dc:creator>
+    
+    <pubDate>Fri, 29 Apr 2016 00:00:00 EST</pubDate>
+    <description>Using Haskell, we implement the breadth-first search algorithm.</description>
+    <link>https://lettier.github.io/posts/2016-04-29-breadth-first-search-in-haskell.html</link>
+    <guid>https://lettier.github.io/posts/2016-04-29-breadth-first-search-in-haskell.html</guid>
+  </item>
+  
+  <item>
+    
+    <media:content url="https://lettier.github.io/images/2016-04-26-lets-make-a-ntp-client-in-c/preview_image.jpg"></media:content>
+    
+    <title>Let's make a NTP Client in C</title>
+    
+    <dc:creator>David Lettier</dc:creator>
+    
+    <pubDate>Tue, 26 Apr 2016 00:00:00 EST</pubDate>
+    <description>Using C, we build a Network Time Protocol client capable of getting the current time from a remote NTP server.</description>
+    <link>https://lettier.github.io/posts/2016-04-26-lets-make-a-ntp-client-in-c.html</link>
+    <guid>https://lettier.github.io/posts/2016-04-26-lets-make-a-ntp-client-in-c.html</guid>
+  </item>
+  
+  <item>
+    
+    <media:content url="https://lettier.github.io/images/2016-04-24-k-means-from-scratch/preview_image.jpg"></media:content>
+    
+    <title>K-Means from Scratch</title>
+    
+    <dc:creator>David Lettier</dc:creator>
+    
+    <pubDate>Sun, 24 Apr 2016 00:00:00 EST</pubDate>
+    <description>Using vanilla JavaScript, we build an interactive k-means clustering application from scratch and test the clusters using the silhouette coefficient metric.</description>
+    <link>https://lettier.github.io/posts/2016-04-24-k-means-from-scratch.html</link>
+    <guid>https://lettier.github.io/posts/2016-04-24-k-means-from-scratch.html</guid>
+  </item>
+  
+  <item>
+    
+    <media:content url="https://lettier.github.io/images/2016-04-22-fibonacci-lcm-and-gcd-in-haskell/preview_image.jpg"></media:content>
+    
+    <title>Fibonacci, LCM and GCD in Haskell</title>
+    
+    <dc:creator>David Lettier</dc:creator>
+    
+    <pubDate>Fri, 22 Apr 2016 00:00:00 EST</pubDate>
+    <description>Using Haskell, we implement the Fibonacci sequence, Least Common Multiple (LCM), and the Greatest Common Divisor (GCD).</description>
+    <link>https://lettier.github.io/posts/2016-04-22-fibonacci-lcm-and-gcd-in-haskell.html</link>
+    <guid>https://lettier.github.io/posts/2016-04-22-fibonacci-lcm-and-gcd-in-haskell.html</guid>
+  </item>
+  
+  <item>
+    
+    <media:content url="https://lettier.github.io/images/2016-04-14-max-subarray-in-haskell/preview_image.jpg"></media:content>
+    
+    <title>Max Subarray in Haskell</title>
+    
+    <dc:creator>David Lettier</dc:creator>
+    
+    <pubDate>Thu, 14 Apr 2016 00:00:00 EST</pubDate>
+    <description>Using Haskell, we implement the linear time algorithm that solves the max subarray problem.</description>
+    <link>https://lettier.github.io/posts/2016-04-14-max-subarray-in-haskell.html</link>
+    <guid>https://lettier.github.io/posts/2016-04-14-max-subarray-in-haskell.html</guid>
+  </item>
+  
+  <item>
+    
+    <media:content url="https://lettier.github.io/images/2016-04-10-birthday-condolences-greeting-card-classifier/preview_image.jpg"></media:content>
+    
+    <title>Birthday Condolences, Greeting Card Classifier</title>
+    
+    <dc:creator>David Lettier</dc:creator>
+    
+    <pubDate>Sun, 10 Apr 2016 00:00:00 EST</pubDate>
+    <description>Using scikit-learn, we build a binary classifier model capable of classifying greeting cards as either birthday or condolences.</description>
+    <link>https://lettier.github.io/posts/2016-04-10-birthday-condolences-greeting-card-classifier.html</link>
+    <guid>https://lettier.github.io/posts/2016-04-10-birthday-condolences-greeting-card-classifier.html</guid>
+  </item>
+  
+  <item>
+    
+    <media:content url="https://lettier.github.io/images/2016-03-28-reelin-and-rocin-receiver-operating-characteristic/preview_image.jpg"></media:content>
+    
+    <title>Reelin' and ROCin', Receiver Operating Characteristic</title>
+    
+    <dc:creator>David Lettier</dc:creator>
+    
+    <pubDate>Mon, 28 Mar 2016 00:00:00 EST</pubDate>
+    <description>Using a fictitious scenario, we explore the Receiver Operating Characteristic metric.</description>
+    <link>https://lettier.github.io/posts/2016-03-28-reelin-and-rocin-receiver-operating-characteristic.html</link>
+    <guid>https://lettier.github.io/posts/2016-03-28-reelin-and-rocin-receiver-operating-characteristic.html</guid>
+  </item>
+  
+  <item>
+    
+    <media:content url="https://lettier.github.io/images/2016-02-29-triforce-overload-sierpinski-pyramids/preview_image.jpg"></media:content>
+    
+    <title>Triforce Overload, Sierpinski Pyramids</title>
+    
+    <dc:creator>David Lettier</dc:creator>
+    
+    <pubDate>Mon, 29 Feb 2016 00:00:00 EST</pubDate>
+    <description>Using only the WebGL, we implement an explorable environment containing two 3D Sierpinski tetrahedrons lit by per fragment lighting.</description>
+    <link>https://lettier.github.io/posts/2016-02-29-triforce-overload-sierpinski-pyramids.html</link>
+    <guid>https://lettier.github.io/posts/2016-02-29-triforce-overload-sierpinski-pyramids.html</guid>
+  </item>
+  
+  <item>
+    
+    <media:content url="https://lettier.github.io/images/2016-02-17-text-mining-in-r-death-row-prior-occupations/preview_image.png"></media:content>
+    
+    <title>Text Mining in R: Death Row Prior Occupations</title>
+    
+    <dc:creator>David Lettier</dc:creator>
+    
+    <pubDate>Wed, 17 Feb 2016 00:00:00 EST</pubDate>
+    <description>Analyzing the Texas Department of Criminal Justice death row inmate data, we text mine death row inmates' prior occupations.</description>
+    <link>https://lettier.github.io/posts/2016-02-17-text-mining-in-r-death-row-prior-occupations.html</link>
+    <guid>https://lettier.github.io/posts/2016-02-17-text-mining-in-r-death-row-prior-occupations.html</guid>
+  </item>
+  
+</channel>
+</rss>

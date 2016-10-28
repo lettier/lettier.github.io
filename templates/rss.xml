@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+  xmlns:media="http://search.yahoo.com/mrss/"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+  <title>Lettier Blog RSS Feed</title>
+  <description>RSS feed for $rootUrl$.</description>
+  <link>$rootUrl$/rss.xml</link>
+  <atom:link href="$rootUrl$/rss.xml" rel="self" type="application/rss+xml" />
+  <copyright>Copyright David Lettier (C) 2016. All rights reserved.</copyright>
+  $for(posts)$
+  <item>
+    $if(preview_image)$
+    <media:content url="$rootUrl$$preview_image$" />
+    $endif$
+    <title>$title$</title>
+    $if(author)$
+    <dc:creator>$author$</dc:creator>
+    $endif$
+    <pubDate>$rfc822Date$</pubDate>
+    <description>$description$</description>
+    <link>$rootUrl$$url$</link>
+    <guid>$rootUrl$$url$</guid>
+  </item>
+  $endfor$
+</channel>
+</rss>

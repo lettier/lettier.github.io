@@ -2,6 +2,7 @@
 title: Birthday Condolences, Greeting Card Classifier
 jumbotron_image: /images/2016-04-10-birthday-condolences-greeting-card-classifier/jumbotron_image.jpg
 preview_image: /images/2016-04-10-birthday-condolences-greeting-card-classifier/preview_image.jpg
+description: Using scikit-learn, we build a binary classifier model capable of classifying greeting cards as either birthday or condolences.
 author: David Lettier
 ---
 <!--https://commons.wikimedia.org/wiki/File:GreetingCards3.jpg-->

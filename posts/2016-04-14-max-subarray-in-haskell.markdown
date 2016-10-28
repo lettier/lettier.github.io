@@ -2,6 +2,7 @@
 title: Max Subarray in Haskell
 jumbotron_image: /images/2016-04-14-max-subarray-in-haskell/jumbotron_image.jpg
 preview_image: /images/2016-04-14-max-subarray-in-haskell/preview_image.jpg
+description: Using Haskell, we implement the linear time algorithm that solves the max subarray problem.
 author: David Lettier
 ---
 

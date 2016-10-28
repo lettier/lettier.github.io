@@ -2,6 +2,7 @@
 title: Reelin' and ROCin', Receiver Operating Characteristic
 jumbotron_image: /images/2016-03-28-reelin-and-rocin-receiver-operating-characteristic/jumbotron_image.jpg
 preview_image: /images/2016-03-28-reelin-and-rocin-receiver-operating-characteristic/preview_image.jpg
+description: Using a fictitious scenario, we explore the Receiver Operating Characteristic metric.
 author: David Lettier
 ---
 

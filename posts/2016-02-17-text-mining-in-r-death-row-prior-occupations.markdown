@@ -2,10 +2,12 @@
 title: Text Mining in R: Death Row Prior Occupations
 jumbotron_image: /images/2016-02-17-text-mining-in-r-death-row-prior-occupations/jumbotron_image.png
 preview_image: /images/2016-02-17-text-mining-in-r-death-row-prior-occupations/preview_image.png
+description: Analyzing the Texas Department of Criminal Justice death row inmate data, we text mine death row inmates' prior occupations.
 author: David Lettier
 ---
 
-Found in a list of [100+ interesting data sets](http://rs.io/100-interesting-data-sets-for-statistics/), the [Texas Department of Criminal Justice](http://www.tdcj.state.tx.us/death_row/index.html)
+Found in a list of [100+ interesting data sets](http://rs.io/100-interesting-data-sets-for-statistics/),
+the [Texas Department of Criminal Justice](http://www.tdcj.state.tx.us/death_row/index.html)
 provides different collections of information on death row inmates both present and past.
 Prior occupations for each current offender are listed [here](http://www.tdcj.state.tx.us/death_row/dr_offenders_on_dr.html).
 

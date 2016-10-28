@@ -5,6 +5,9 @@ import           Data.Maybe (fromMaybe)
 import qualified Data.Map as M
 import           Hakyll
 
+rootUrl :: String
+rootUrl = "https://lettier.github.io"
+
 main :: IO ()
 main = hakyll $ do
   match ("images/*" .||. "images/*/*") $ do
@@ -27,14 +30,28 @@ main = hakyll $ do
       >>= loadAndApplyTemplate "templates/default.html" postCtx
       >>= relativizeUrls
 
+  create ["rss.xml"] $ do
+    route idRoute
+    compile $ do
+      posts <- recentFirst =<< loadAll "posts/*"
+      let count = length posts
+      let postsCtx = mconcat [
+                listField "posts" postCtx (return posts)
+              , constField "rootUrl" rootUrl
+              , defaultContext
+            ]
+      makeItem ""
+        >>= loadAndApplyTemplate "templates/rss.xml" postsCtx
+        >>= relativizeUrls
+
   create ["posts.html"] $ do
     route idRoute
     compile $ do
       posts <- recentFirst =<< loadAll "posts/*"
       let count = length posts
       let postsCtx = mconcat [
-              listField "posts" postCtx (return posts)
-              , constField "title" ((show count) ++ " Post" ++ (plural count) ++ " and Counting")
+                listField "posts" postCtx (return posts)
+              , constField "title" (show count ++ " Post" ++ plural count ++ " and Counting")
               , titleField "title"
               , defaultContext
             ]
@@ -61,8 +78,10 @@ itemSetIdentifier x (Item _ i) = Item x i
 
 postCtx :: Context String
 postCtx = mconcat [
-    metadataField
+      metadataField
     , dateField "date" "%Y/%m/%d"
+    , dateField "rfc822Date" "%a, %d %b %Y 00:00:00 EST"
+    , constField "rootUrl" rootUrl
     , defaultContext
   ]
 
