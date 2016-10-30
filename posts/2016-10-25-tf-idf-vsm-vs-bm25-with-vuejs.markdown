@@ -519,12 +519,13 @@ The actual code:
     let k1 = 1.2;
     let k2 = 100;
     let b  = 0.75;
-    let K  = meanDocLen === 0 ? 0 : k1 * ((1 - b) + (b * (sum(countVector) / meanDocLen)));
     return this.countVectors.map(
       function (countVector) {
         return this.queryTokens.reduce(
             function (acc, queryToken) {
               let dictionaryIndex = this.dictionary.indexOf(queryToken);
+
+              let K  = meanDocLen === 0 ? 0 : k1 * ((1 - b) + (b * (sum(countVector) / meanDocLen)));
 
               let r  = 0;
               let R  = 0;

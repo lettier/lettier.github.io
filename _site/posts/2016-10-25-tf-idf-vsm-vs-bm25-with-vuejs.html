@@ -529,12 +529,13 @@ D <span class="op">=</span> Docs
     <span class="kw">let</span> k1 <span class="op">=</span> <span class="fl">1.2</span><span class="op">;</span>
     <span class="kw">let</span> k2 <span class="op">=</span> <span class="dv">100</span><span class="op">;</span>
     <span class="kw">let</span> b  <span class="op">=</span> <span class="fl">0.75</span><span class="op">;</span>
-    <span class="kw">let</span> K  <span class="op">=</span> meanDocLen <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> : k1 <span class="op">*</span> ((<span class="dv">1</span> <span class="op">-</span> b) <span class="op">+</span> (b <span class="op">*</span> (<span class="at">sum</span>(countVector) / meanDocLen)))<span class="op">;</span>
     <span class="cf">return</span> <span class="kw">this</span>.<span class="va">countVectors</span>.<span class="at">map</span>(
       <span class="kw">function</span> (countVector) <span class="op">{</span>
         <span class="cf">return</span> <span class="kw">this</span>.<span class="va">queryTokens</span>.<span class="at">reduce</span>(
             <span class="kw">function</span> (acc<span class="op">,</span> queryToken) <span class="op">{</span>
               <span class="kw">let</span> dictionaryIndex <span class="op">=</span> <span class="kw">this</span>.<span class="va">dictionary</span>.<span class="at">indexOf</span>(queryToken)<span class="op">;</span>
+
+              <span class="kw">let</span> K  <span class="op">=</span> meanDocLen <span class="op">===</span> <span class="dv">0</span> <span class="op">?</span> <span class="dv">0</span> : k1 <span class="op">*</span> ((<span class="dv">1</span> <span class="op">-</span> b) <span class="op">+</span> (b <span class="op">*</span> (<span class="at">sum</span>(countVector) / meanDocLen)))<span class="op">;</span>
 
               <span class="kw">let</span> r  <span class="op">=</span> <span class="dv">0</span><span class="op">;</span>
               <span class="kw">let</span> R  <span class="op">=</span> <span class="dv">0</span><span class="op">;</span>
