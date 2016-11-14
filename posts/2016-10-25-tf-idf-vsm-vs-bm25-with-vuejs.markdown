@@ -113,7 +113,7 @@ Our tokens will be one n-grams or unigrams since we are splitting on white space
 
 ## Dictionary
 
-We will now take each shredded pile of tokens and build a dictionary---an array of unique words (unigrams) order alphabetically.
+We will now take each shredded pile of tokens and build a dictionary---an array of unique words (unigrams) ordered alphabetically.
 
 ```javascript
 , dictionary: function () {
@@ -302,7 +302,7 @@ giving us our final vectorized documents.
 
 You will notice that if a token is in all documents,
 its final tf-idf score is zero (because its idf is zero) for any document in the corpus.
-When a token is in every document, it is effectively ignore when calculating the relevance of documents in a corpus again a given query.
+When a token is in every document, it is effectively ignored when calculating the relevance of documents in a corpus again a given query.
 You can see this happening for `a` in our documents.
 
 When a token's tf is zero, for a given document vector, its resulting tf-idf score is zero even if its idf is non-zero.
