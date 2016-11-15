@@ -12,8 +12,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="author" content="David Lettier">
     <meta name="description" content="Using Vue.js, we build a JavaScript based search engine capable of using tf-idf VSM and Okapi BM25 simultaneously.">
-    <link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="../css/pandoc.css">
     <link rel="stylesheet" type="text/css" href="../css/default.css">
     <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
@@ -239,7 +239,7 @@ In this model, a text (such as a sentence or a document) is represented as the b
 [<span class="st">&quot;to&quot;</span><span class="op">,</span> <span class="st">&quot;market&quot;</span><span class="op">,</span> <span class="st">&quot;to&quot;</span><span class="op">,</span> <span class="st">&quot;market&quot;</span><span class="op">,</span> <span class="st">&quot;to&quot;</span><span class="op">,</span> <span class="st">&quot;buy&quot;</span><span class="op">,</span> <span class="st">&quot;a&quot;</span><span class="op">,</span> <span class="st">&quot;plum&quot;</span><span class="op">,</span> <span class="st">&quot;cake&quot;</span><span class="op">,</span> <span class="st">&quot;home&quot;</span><span class="op">,</span> <span class="st">&quot;again&quot;</span><span class="op">,</span> <span class="st">&quot;home&quot;</span><span class="op">,</span> <span class="st">&quot;again&quot;</span><span class="op">,</span> <span class="st">&quot;market&quot;</span><span class="op">,</span> <span class="st">&quot;is&quot;</span><span class="op">,</span> <span class="st">&quot;late&quot;</span><span class="op">,</span> <span class="st">&quot;to&quot;</span><span class="op">,</span> <span class="st">&quot;market&quot;</span><span class="op">,</span> <span class="st">&quot;to&quot;</span><span class="op">,</span> <span class="st">&quot;market&quot;</span><span class="op">,</span> <span class="st">&quot;to&quot;</span><span class="op">,</span> <span class="st">&quot;buy&quot;</span><span class="op">,</span> <span class="st">&quot;a&quot;</span><span class="op">,</span> <span class="st">&quot;plum&quot;</span><span class="op">,</span> <span class="st">&quot;bun&quot;</span><span class="op">,</span> <span class="st">&quot;home&quot;</span><span class="op">,</span> <span class="st">&quot;again&quot;</span><span class="op">,</span> <span class="st">&quot;home&quot;</span><span class="op">,</span> <span class="st">&quot;again&quot;</span><span class="op">,</span> <span class="st">&quot;market&quot;</span><span class="op">,</span> <span class="st">&quot;is&quot;</span><span class="op">,</span> <span class="st">&quot;done&quot;</span>]
 [<span class="st">&quot;jack&quot;</span><span class="op">,</span> <span class="st">&quot;and&quot;</span><span class="op">,</span> <span class="st">&quot;jill&quot;</span><span class="op">,</span> <span class="st">&quot;went&quot;</span><span class="op">,</span> <span class="st">&quot;up&quot;</span><span class="op">,</span> <span class="st">&quot;the&quot;</span><span class="op">,</span> <span class="st">&quot;hill&quot;</span><span class="op">,</span> <span class="st">&quot;to&quot;</span><span class="op">,</span> <span class="st">&quot;fetch&quot;</span><span class="op">,</span> <span class="st">&quot;a&quot;</span><span class="op">,</span> <span class="st">&quot;pail&quot;</span><span class="op">,</span> <span class="st">&quot;of&quot;</span><span class="op">,</span> <span class="st">&quot;water&quot;</span><span class="op">,</span> <span class="st">&quot;jack&quot;</span><span class="op">,</span> <span class="st">&quot;fell&quot;</span><span class="op">,</span> <span class="st">&quot;down&quot;</span><span class="op">,</span> <span class="st">&quot;and&quot;</span><span class="op">,</span> <span class="st">&quot;broke&quot;</span><span class="op">,</span> <span class="st">&quot;his&quot;</span><span class="op">,</span> <span class="st">&quot;crown&quot;</span><span class="op">,</span> <span class="st">&quot;and&quot;</span><span class="op">,</span> <span class="st">&quot;jill&quot;</span><span class="op">,</span> <span class="st">&quot;came&quot;</span><span class="op">,</span> <span class="st">&quot;tumbling&quot;</span><span class="op">,</span> <span class="st">&quot;after&quot;</span>]</code></pre></div>
 <h2 id="dictionary">Dictionary</h2>
-<p>We will now take each shredded pile of tokens and build a dictionary—an array of unique words (unigrams) ordered alphabetically.</p>
+<p>We will now take each shredded pile of tokens and build a dictionary—an array of unique words (unigrams) order alphabetically.</p>
 <div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="op">,</span> dictionary<span class="op">:</span> <span class="kw">function</span> () <span class="op">{</span>
     <span class="cf">return</span> <span class="kw">this</span>.<span class="va">tokens</span>.<span class="at">reduce</span>(
         <span class="kw">function</span> (acc<span class="op">,</span> tokens) <span class="op">{</span>
@@ -377,7 +377,7 @@ Each dimension corresponds to a separate term. If a term occurs in the document,
       <span class="op">}</span>.<span class="at">bind</span>(<span class="kw">this</span>)
     )<span class="op">;</span>
   <span class="op">}</span></code></pre></div>
-<p>You will notice that if a token is in all documents, its final tf-idf score is zero (because its idf is zero) for any document in the corpus. When a token is in every document, it is effectively ignored when calculating the relevance of documents in a corpus again a given query. You can see this happening for <code>a</code> in our documents.</p>
+<p>You will notice that if a token is in all documents, its final tf-idf score is zero (because its idf is zero) for any document in the corpus. When a token is in every document, it is effectively ignore when calculating the relevance of documents in a corpus again a given query. You can see this happening for <code>a</code> in our documents.</p>
 <p>When a token’s tf is zero, for a given document vector, its resulting tf-idf score is zero even if its idf is non-zero. This makes sense since the document never had that word or term.</p>
 <div class="figure">
 <img src="../images/2016-10-25-tf-idf-vsm-vs-bm25-with-vuejs/tfidf_matrix.png" alt="TF-IDF Matrix" class="post-img post-img-fill" />
@@ -1346,7 +1346,7 @@ button <span class="kw">{</span>
     </div>
     <div class="share-toolbox addthis_sharing_toolbox"></div>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-    <script src="../js/bootstrap.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4fc2bc7a00a9352b"></script>
     <script>
       (function(i,s,o,g,r,a,m){
