@@ -483,7 +483,7 @@ body {
     cursor              pointer
 ```
 
-This the label for the file input box.
+This is the label for the file input box.
 It is here that we make it more like a button.
 
 ```haskell
@@ -1203,7 +1203,7 @@ hideMainWindowMenu :: MainWindow -> Fay ()
 hideMainWindowMenu = ffi "%1['setMenu'](null)"
 ```
 
-To simply the interface, we hide the main menu bar.
+To simplify the interface, we hide the main menu bar.
 During development, it is best to leave this visible.
 
 ```haskell
