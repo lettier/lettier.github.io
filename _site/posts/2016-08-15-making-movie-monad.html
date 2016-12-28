@@ -507,7 +507,7 @@ main <span class="fu">=</span> putCss <span class="fu">$</span> <span class="kw"
     borderBottomWidth   <span class="fu">$</span> px <span class="dv">10</span>
     display             inlineBlock
     cursor              pointer</code></pre></div>
-<p>This the label for the file input box. It is here that we make it more like a button.</p>
+<p>This is the label for the file input box. It is here that we make it more like a button.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  video <span class="fu">?</span> <span class="kw">do</span>
     height <span class="fu">$</span> pct <span class="dv">100</span>
     width  <span class="fu">$</span> pct <span class="dv">100</span></code></pre></div>
@@ -973,7 +973,7 @@ setMainWindowNull <span class="fu">=</span> ffi <span class="st">&quot;(function
 <p>Sets the main window global property to null.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">hideMainWindowMenu ::</span> <span class="dt">MainWindow</span> <span class="ot">-&gt;</span> <span class="dt">Fay</span> ()
 hideMainWindowMenu <span class="fu">=</span> ffi <span class="st">&quot;%1['setMenu'](null)&quot;</span></code></pre></div>
-<p>To simply the interface, we hide the main menu bar. During development, it is best to leave this visible.</p>
+<p>To simplify the interface, we hide the main menu bar. During development, it is best to leave this visible.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">setupMainWindow ::</span> <span class="dt">Fay</span> ()
 setupMainWindow <span class="fu">=</span> <span class="kw">do</span>
   nullableMainWindow <span class="ot">&lt;-</span> getMainWindow
