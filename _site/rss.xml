@@ -9,6 +9,20 @@
   
   <item>
     
+    <media:content url="https://lettier.github.io/images/2017-01-15-linear-regression-and-the-amazing-beard/preview_image.jpg"></media:content>
+    
+    <title>Linear Regression and the Amazing Beard</title>
+    
+    <dc:creator>David Lettier</dc:creator>
+    
+    <pubDate>Sun, 15 Jan 2017 00:00:00 EST</pubDate>
+    <description>Using PureScript, Halogen, and Chart.js, we implement simple linear regression, using the gradient descent algorithm, from scratch.</description>
+    <link>https://lettier.github.io/posts/2017-01-15-linear-regression-and-the-amazing-beard.html</link>
+    <guid>https://lettier.github.io/posts/2017-01-15-linear-regression-and-the-amazing-beard.html</guid>
+  </item>
+  
+  <item>
+    
     <media:content url="https://lettier.github.io/images/2016-10-25-tf-idf-vsm-vs-bm25-with-vuejs/preview_image.jpg"></media:content>
     
     <title>TF-IDF VSM vs BM25 with Vue.js</title>
