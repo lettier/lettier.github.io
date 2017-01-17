@@ -288,7 +288,7 @@ This most-seen-class type becomes the class type for your unclassified data poin
 # Wrap-up
 
 We discussed the details of the k-Nearest Neighbors algorithm using a fictitious story about classifying unknown plants.
-Along the way we looked at how each step is implemented in the [interactive demo](http://www.lettier.com/knearestneighbors/).
+Along the way, we looked at how each step is implemented in the [interactive demo](http://www.lettier.com/knearestneighbors/).
 
 Now that you have seen how a supervised classification algorithm works, take a look at
 [K-Means from Scratch](/posts/2016-04-24-k-means-from-scratch.html)--an unsupervised clustering method for unlabeled data.
