@@ -32,17 +32,11 @@ main = hakyll $ do
 
   create ["rss.xml"] $ do
     route idRoute
-    compile $ do
-      posts <- recentFirst =<< loadAll "posts/*"
-      let count = length posts
-      let postsCtx = mconcat [
-                listField "posts" postCtx (return posts)
-              , constField "rootUrl" rootUrl
-              , defaultContext
-            ]
-      makeItem ""
-        >>= loadAndApplyTemplate "templates/rss.xml" postsCtx
-        >>= relativizeUrls
+    compile $ createXmlItem "rss.xml"
+
+  create ["sitemap.xml"] $ do
+    route idRoute
+    compile $ createXmlItem "sitemap.xml"
 
   create ["posts.html"] $ do
     route idRoute
@@ -70,6 +64,18 @@ main = hakyll $ do
 
   match "templates/*" $ compile templateCompiler
 
+createXmlItem :: String -> Compiler (Item String)
+createXmlItem templateName = do
+    posts <- recentFirst =<< loadAll "posts/*"
+    let postsCtx = mconcat [
+              listField "posts" postCtx (return posts)
+            , constField "rootUrl" rootUrl
+            , defaultContext
+          ]
+    makeItem ""
+      >>= loadAndApplyTemplate (fromFilePath ("templates/" ++ templateName)) postsCtx
+      >>= relativizeUrls
+
 changeIdentifier :: Identifier -> Item a -> Compiler (Item a)
 changeIdentifier idt item = return (itemSetIdentifier idt item)
 
@@ -79,7 +85,7 @@ itemSetIdentifier x (Item _ i) = Item x i
 postCtx :: Context String
 postCtx = mconcat [
       metadataField
-    , dateField "date" "%Y/%m/%d"
+    , dateField "date" "%Y-%m-%d"
     , dateField "rfc822Date" "%a, %d %b %Y 00:00:00 EST"
     , constField "rootUrl" rootUrl
     , defaultContext
