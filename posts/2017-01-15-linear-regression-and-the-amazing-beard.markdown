@@ -71,7 +71,7 @@ Pulling it taught, you swivel the string through the dots trying to cross as man
 
 ## Hypothesis Function
 
-As you swivel it through the points, you get the idea that you could some how model data with only the string.
+As you swivel it through the points, you get the idea that you could some how model the data with only the string.
 Why not use the equation for a straight line you think to yourself.
 The assumption here being that beard length had a linear relationship to the month.
 
@@ -237,7 +237,7 @@ This is known as the _learning rate_.
 
 To keep it simple, you can maintain a constant learning rate throughout the duration of gradient descent.
 However this may cause some problems depending on your cost function landscape.
-In the [demo](https://github.com/lettier/interactive-simple-linear-regression/blob/master/src/Main.purs#L206)
+In the [demo](https://github.com/lettier/interactive-simple-linear-regression/blob/master/src/Main.purs#L254)
 we employ a technique known as [Bold Driver](http://www.willamette.edu/~gorr/classes/cs449/momrate.html).
 Ideally we'd like to make leaps and bounds the farther away we are from the minimum until we get very near.
 Once we start getting close, we want to take smaller and smaller steps until we slowly slide right into the minimum.

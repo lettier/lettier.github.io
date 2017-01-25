@@ -219,7 +219,7 @@
 </div>
 <p>You notice the string gives the dots an up-and-to-the-right type trajectory. Pulling it taught, you swivel the string through the dots trying to cross as many as possible.</p>
 <h2 id="hypothesis-function">Hypothesis Function</h2>
-<p>As you swivel it through the points, you get the idea that you could some how model data with only the string. Why not use the equation for a straight line you think to yourself. The assumption here being that beard length had a linear relationship to the month.</p>
+<p>As you swivel it through the points, you get the idea that you could some how model the data with only the string. Why not use the equation for a straight line you think to yourself. The assumption here being that beard length had a linear relationship to the month.</p>
 <p>We will use PureScript to program our simple linear regression calculator. If you have ever used Haskell, the syntax is very similar. Here is a <a href="https://learnxinyminutes.com/docs/purescript/">quick guide</a> to get a feel for the language.</p>
 <blockquote>
 PureScript is a small strongly typed programming language that compiles to JavaScript.
@@ -317,7 +317,7 @@ gradient f values <span class="fu">=</span> (<span class="fl">1.0</span> <span c
 
 </div>
 <p>As we travel along the cost function (looking for the global minimum), descending against the gradient, we must decide on how big of next step we will take. Take too big of a step and you may just overshoot the minimum. Take too small of a step and it may take forever to reach the minimum. This is known as the <em>learning rate</em>.</p>
-<p>To keep it simple, you can maintain a constant learning rate throughout the duration of gradient descent. However this may cause some problems depending on your cost function landscape. In the <a href="https://github.com/lettier/interactive-simple-linear-regression/blob/master/src/Main.purs#L206">demo</a> we employ a technique known as <a href="http://www.willamette.edu/~gorr/classes/cs449/momrate.html">Bold Driver</a>. Ideally we’d like to make leaps and bounds the farther away we are from the minimum until we get very near. Once we start getting close, we want to take smaller and smaller steps until we slowly slide right into the minimum.</p>
+<p>To keep it simple, you can maintain a constant learning rate throughout the duration of gradient descent. However this may cause some problems depending on your cost function landscape. In the <a href="https://github.com/lettier/interactive-simple-linear-regression/blob/master/src/Main.purs#L254">demo</a> we employ a technique known as <a href="http://www.willamette.edu/~gorr/classes/cs449/momrate.html">Bold Driver</a>. Ideally we’d like to make leaps and bounds the farther away we are from the minimum until we get very near. Once we start getting close, we want to take smaller and smaller steps until we slowly slide right into the minimum.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">newYIntercept ::</span> <span class="dt">Number</span> <span class="ot">-&gt;</span> <span class="dt">Array</span> (<span class="dt">Array</span> <span class="dt">Number</span>) <span class="ot">-&gt;</span> <span class="dt">Number</span> <span class="ot">-&gt;</span> <span class="dt">Number</span> <span class="ot">-&gt;</span> <span class="dt">Number</span>
 newYIntercept learningRate values oldYIntercept slope <span class="fu">=</span> newYIntercept'
   <span class="kw">where</span>
