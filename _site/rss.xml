@@ -9,6 +9,20 @@
   
   <item>
     
+    <media:content url="https://lettier.github.io/images/2017-02-25-matrix-inverse-purescript/preview_image.jpg"></media:content>
+    
+    <title>Let's make a Matrix Inverse Calculator with PureScript</title>
+    
+    <dc:creator>David Lettier</dc:creator>
+    
+    <pubDate>Sat, 25 Feb 2017 00:00:00 EST</pubDate>
+    <description>Using PureScript and the Halogen library, we build a matrix inverse calculator from the ground up.</description>
+    <link>https://lettier.github.io/posts/2017-02-25-matrix-inverse-purescript.html</link>
+    <guid>https://lettier.github.io/posts/2017-02-25-matrix-inverse-purescript.html</guid>
+  </item>
+  
+  <item>
+    
     <media:content url="https://lettier.github.io/images/2017-01-15-linear-regression-and-the-amazing-beard/preview_image.jpg"></media:content>
     
     <title>Linear Regression and the Amazing Beard</title>
