@@ -35,7 +35,7 @@ All of the code for the project is hosted on [GitHub](https://github.com/lettier
 
 ## Project setup
 
-Before we can begin developing we will need to set up our project with all of its files and dependencies.
+Before we begin developing, we need to set up our project with all of its files and dependencies.
 
 ### File structure
 
@@ -859,7 +859,7 @@ If found, we return `Just` the row number and `Just` the row column value for th
     folder _ _ = { index: Nothing, value: Nothing }
 ```
 
-Looking closer at `folder` you can see that takes a record, a tuple containing an integer and a real number, and returns
+Looking closer at `folder`, it takes a record, a tuple containing an integer and a real number, and returns
 a record that holds maybe an integer (`index`) and maybe a real number (`value`).
 There a three input scenarios `folder` _pattern matches_ on.
 
@@ -872,7 +872,7 @@ There a three input scenarios `folder` _pattern matches_ on.
 * For everything else
     * return a record containing `Nothing`
 
-The `foldl` uses folder to reduce the extracted tuples, from the matrix column, down to a single record where we
+The `foldl` uses `folder` to reduce the extracted tuples, from the matrix column, down to a single record where we
 access the index or row number that `Maybe` an integer if `folder` was able to find something.
 
 ```haskell

@@ -204,7 +204,7 @@
 <li>Using the Halogen library to build our UI</li>
 </ul>
 <h2 id="project-setup">Project setup</h2>
-<p>Before we can begin developing we will need to set up our project with all of its files and dependencies.</p>
+<p>Before we begin developing, we need to set up our project with all of its files and dependencies.</p>
 <h3 id="file-structure">File structure</h3>
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">matrix-inverse-calculator/</span>
   <span class="kw">dist/</span>
@@ -846,7 +846,7 @@ firstValidRow matrix atRowOrBelow inCol <span class="fu">=</span> (foldl folder 
             <span class="kw">else</span> r
 
     folder _ _ <span class="fu">=</span> { index<span class="fu">:</span> <span class="dt">Nothing</span>, value<span class="fu">:</span> <span class="dt">Nothing</span> }</code></pre></div>
-<p>Looking closer at <code>folder</code> you can see that takes a record, a tuple containing an integer and a real number, and returns a record that holds maybe an integer (<code>index</code>) and maybe a real number (<code>value</code>). There a three input scenarios <code>folder</code> <em>pattern matches</em> on.</p>
+<p>Looking closer at <code>folder</code>, it takes a record, a tuple containing an integer and a real number, and returns a record that holds maybe an integer (<code>index</code>) and maybe a real number (<code>value</code>). There a three input scenarios <code>folder</code> <em>pattern matches</em> on.</p>
 <ul>
 <li>The input record has nothing
 <ul>
@@ -865,7 +865,7 @@ firstValidRow matrix atRowOrBelow inCol <span class="fu">=</span> (foldl folder 
 <li>return a record containing <code>Nothing</code></li>
 </ul></li>
 </ul>
-<p>The <code>foldl</code> uses folder to reduce the extracted tuples, from the matrix column, down to a single record where we access the index or row number that <code>Maybe</code> an integer if <code>folder</code> was able to find something.</p>
+<p>The <code>foldl</code> uses <code>folder</code> to reduce the extracted tuples, from the matrix column, down to a single record where we access the index or row number that <code>Maybe</code> an integer if <code>folder</code> was able to find something.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">input matrix
 
     <span class="dt">C1</span>  <span class="dt">C2</span>  <span class="dt">C3</span> <span class="dt">C4</span>
