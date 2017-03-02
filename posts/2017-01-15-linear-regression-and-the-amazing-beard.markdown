@@ -1,5 +1,5 @@
 ---
-title: Linear Regression and the Amazing Beard
+title: Let's make a Linear Regression Calculator with PureScript
 jumbotron_image: /images/2017-01-15-linear-regression-and-the-amazing-beard/jumbotron_image.jpg
 preview_image: /images/2017-01-15-linear-regression-and-the-amazing-beard/preview_image.jpg
 description: Using PureScript, Halogen, and Chart.js, we implement simple linear regression and gradient descent from the ground up.

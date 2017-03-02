@@ -1,5 +1,5 @@
 ---
-title: TF-IDF VSM vs BM25 with Vue.js
+title: Let's make a Search Engine with Vue.js
 jumbotron_image: /images/2016-10-25-tf-idf-vsm-vs-bm25-with-vuejs/jumbotron_image.jpg
 preview_image: /images/2016-10-25-tf-idf-vsm-vs-bm25-with-vuejs/preview_image.jpg
 description: Using Vue.js, we build a JavaScript based search engine capable of using tf-idf VSM and Okapi BM25 simultaneously.
@@ -33,7 +33,7 @@ Mother Goose nursery rhymes using both tf-idf VSM and BM25 simultaneously.
 
 If you would like to play along as we build up the project, there is a playable demo located
 [here](
-http://www.lettier.com/searchEngine
+http://www.lettier.com/search-engine
 ).
 
 ![Demo built with Vue.js](/images/2016-10-25-tf-idf-vsm-vs-bm25-with-vuejs/demo.jpg){.post-img .post-img-fill}
