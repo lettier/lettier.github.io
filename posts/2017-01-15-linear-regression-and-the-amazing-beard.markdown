@@ -11,7 +11,7 @@ author: David Lettier
 
 You can try out the final build of the simple linear regression calculator at
 [lettier.com/simple-linear-regression](https://lettier.com/simple-linear-regression/).
-All of the code for the project is hosted on [GitHub](https://github.com/lettier/simple-linear-regression).
+All of the code for the project is hosted on [GitHub](https://github.com/lettier/interactive-simple-linear-regression).
 
 ## Who this is for
 
