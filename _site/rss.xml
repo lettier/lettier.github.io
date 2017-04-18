@@ -30,7 +30,7 @@
     <dc:creator>David Lettier</dc:creator>
     
     <pubDate>Sun, 15 Jan 2017 00:00:00 EST</pubDate>
-    <description>Using PureScript, Halogen, and Chart.js, we implement simple linear regression and gradient descent from the ground up.</description>
+    <description>Using PureScript, Halogen, and Chart.js, we implement linear regression, gradient descent, and the PRESS statistic from the ground up.</description>
     <link>https://lettier.github.io/posts/2017-01-15-linear-regression-and-the-amazing-beard.html</link>
     <guid>https://lettier.github.io/posts/2017-01-15-linear-regression-and-the-amazing-beard.html</guid>
   </item>
