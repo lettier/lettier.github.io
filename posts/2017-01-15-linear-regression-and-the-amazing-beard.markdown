@@ -313,7 +313,7 @@ Earlier we said that our goal was to find the collection of coefficients that mi
 the predicted outputs (as given by our hypothesis function).
 More precisely we wish to minimize our _cost_ or _loss_ function.
 
-The cost function takes the initial or found coefficients,
+The cost function takes the coefficients we've come up with,
 the rows of inputs given,
 the list of outputs given,
 and returns the _mean squared error_ or MSE.
@@ -487,7 +487,7 @@ Using the learning rate and the gradient, we map over the coefficients and retur
 The update function is the following.
 
 ```haskell
-newCoefficient[i] = oldCoefficient[i] - (learningRate * partialDerivative[i])`
+newCoefficient[i] = oldCoefficient[i] - (learningRate * partialDerivative[i])
 ```
 
 ## PRESS Statistic
@@ -542,9 +542,9 @@ pressStatistic = sum[0...i...(N-1)](((hypothesis[i] - output[i]) / (1 - hatMatri
 Our revised method for computing the PRESS statistic is the following.
 
 * For every input-output pair `i`
-    * Calculate `e = (hypothesis[i] - outputs[i]) / (1 - hatMatrix[i][i])`
-    * Square each `e`
-* Sum the list of squared `e`.
+    * Calculate `errors[i] = (hypothesis[i] - outputs[i]) / (1 - hatMatrix[i][i])`
+    * Square each `errors[i]`
+* Sum the list of squared `errors[i]`.
 
 We can now translate this outline into actual code.
 
@@ -650,7 +650,7 @@ runLinearRegressionWithUnscaled
 ```
 
 The major function in the module is `runLinearRegressionWithUnscaled`.
-The UI module will need to call this function with the input data in order to receive the found coefficients.
+The UI module will need to call this function with the data points in order to receive the found coefficients.
 
 ```haskell
   maxIterations
@@ -683,9 +683,9 @@ So if our data was the following.
 ```haskell
 | Regressors  | Regressands |
 |=============|=============|
-| X: 1, Y: 2, | Z: 3        |
-| X: 4, Y: 5, | Z: 6        |
-| X: 7, Y: 8, | Z: 9        |
+| x: 1, y: 2, | z: 3        |
+| x: 4, y: 5, | z: 6        |
+| x: 7, y: 8, | z: 9        |
 ```
 
 Then our function call would look like this.
@@ -712,15 +712,17 @@ hypothesis coefficients regressors = sum $ map (\ (Tuple c r) -> c * r) tuples
 Given the found coefficients and a row of input data (`regressors`), the `hypothesis` function outputs a prediction.
 
 ```haskell
-X: 1, Y: 1
-X: 2, Y: 2
-X: 3, Y: 3
-X: 4, Y: 4
-X: 5, Y: 5
-X: 6, Y: 6
+[
+    { x: 1, y: 1 }
+  , { x: 2, y: 2 }
+  , { x: 3, y: 3 }
+  , { x: 4, y: 4 }
+  , { x: 5, y: 5 }
+  , { x: 6, y: 6 }
+]
 ```
 
-Say our data looked like this the `X` and `Y` pairs up above.
+Say our data looked like the `x` and `y` pairs up above.
 
 ```haskell
 [0.0, 1.0]
@@ -1071,7 +1073,7 @@ import Plot (PLOT, PlotData, makePlot)
 import Utils (maybeNumberToString, stringToMaybeNumber, arrayMinOrMax)
 ```
 
-All of the various imports we will need.
+Here we list all of the various imports we will need.
 `Halogen` will do the heavy lifting of working with the document object model or DOM.
 `Plot` is a module we will write.
 It provides an application programming interface or API to draw or plot our graph on the page.
@@ -1121,7 +1123,7 @@ This is our state data structure. It holds all of the configuration for our comp
 * `nextId` - the next highest identifier for a new point
 * `points` - a list of points
 * `yIntercept` - the first coefficient
-* `slope` - the second and last coefficient
+* `slope` - the second or last coefficient
 * `pressStatistic` - the PRESS statistic indicating how well our model fits
 * `running` - a flag indicating that we are or are not running the linear regression algorithm
     * If true, the input boxes cannot be updated
@@ -2308,7 +2310,7 @@ button {
 
 ## Index.html
 
-This is skeleton of our application.
+This is the skeleton of our application.
 Once our component runs, the markup will change.
 
 Make sure to copy this to `static/html/index.html`.
@@ -2409,8 +2411,8 @@ Fortunately, you have the calculator with you.
 
 You can see that the fitted model is not perfect but unbeknownst to you, the truth contains noise or _irreducible error_.
 Anyway, with your fitted model of `f(year) = 1.9208460314074158 * year + 0.7777975490014306`, you can now fill out
-previous years eight and 13 as well as current year 15.
-Note that while year 15 is an extrapolation, the PRESS statistic is fairly low indicating the fit is well suited for prediction.
+previous years eight and 13 as well as the current year 15.
+Note that while year 15 is an extrapolation, the PRESS statistic is fairly low.
 
 ```haskell
 | Year | Beard Length in feet |

@@ -381,7 +381,7 @@ calculateCost coefficients designMatrix regressands <span class="fu">=</span> su
     regressands' <span class="fu">=</span> map (hypothesis coefficients) designMatrix
     errors <span class="fu">=</span> map (\ (<span class="dt">Tuple</span> y' y) <span class="ot">-&gt;</span> pow (y' <span class="fu">-</span> y) <span class="fl">2.0</span>) (zip regressands' regressands)</code></pre></div>
 <p>Earlier we said that our goal was to find the collection of coefficients that minimize the difference between the outputs given and the predicted outputs (as given by our hypothesis function). More precisely we wish to minimize our <em>cost</em> or <em>loss</em> function.</p>
-<p>The cost function takes the initial or found coefficients, the rows of inputs given, the list of outputs given, and returns the <em>mean squared error</em> or MSE.</p>
+<p>The cost function takes the coefficients we’ve come up with, the rows of inputs given, the list of outputs given, and returns the <em>mean squared error</em> or MSE.</p>
 <p>To calculate the MSE, the cost function calculates the squared error (difference) between each given and predicted output, sums these squared errors <code>(predicted output - given output)^2</code>, and then divides the sum by the size of the given outputs.</p>
 <p>If our hypothesis function is perfect, we will have a MSE of zero.</p>
 <blockquote>
@@ -462,7 +462,7 @@ updateCoefficients learningRate coefficients designMatrix regressands <span clas
     gradient <span class="fu">=</span> map paritalDerivativeMapper (range <span class="dv">0</span> (length coefficients <span class="fu">-</span> <span class="dv">1</span>))
     result <span class="fu">=</span> map (\ (<span class="dt">Tuple</span> o g) <span class="ot">-&gt;</span> o <span class="fu">-</span> (learningRate <span class="fu">*</span> g)) (zip coefficients gradient)</code></pre></div>
 <p>Using the learning rate and the gradient, we map over the coefficients and return them updated. The update function is the following.</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">newCoefficient[i] <span class="fu">=</span> oldCoefficient[i] <span class="fu">-</span> (learningRate <span class="fu">*</span> partialDerivative[i])<span class="ot">`</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">newCoefficient[i] <span class="fu">=</span> oldCoefficient[i] <span class="fu">-</span> (learningRate <span class="fu">*</span> partialDerivative[i])</code></pre></div>
 <h2 id="press-statistic">PRESS Statistic</h2>
 <p>As with any machine learning endeavor, you’ll want to cross-validate the model you have built. Cross-validation can help detect overfitting which is typically present when your model performs well for observations it trained on but performs poorly on observations it did not train on. For our calculator we will use the PRESS statistic method.</p>
 <blockquote>
@@ -496,10 +496,10 @@ hatMatrix <span class="fu">=</span> <span class="dt">X</span> <span class="fu">*
 <ul>
 <li>For every input-output pair <code>i</code>
 <ul>
-<li>Calculate <code>e = (hypothesis[i] - outputs[i]) / (1 - hatMatrix[i][i])</code></li>
-<li>Square each <code>e</code></li>
+<li>Calculate <code>errors[i] = (hypothesis[i] - outputs[i]) / (1 - hatMatrix[i][i])</code></li>
+<li>Square each <code>errors[i]</code></li>
 </ul></li>
-<li>Sum the list of squared <code>e</code>.</li>
+<li>Sum the list of squared <code>errors[i]</code>.</li>
 </ul>
 <p>We can now translate this outline into actual code.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">    predictions ::</span> <span class="dt">Vector</span>
@@ -572,7 +572,7 @@ runLinearRegressionWithUnscaled
   regressands
   unscaledDesignMatrix
   <span class="fu">=</span> <span class="kw">if</span> containsNothing unscaledUpdatedCoefficents <span class="kw">then</span> [] <span class="kw">else</span> map (fromMaybe <span class="fl">0.0</span>) unscaledUpdatedCoefficents</code></pre></div>
-<p>The major function in the module is <code>runLinearRegressionWithUnscaled</code>. The UI module will need to call this function with the input data in order to receive the found coefficients.</p>
+<p>The major function in the module is <code>runLinearRegressionWithUnscaled</code>. The UI module will need to call this function with the data points in order to receive the found coefficients.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  maxIterations
   maxCost
   learningRate
@@ -594,9 +594,9 @@ runLinearRegressionWithUnscaled
 <p>So if our data was the following.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="fu">|</span> <span class="dt">Regressors</span>  <span class="fu">|</span> <span class="dt">Regressands</span> <span class="fu">|</span>
 <span class="fu">|=============|=============|</span>
-<span class="fu">|</span> <span class="dt">X</span><span class="fu">:</span> <span class="dv">1</span>, <span class="dt">Y</span><span class="fu">:</span> <span class="dv">2</span>, <span class="fu">|</span> <span class="dt">Z</span><span class="fu">:</span> <span class="dv">3</span>        <span class="fu">|</span>
-<span class="fu">|</span> <span class="dt">X</span><span class="fu">:</span> <span class="dv">4</span>, <span class="dt">Y</span><span class="fu">:</span> <span class="dv">5</span>, <span class="fu">|</span> <span class="dt">Z</span><span class="fu">:</span> <span class="dv">6</span>        <span class="fu">|</span>
-<span class="fu">|</span> <span class="dt">X</span><span class="fu">:</span> <span class="dv">7</span>, <span class="dt">Y</span><span class="fu">:</span> <span class="dv">8</span>, <span class="fu">|</span> <span class="dt">Z</span><span class="fu">:</span> <span class="dv">9</span>        <span class="fu">|</span></code></pre></div>
+<span class="fu">|</span> x<span class="fu">:</span> <span class="dv">1</span>, y<span class="fu">:</span> <span class="dv">2</span>, <span class="fu">|</span> z<span class="fu">:</span> <span class="dv">3</span>        <span class="fu">|</span>
+<span class="fu">|</span> x<span class="fu">:</span> <span class="dv">4</span>, y<span class="fu">:</span> <span class="dv">5</span>, <span class="fu">|</span> z<span class="fu">:</span> <span class="dv">6</span>        <span class="fu">|</span>
+<span class="fu">|</span> x<span class="fu">:</span> <span class="dv">7</span>, y<span class="fu">:</span> <span class="dv">8</span>, <span class="fu">|</span> z<span class="fu">:</span> <span class="dv">9</span>        <span class="fu">|</span></code></pre></div>
 <p>Then our function call would look like this.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">runLinearRegressionWithUnscaled        <span class="co">-- function</span>
   <span class="dv">1000</span>                                 <span class="co">-- maxIterations (configuration)</span>
@@ -611,13 +611,15 @@ hypothesis coefficients regressors <span class="fu">=</span> sum <span class="fu
   <span class="kw">where</span>
     tuples <span class="fu">=</span> zip coefficients ([<span class="fl">1.0</span>] <span class="fu">&lt;&gt;</span> regressors)</code></pre></div>
 <p>Given the found coefficients and a row of input data (<code>regressors</code>), the <code>hypothesis</code> function outputs a prediction.</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="dt">X</span><span class="fu">:</span> <span class="dv">1</span>, <span class="dt">Y</span><span class="fu">:</span> <span class="dv">1</span>
-<span class="dt">X</span><span class="fu">:</span> <span class="dv">2</span>, <span class="dt">Y</span><span class="fu">:</span> <span class="dv">2</span>
-<span class="dt">X</span><span class="fu">:</span> <span class="dv">3</span>, <span class="dt">Y</span><span class="fu">:</span> <span class="dv">3</span>
-<span class="dt">X</span><span class="fu">:</span> <span class="dv">4</span>, <span class="dt">Y</span><span class="fu">:</span> <span class="dv">4</span>
-<span class="dt">X</span><span class="fu">:</span> <span class="dv">5</span>, <span class="dt">Y</span><span class="fu">:</span> <span class="dv">5</span>
-<span class="dt">X</span><span class="fu">:</span> <span class="dv">6</span>, <span class="dt">Y</span><span class="fu">:</span> <span class="dv">6</span></code></pre></div>
-<p>Say our data looked like this the <code>X</code> and <code>Y</code> pairs up above.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">[
+    { x<span class="fu">:</span> <span class="dv">1</span>, y<span class="fu">:</span> <span class="dv">1</span> }
+  , { x<span class="fu">:</span> <span class="dv">2</span>, y<span class="fu">:</span> <span class="dv">2</span> }
+  , { x<span class="fu">:</span> <span class="dv">3</span>, y<span class="fu">:</span> <span class="dv">3</span> }
+  , { x<span class="fu">:</span> <span class="dv">4</span>, y<span class="fu">:</span> <span class="dv">4</span> }
+  , { x<span class="fu">:</span> <span class="dv">5</span>, y<span class="fu">:</span> <span class="dv">5</span> }
+  , { x<span class="fu">:</span> <span class="dv">6</span>, y<span class="fu">:</span> <span class="dv">6</span> }
+]</code></pre></div>
+<p>Say our data looked like the <code>x</code> and <code>y</code> pairs up above.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">[<span class="fl">0.0</span>, <span class="fl">1.0</span>]</code></pre></div>
 <p>And our coefficients were zero and one.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">hypothesis [<span class="fl">0.0</span>, <span class="fl">1.0</span>] [<span class="fl">7.0</span>] <span class="fu">=</span> <span class="fl">7.0</span></code></pre></div>
@@ -933,7 +935,7 @@ mean es <span class="fu">=</span> <span class="dt">Just</span> (sum es <span cla
 <span class="kw">import </span><span class="dt">Plot</span> (<span class="dt">PLOT</span>, <span class="dt">PlotData</span>, makePlot)
 
 <span class="kw">import </span><span class="dt">Utils</span> (maybeNumberToString, stringToMaybeNumber, arrayMinOrMax)</code></pre></div>
-<p>All of the various imports we will need. <code>Halogen</code> will do the heavy lifting of working with the document object model or DOM. <code>Plot</code> is a module we will write. It provides an application programming interface or API to draw or plot our graph on the page.</p>
+<p>Here we list all of the various imports we will need. <code>Halogen</code> will do the heavy lifting of working with the document object model or DOM. <code>Plot</code> is a module we will write. It provides an application programming interface or API to draw or plot our graph on the page.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">Effects</span> eff <span class="fu">=</span> <span class="dt">H.HalogenEffects</span> (<span class="ot">plot ::</span> <span class="dt">PLOT</span>,<span class="ot"> console ::</span> <span class="dt">CONSOLE</span>,<span class="ot"> random ::</span> <span class="dt">RANDOM</span> <span class="fu">|</span> eff)</code></pre></div>
 <p>Our interface will have to perform various (side) effects that will interact with the “outside world”. We will have to <code>plot</code> our graph, write out to the <code>console</code>, and generate <code>random</code> numbers. You can think of this syntax as “whitelisting” the effects we know we will perform.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">Point</span> <span class="fu">=</span> {<span class="ot"> id ::</span> <span class="dt">Int</span>,<span class="ot"> x ::</span> <span class="dt">Maybe</span> <span class="dt">Number</span>,<span class="ot"> y ::</span> <span class="dt">Maybe</span> <span class="dt">Number</span> }</code></pre></div>
@@ -959,7 +961,7 @@ mean es <span class="fu">=</span> <span class="dt">Just</span> (sum es <span cla
 <li><code>nextId</code> - the next highest identifier for a new point</li>
 <li><code>points</code> - a list of points</li>
 <li><code>yIntercept</code> - the first coefficient</li>
-<li><code>slope</code> - the second and last coefficient</li>
+<li><code>slope</code> - the second or last coefficient</li>
 <li><code>pressStatistic</code> - the PRESS statistic indicating how well our model fits</li>
 <li><code>running</code> - a flag indicating that we are or are not running the linear regression algorithm
 <ul>
@@ -2053,7 +2055,7 @@ button <span class="kw">{</span>
   <span class="kw">flex-direction:</span> row<span class="kw">;</span>
 <span class="kw">}</span></code></pre></div>
 <h2 id="index.html">Index.html</h2>
-<p>This is skeleton of our application. Once our component runs, the markup will change.</p>
+<p>This is the skeleton of our application. Once our component runs, the markup will change.</p>
 <p>Make sure to copy this to <code>static/html/index.html</code>.</p>
 <div class="sourceCode"><pre class="sourceCode html"><code class="sourceCode html"><span class="dt">&lt;!DOCTYPE </span>html<span class="dt">&gt;</span>
 <span class="co">&lt;!--(C) 2017 David Lettier--&gt;</span>
@@ -2125,7 +2127,7 @@ button <span class="kw">{</span>
 <img src="../images/2017-01-15-linear-regression-and-the-amazing-beard/beard_regression.jpg" class="post-img post-img-small post-img-limit" />
 
 </div>
-<p>You can see that the fitted model is not perfect but unbeknownst to you, the truth contains noise or <em>irreducible error</em>. Anyway, with your fitted model of <code>f(year) = 1.9208460314074158 * year + 0.7777975490014306</code>, you can now fill out previous years eight and 13 as well as current year 15. Note that while year 15 is an extrapolation, the PRESS statistic is fairly low indicating the fit is well suited for prediction.</p>
+<p>You can see that the fitted model is not perfect but unbeknownst to you, the truth contains noise or <em>irreducible error</em>. Anyway, with your fitted model of <code>f(year) = 1.9208460314074158 * year + 0.7777975490014306</code>, you can now fill out previous years eight and 13 as well as the current year 15. Note that while year 15 is an extrapolation, the PRESS statistic is fairly low.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="fu">|</span> <span class="dt">Year</span> <span class="fu">|</span> <span class="dt">Beard</span> <span class="dt">Length</span> <span class="kw">in</span> feet <span class="fu">|</span>
 <span class="fu">|======|======================|</span>
 <span class="fu">|</span>  <span class="dv">5</span>   <span class="fu">|</span> <span class="fl">10.111222679314832</span>   <span class="fu">|</span>
