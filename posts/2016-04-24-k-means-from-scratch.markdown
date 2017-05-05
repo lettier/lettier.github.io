@@ -47,7 +47,7 @@ We will offer two initialization methods for our k-means object:
 * Random
 * The Fouad Khan Method
 
-Other methods include randomly choosing `k` data points as the starting means and `k-means++`.
+Other methods include randomly choosing `k` data points as the starting means and _k-means++_.
 
 ### Random
 
@@ -384,7 +384,7 @@ These are our `upperBoundDataPoints`.
 ]
 ```
 
-The lower bound indexes are the first one (index `0`) and then the `index + 1` for all upper bound indexes <i>expect</i> the last one
+The lower bound indexes are the first one (index `0`) and then the `index + 1` for all upper bound indexes <i>except</i> the last one
 (in this case index five). So indexes `0` and `2 + 1 = 3`.
 Recall that index `0` was the data point closest to the origin.
 
