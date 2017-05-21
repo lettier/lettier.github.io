@@ -1,1 +1,17 @@
-$partial("templates/post-list.html")$
+<ul class="post-list">
+  $for(posts)$
+    <li class="post-list-item">
+      <a href="$url$" title="$title$">
+        <!--https://pixabay.com/en/bollard-pier-port-catwalk-sea-589043/-->
+        <div class="post-preview-cell"
+          style="background-image: url($if(preview_image)$$preview_image$$else$/images/preview_image_default.jpg$endif$);">
+          <div class="post-preview-cell-text-container post-image-link-cell-color">
+            <div class="post-preview-cell-text">
+              $title$
+            </div>
+          </div>
+        </div>
+      </a>
+    </li>
+  $endfor$
+</ul>
