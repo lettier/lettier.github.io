@@ -58,7 +58,18 @@ main = hakyll $ do
     route idRoute
     compile $ do
       post <- fmap head . recentFirst =<< loadAllSnapshots "posts/*" "content"
-      loadAndApplyTemplate "templates/default.html" postCtx post
+      posts <- fmap tail . recentFirst =<< loadAll "posts/*"
+      let postsCtx = mconcat [
+                listField "posts" postCtx (return posts)
+              , titleField "title"
+              , defaultContext
+            ]
+      let indexCtx = mconcat [
+                constField "index" ""
+              , postCtx
+            ]
+      loadAndApplyTemplate "templates/posts.html" postsCtx post
+        >>= loadAndApplyTemplate "templates/default.html" indexCtx
         >>= relativizeUrls
         >>= changeIdentifier "index.html"
 

@@ -73,7 +73,7 @@
   </head>
   <body>
     <div id="top"></div>
-    <nav class="navbar navbar-inverse navbar-transparent navbar-fixed-top">
+    <nav class="navbar navbar-inverse navbar-transparent navbar-fixed-top full-page-width-drop-shadow">
       <div class="container-fluid navbar-container">
         <ul class="nav navbar-nav nav-left">
           <!--
@@ -102,6 +102,7 @@
               </a>
             </div>
           </li>
+          <!--
           <li>
             <div class="nav-icon-container">
               <a href="/posts.html" title="Posts">
@@ -113,6 +114,7 @@
               </a>
             </div>
           </li>
+          -->
         </ul>
         <div class="nav-right">
           <!--
@@ -204,25 +206,43 @@
         </div>
       </div>
     </nav>
-    <div class="jumbotron"
-      $if(jumbotron_image)$
-        style="background-image: url('$jumbotron_image$');"
-      $else$
-        style="background-image: url('images/jumbotron_image_default.jpg');"
-      $endif$
-    >
-      <div class="container vertical-center">
-        <div class="jumbotron-text">
-          <h1 class="jumbotron-text-background">
-            $if(title)$
-              $title$
-            $else$
-              Home
+    $if(index)$
+      <a href="$url$"
+        $if(title)$
+          title="$title$"
+        $endif$
+      >
+    $endif$
+        <div class="jumbotron full-page-width-drop-shadow jumbotron-background-image"
+          $if(jumbotron_image)$
+            style="background-image: url('$jumbotron_image$');"
+          $else$
+            style="background-image: url('images/jumbotron_image_default.jpg');"
+          $endif$
+        >
+          <div
+            $if(index)$
+              class="post-image-link-cell-color"
             $endif$
-          </h1>
+          >
+            <div class="jumbotron">
+              <div class="container vertical-center">
+                <div class="jumbotron-text-container">
+                  <h1 class="jumbotron-text jumbotron-text-background">
+                    $if(title)$
+                      $title$
+                    $else$
+                      Home
+                    $endif$
+                  </h1>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+    $if(index)$
+      </a>
+    $endif$
     <div class="container page-container">
       $body$
     </div>
