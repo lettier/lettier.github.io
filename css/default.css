@@ -286,10 +286,15 @@ pre code {
 }
 
 .post-body h1, .post-body h2, .post-body h3, .post-body h4, .post-body h5 {
-  border-left: 2px solid #67DE8B;;
+  border-left: 2px solid #67DE8B;
   padding-left: 20px;
   padding-top: 15px;
   padding-bottom: 15px;
+}
+
+.post-body h4, .post-body h5, .post-body h6 {
+  font-weight: 100;
+  letter-spacing: 0.5px;
 }
 
 .post-img {

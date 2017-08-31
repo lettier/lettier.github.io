@@ -1368,6 +1368,8 @@ Each target or build step is listed in the `makefile` you created earlier.
 Using the Haskell libraries Blaze, Fay, and Clay, we generated the HTML, CSS, and JavaScript files necessary to build Movie Monad.
 These files, along with Electron and Electron Packager, allowed us to make a video playing desktop application and
 package it up for distribution to all major platforms.
+In [Let's make a GTK Video Player with Haskell](/posts/2017-08-30-haskell-gtk-video-player.html),
+we take a different approach and build Movie Monad using GTK+ and GStreamer.
 
 If you enjoy web programming in Haskell, be sure to read
 [Building a Haskell Web API](/posts/2016-07-15-building-a-haskell-web-api.html) and
