@@ -9,6 +9,20 @@
   
   <item>
     
+    <media:content url="https://lettier.github.io/images/2017-08-30-haskell-gtk-video-player/preview_image.jpg"></media:content>
+    
+    <title>Let's make a GTK Video Player with Haskell</title>
+    
+    <dc:creator>David Lettier</dc:creator>
+    
+    <pubDate>Wed, 30 Aug 2017 00:00:00 EST</pubDate>
+    <description>Using Haskell, GTK+, GStreamer, xlib, and the haskell-gi bindings, we build a video player complete with seek and volume controls.</description>
+    <link>https://lettier.github.io/posts/2017-08-30-haskell-gtk-video-player.html</link>
+    <guid>https://lettier.github.io/posts/2017-08-30-haskell-gtk-video-player.html</guid>
+  </item>
+  
+  <item>
+    
     <media:content url="https://lettier.github.io/images/2017-02-25-matrix-inverse-purescript/preview_image.jpg"></media:content>
     
     <title>Let's make a Matrix Inverse Calculator with PureScript</title>

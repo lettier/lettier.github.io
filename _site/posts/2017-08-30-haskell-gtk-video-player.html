@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta property="og:site_name" content="Lettier">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Let's make a GTK Video Player with Haskell by David Lettier">
+    <meta property="og:image" content="https://lettier.github.io/images/2017-08-30-haskell-gtk-video-player/jumbotron_image.jpg">
+    <meta property="og:url" content="https://lettier.github.io/posts/2017-08-30-haskell-gtk-video-player.html">
+    <meta property="og:description" content="Using Haskell, GTK+, GStreamer, xlib, and the haskell-gi bindings, we build a video player complete with seek and volume controls.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="David Lettier">
+    <meta name="description" content="Using Haskell, GTK+, GStreamer, xlib, and the haskell-gi bindings, we build a video player complete with seek and volume controls.">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/pandoc.css">
+    <link rel="stylesheet" type="text/css" href="../css/default.css">
+    <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
+    
+      <title>Let's make a GTK Video Player with Haskell by David Lettier</title>
+    
+  </head>
+  <body>
+    <div id="top"></div>
+    <nav class="navbar navbar-inverse navbar-transparent navbar-fixed-top full-page-width-drop-shadow">
+      <div class="container-fluid navbar-container">
+        <ul class="nav navbar-nav nav-left">
+          <!--
+          <li class="nav-link"><a href="/">Home</a></li>
+          <li class="nav-link"><a href="/posts.html">Posts</a></li>
+          -->
+          <li>
+            <div class="nav-icon-container">
+              <a href="../" title="Home">
+                <div>
+                  <i class="fa fa-home nav-icon"></i>
+                </div>
+                <div class="nav-icon-dot">
+                </div>
+              </a>
+            </div>
+          </li>
+          <li>
+            <div class="nav-icon-container">
+              <a href="../rss.xml" title="RSS" type="application/rss+xml" target="_blank">
+                <div>
+                  <i class="fa fa-rss nav-icon"></i>
+                </div>
+                <div class="nav-icon-dot">
+                </div>
+              </a>
+            </div>
+          </li>
+          <!--
+          <li>
+            <div class="nav-icon-container">
+              <a href="/posts.html" title="Posts">
+                <div>
+                  <i class="fa fa-th-large nav-icon shaker"></i>
+                </div>
+                <div class="nav-icon-dot">
+                </div>
+              </a>
+            </div>
+          </li>
+          -->
+        </ul>
+        <div class="nav-right">
+          <!--
+          <a href="http://www.lettier.com/" title="Lettier.com">
+            <div class="lettier-icon">
+              <img src="/images/logo.svg" width="30" height="30" alt="Lettier.com" class="lettier-icon-img">
+            </div>
+          </a>
+          -->
+          <div class="nav-icon-container">
+            <a href="http://www.lettier.com/" title="Lettier.com">
+              <div class="lettier-icon">
+                <img src="../images/logo.svg" width="30" height="30" alt="Lettier.com" class="lettier-icon-img">
+              </div>
+              <div class="nav-icon-dot">
+              </div>
+            </a>
+          </div>
+          <!--
+          <a href="https://www.github.com/lettier" title="Github">
+            <i class="fa fa-github nav-icon"></i>
+          </a>
+          -->
+          <div class="nav-icon-container">
+            <a href="https://www.github.com/lettier" title="Github">
+              <div>
+                <i class="fa fa-github nav-icon"></i>
+              </div>
+              <div class="nav-icon-dot">
+              </div>
+            </a>
+          </div>
+          <!--
+          <a href="https://www.linkedin.com/in/lettier" title="LinkedIn">
+            <i class="fa fa-linkedin nav-icon"></i>
+          </a>
+          -->
+          <div class="nav-icon-container">
+            <a href="https://www.linkedin.com/in/lettier" title="LinkedIn">
+              <div>
+                <i class="fa fa-linkedin nav-icon"></i>
+              </div>
+              <div class="nav-icon-dot">
+              </div>
+            </a>
+          </div>
+          <!--
+          <a href="https://stackoverflow.com/users/3838674/lettier" title="Stack Overflow">
+            <i class="fa fa-stack-overflow nav-icon"></i>
+          </a>
+          <div class="nav-icon-container">
+            <a href="https://stackoverflow.com/users/3838674/lettier" title="Stack Overflow">
+              <div>
+                <i class="fa fa-stack-overflow nav-icon"></i>
+              </div>
+              <div class="nav-icon-dot">
+              </div>
+            </a>
+          </div>
+          -->
+          <!--
+          <a href="https://www.hackerrank.com/lettier" title="HackerRank">
+            <i class="fa fa-trophy nav-icon nav-icon-second-last"></i>
+          </a>
+          -->
+          <div class="nav-icon-container nav-icon-container-second-last">
+            <a href="https://www.hackerrank.com/lettier" title="HackerRank">
+              <div>
+                <i class="fa fa-trophy nav-icon nav-icon-second-last"></i>
+              </div>
+              <div class="nav-icon-dot">
+              </div>
+            </a>
+          </div>
+          <!--
+          <a href="https://www.behance.net/dlettier" title="Behance">
+            <i class="fa fa-behance nav-icon nav-icon-last"></i>
+          </a>
+          -->
+          <div class="nav-icon-container nav-icon-container-last">
+            <a href="https://www.behance.net/dlettier" title="Behance">
+              <div>
+                <i class="fa fa-behance nav-icon"></i>
+              </div>
+              <div class="nav-icon-dot">
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </nav>
+    
+        <div class="jumbotron full-page-width-drop-shadow jumbotron-background-image" style="background-image: url('/images/2017-08-30-haskell-gtk-video-player/jumbotron_image.jpg');">
+          <div>
+            <div class="jumbotron">
+              <div class="container vertical-center">
+                <div class="jumbotron-text-container">
+                  <h1 class="jumbotron-text jumbotron-text-background">
+                    
+                      Let's make a GTK Video Player with Haskell
+                    
+                  </h1>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+    
+    <div class="container page-container">
+      <div class="post-header">
+  <div class="display-left">
+  </div>
+  <div class="display-right date-author">
+    <p>2017-08-30 &nbsp; <i class="fa fa-calendar"></i></p>
+    
+      <p>David Lettier &nbsp; <i class="fa fa-user"></i></p>
+    
+  </div>
+</div>
+<div class="post-body">
+  <!--https://pixabay.com/en/wild-outdoors-landscape-nature-865296/-->
+<h2 id="overview">Overview</h2>
+<div class="figure">
+<img src="../images/2017-08-30-haskell-gtk-video-player/ui.jpg" alt="The UI of Movie Monad showing Sintel from the Blender Foundation." class="post-img post-img-limit" />
+<p class="caption">The UI of Movie Monad showing <a href="https://durian.blender.org/">Sintel from the Blender Foundation</a>.</p>
+</div>
+<p>When we last left off with <a href="../posts/2016-08-15-making-movie-monad.html">Movie Monad</a>, we had built a desktop video player using all web-based technologies (HTML, CSS, JavaScript, and Electron). The twist was that all of the source code for the project was written in Haskell.</p>
+<p>One of the limitations of our web-based approach was that the video file size could only be so large. If the file size was too large, it would crash the application. To avoid this, we put in a file size check and told the user if the video file was too large.</p>
+<p>We could continue with the web-based approach and setup a back-end server to stream the video file to the HTML5 player and run the server and the Electron application side-by-side. Instead we will go with a non-web-based approach using GTK+, GStreamer, and the X11 windowing system. Note that if you use another windowing system, such as Wayland, Quartz, or WinAPI, this approach can be adapted to work with your particular GDK back-end. The adaptation part being the embedding of the <a href="https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-base-plugins/html/gst-plugins-base-plugins-playbin.html">GStreamer playbin</a> video output into the Movie Monad window.</p>
+<blockquote>
+GDK is an important part of GTK+’s portability. Since low-level cross-platform functionality is already provided by GLib, all that is needed to make GTK+ run on other platforms is to port GDK to the underlying operating system’s graphics layer. Hence, the GDK ports to the Windows API and Quartz are what makes GTK+ applications run on Windows and macOS, respectively.
+<footer>
+<a href="https://en.wikipedia.org/wiki/GDK">GDK - Wikipedia</a>
+</footer>
+</blockquote>
+<h2 id="who-this-is-for">Who this is for</h2>
+<ul>
+<li>Haskell programmers looking to make a GTK+ user interface (UI)</li>
+<li>Programmers interested in functional programming</li>
+<li>GUI builders</li>
+<li>Those looking for an alternative to GitHub’s Electron</li>
+<li>Video player aficionados</li>
+</ul>
+<h2 id="what-we-will-cover">What we will cover</h2>
+<ul>
+<li>Stack</li>
+<li>The haskell-gi bindings</li>
+<li>Cabal data directory and data files</li>
+<li>Glade</li>
+<li>GTK+</li>
+<li>GStreamer</li>
+<li>How to build Movie Monad</li>
+</ul>
+<h2 id="project-setup">Project setup</h2>
+<p>Before we can begin, we will need our machine setup to develop Haskell programs and our project directory setup with its files and dependencies.</p>
+<h3 id="haskell-platform">Haskell Platform</h3>
+<p>If your machine in not already setup to develop Haskell programs, you can obtain all that we will need by downloading and installing the <a href="https://www.haskell.org/platform/">Haskell Platform</a>.</p>
+<h3 id="stack">Stack</h3>
+<p>If you are setup to develop with Haskell but do not have <a href="https://docs.haskellstack.org/en/stable/README/">Stack</a>, make sure to get Stack installed before you begin. Note that if you used the Haskell Platform, you should already have Stack.</p>
+<h3 id="exiftool">ExifTool</h3>
+<p>Before we can play a video in Movie Monad, we will need to gather some details about the file the user selected. We will be using <a href="https://www.sno.phy.queensu.ca/~phil/exiftool/install.html">ExifTool</a> to gather these details. If you are using some Linux distribution, there is a good chance that you already have it (<code>which exiftool</code>). ExifTool is available for Windows, Mac, and Linux.</p>
+<h3 id="project-files">Project files</h3>
+<p>There are three ways you can obtain the project files.</p>
+<ul>
+<li>You can download the <a href="https://github.com/lettier/movie-monad/archive/master.zip">ZIP</a> and extract it</li>
+<li>You can clone the Git repository using the command <code>git clone git@github.com:lettier/movie-monad.git</code></li>
+<li>You can clone the Git repository using the command <code>git clone https://github.com/lettier/movie-monad.git</code></li>
+</ul>
+<h3 id="haskell-gi">haskell-gi</h3>
+<p><a href="https://github.com/haskell-gi/haskell-gi">haskell-gi</a> is capable of generating Haskell bindings for libraries that use the <a href="https://wiki.gnome.org/Projects/GObjectIntrospection">GObject introspection middleware</a>. At the time of this writing, certain bindings we will need are not available on <a href="https://hackage.haskell.org/packages/search?terms=gi">Hackage</a>. Thus we will use haskell-gi to generate these bindings for us. For now, let us install haskell-gi.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">cd</span> movie-monad/
+<span class="kw">stack</span> setup
+<span class="kw">stack</span> install haskell-gi</code></pre></div>
+<h3 id="xlib">xlib</h3>
+<p>We will need a binding to the xlib library.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">cd</span> movie-monad/
+<span class="kw">haskell-gi</span> -o lib/gi-xlib/xlib.overrides -O lib/gi-xlib xlib</code></pre></div>
+<h3 id="gdkx11-3.0">GdkX11-3.0</h3>
+<p>We will need a binding to the GdkX11 library.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">cd</span> movie-monad/
+<span class="kw">haskell-gi</span> -o lib/gi-gdkx11/GdkX11.overrides -O lib/gi-gdkx11 GdkX11-3.0</code></pre></div>
+<h3 id="dependencies">Dependencies</h3>
+<p>Go ahead now and install the project dependencies.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">cd</span> movie-monad/
+<span class="kw">stack</span> install --dependencies-only</code></pre></div>
+<h2 id="the-code">The code</h2>
+<p>We are now setup to implement Movie Monad. You can either delete the source files and recreate it them or just follow along.</p>
+<h3 id="paths_movie_monad.hs">Paths_movie_monad.hs</h3>
+<p><code>Paths_movie_monad.hs</code> is used to find our <a href="https://glade.gnome.org/">Glade</a> XML GUI file at runtime. While we are developing, we use a dummy module (<code>movie-monad/src/dev/Paths_movie_monad.hs</code>) to find the <code>movie-monad/src/data/gui.glade</code> file. After we build/install the project, the real <code>Paths_movie_monad</code> module is auto generated. This auto generated module provides us with the <code>getDataFileName</code> function. <code>getDataFileName</code> prefixes its input with the absolute path to where the <code>data-dir</code> (<code>movie-monad/src/</code>) <code>data-files</code> were copied or installed to.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE OverloadedStrings #-}</span>
+
+<span class="kw">module</span> <span class="dt">Paths_movie_monad</span> <span class="kw">where</span>
+
+<span class="ot">dataDir ::</span> <span class="dt">String</span>
+dataDir <span class="fu">=</span> <span class="st">&quot;./src/&quot;</span>
+
+<span class="ot">getDataFileName ::</span> FilePath <span class="ot">-&gt;</span> <span class="dt">IO</span> FilePath
+getDataFileName a <span class="fu">=</span> <span class="kw">do</span>
+  putStrLn <span class="st">&quot;You are using a fake Paths_movie_monad.&quot;</span>
+  return (dataDir <span class="fu">++</span> <span class="st">&quot;/&quot;</span> <span class="fu">++</span> a)</code></pre></div>
+<p>The dummy <code>Paths_movie_monad</code> module.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE CPP #-}</span>
+<span class="ot">{-# OPTIONS_GHC -fno-warn-missing-import-lists #-}</span>
+<span class="ot">{-# OPTIONS_GHC -fno-warn-implicit-prelude #-}</span>
+<span class="kw">module</span> <span class="dt">Paths_movie_monad</span> (
+    version,
+    getBinDir, getLibDir, getDynLibDir, getDataDir, getLibexecDir,
+    getDataFileName, getSysconfDir
+  ) <span class="kw">where</span>
+
+<span class="kw">import qualified</span> <span class="dt">Control.Exception</span> <span class="kw">as</span> <span class="dt">Exception</span>
+<span class="kw">import </span><span class="dt">Data.Version</span> (<span class="dt">Version</span>(..))
+<span class="kw">import </span><span class="dt">System.Environment</span> (getEnv)
+<span class="kw">import </span><span class="dt">Prelude</span>
+
+<span class="st">#if defined(VERSION_base)</span>
+
+<span class="st">#if MIN_VERSION_base(4,0,0)</span>
+<span class="ot">catchIO ::</span> <span class="dt">IO</span> a <span class="ot">-&gt;</span> (<span class="dt">Exception.IOException</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> a) <span class="ot">-&gt;</span> <span class="dt">IO</span> a
+<span class="st">#else</span>
+<span class="ot">catchIO ::</span> <span class="dt">IO</span> a <span class="ot">-&gt;</span> (<span class="dt">Exception.Exception</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> a) <span class="ot">-&gt;</span> <span class="dt">IO</span> a
+<span class="st">#endif</span>
+
+<span class="st">#else</span>
+<span class="ot">catchIO ::</span> <span class="dt">IO</span> a <span class="ot">-&gt;</span> (<span class="dt">Exception.IOException</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> a) <span class="ot">-&gt;</span> <span class="dt">IO</span> a
+<span class="st">#endif</span>
+catchIO <span class="fu">=</span> Exception.catch
+
+<span class="ot">version ::</span> <span class="dt">Version</span>
+version <span class="fu">=</span> <span class="dt">Version</span> [<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>] []
+bindir, libdir, dynlibdir, datadir, libexecdir,<span class="ot"> sysconfdir ::</span> FilePath
+
+bindir     <span class="fu">=</span> <span class="st">&quot;/home/&lt;snip&gt;/.stack-work/install/x86_64-linux-nopie/lts-9.1/8.0.2/bin&quot;</span>
+libdir     <span class="fu">=</span> <span class="st">&quot;/home/&lt;snip&gt;/.stack-work/install/x86_64-linux-nopie/lts-9.1/8.0.2/lib/x86_64-linux-ghc-8.0.2/movie-monad-0.0.0.0&quot;</span>
+dynlibdir  <span class="fu">=</span> <span class="st">&quot;/home/&lt;snip&gt;/.stack-work/install/x86_64-linux-nopie/lts-9.1/8.0.2/lib/x86_64-linux-ghc-8.0.2&quot;</span>
+datadir    <span class="fu">=</span> <span class="st">&quot;/home/&lt;snip&gt;/.stack-work/install/x86_64-linux-nopie/lts-9.1/8.0.2/share/x86_64-linux-ghc-8.0.2/movie-monad-0.0.0.0&quot;</span>
+libexecdir <span class="fu">=</span> <span class="st">&quot;/home/&lt;snip&gt;/.stack-work/install/x86_64-linux-nopie/lts-9.1/8.0.2/libexec&quot;</span>
+sysconfdir <span class="fu">=</span> <span class="st">&quot;/home/&lt;snip&gt;/.stack-work/install/x86_64-linux-nopie/lts-9.1/8.0.2/etc&quot;</span>
+
+getBinDir, getLibDir, getDynLibDir, getDataDir, getLibexecDir,<span class="ot"> getSysconfDir ::</span> <span class="dt">IO</span> FilePath
+getBinDir <span class="fu">=</span> catchIO (getEnv <span class="st">&quot;movie_monad_bindir&quot;</span>) (\_ <span class="ot">-&gt;</span> return bindir)
+getLibDir <span class="fu">=</span> catchIO (getEnv <span class="st">&quot;movie_monad_libdir&quot;</span>) (\_ <span class="ot">-&gt;</span> return libdir)
+getDynLibDir <span class="fu">=</span> catchIO (getEnv <span class="st">&quot;movie_monad_dynlibdir&quot;</span>) (\_ <span class="ot">-&gt;</span> return dynlibdir)
+getDataDir <span class="fu">=</span> catchIO (getEnv <span class="st">&quot;movie_monad_datadir&quot;</span>) (\_ <span class="ot">-&gt;</span> return datadir)
+getLibexecDir <span class="fu">=</span> catchIO (getEnv <span class="st">&quot;movie_monad_libexecdir&quot;</span>) (\_ <span class="ot">-&gt;</span> return libexecdir)
+getSysconfDir <span class="fu">=</span> catchIO (getEnv <span class="st">&quot;movie_monad_sysconfdir&quot;</span>) (\_ <span class="ot">-&gt;</span> return sysconfdir)
+
+<span class="ot">getDataFileName ::</span> FilePath <span class="ot">-&gt;</span> <span class="dt">IO</span> FilePath
+getDataFileName name <span class="fu">=</span> <span class="kw">do</span>
+  dir <span class="ot">&lt;-</span> getDataDir
+  return (dir <span class="fu">++</span> <span class="st">&quot;/&quot;</span> <span class="fu">++</span> name)</code></pre></div>
+<p>The auto generated <code>Paths_movie_monad</code> module.</p>
+<h3 id="main.hs">Main.hs</h3>
+<p><code>Main.hs</code> is the entry point for Movie Monad. In this file we setup our window with its various widgets, we wire up GStreamer, and we teardown our window once the user exits.</p>
+<h4 id="pragmas">Pragmas</h4>
+<p>We need to tell the compiler (GHC) that we want overloaded strings and lexically scoped type variables. <code>OverloadedStrings</code> allows us to use string literals (<code>&quot;Literal&quot;</code>) in places that demand <code>String/[Char]</code> or <code>Text</code>. <code>ScopedTypeVariables</code> allows us to use a type signature in the parameter pattern of the lambda function passed to catch when calling ExifTool.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE OverloadedStrings #-}</span>
+<span class="ot">{-# LANGUAGE ScopedTypeVariables #-}</span></code></pre></div>
+<h4 id="imports">Imports</h4>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">module</span> <span class="dt">Main</span> <span class="kw">where</span>
+
+<span class="kw">import </span><span class="dt">Prelude</span>
+<span class="kw">import </span><span class="dt">Foreign.C.Types</span>
+<span class="kw">import </span><span class="dt">System.Process</span>
+<span class="kw">import </span><span class="dt">System.Exit</span>
+<span class="kw">import </span><span class="dt">Control.Monad</span>
+<span class="kw">import </span><span class="dt">Control.Exception</span>
+<span class="kw">import </span><span class="dt">Data.Maybe</span>
+<span class="kw">import </span><span class="dt">Data.Int</span>
+<span class="kw">import </span><span class="dt">Data.Text</span>
+<span class="kw">import </span><span class="dt">Data.String.Utils</span>
+<span class="kw">import </span><span class="dt">Data.GI.Base</span>
+<span class="kw">import </span><span class="dt">Data.GI.Base.Properties</span>
+<span class="kw">import </span><span class="dt">GI.GLib</span>
+<span class="kw">import </span><span class="dt">GI.GObject</span>
+<span class="kw">import qualified</span> <span class="dt">GI.Gtk</span>
+<span class="kw">import </span><span class="dt">GI.Gst</span>
+<span class="kw">import </span><span class="dt">GI.GstVideo</span>
+<span class="kw">import </span><span class="dt">GI.GdkX11</span>
+<span class="kw">import </span><span class="dt">Paths_movie_monad</span></code></pre></div>
+<p>Since we are dealing with C bindings, we will need to work with types that exist in the C language. A large portion of the imports are the bindings generated by haskell-gi.</p>
+<h4 id="isvideooverlay">IsVideoOverlay</h4>
+<p>The GStreamer video bindings (<code>gi-gstvideo</code>) have an <code>IsVideoOverlay</code> type class (interface). The GStreamer bindings (<code>gi-gst</code>) have an element type. In order to use <code>playbin</code> (an element) with the function <code>GI.GstVideo.videoOverlaySetWindowHandle</code>, we must declare <code>GI.Gst.Element</code> a type instance of <code>IsVideoOverlay</code>. On the C side, <code>playbin</code> implements the <code>VideoOverlay</code> interface.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">newtype</span> <span class="dt">GstElement</span> <span class="fu">=</span> <span class="dt">GstElement</span> <span class="dt">GI.Gst.Element</span>
+<span class="kw">instance</span> <span class="dt">GI.GstVideo.IsVideoOverlay</span> <span class="dt">GstElement</span></code></pre></div>
+<p>Note that we wrap <code>GI.Gst.Element</code> in a newtype to avoid an orphaned instance since we are declaring the instance outside of the haskell-gi bindings.</p>
+<h4 id="main">main</h4>
+<p><code>main</code> is our largest function where we initialize all of the GUI widgets and define callback procedures based on certain events.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">main ::</span> <span class="dt">IO</span> ()
+main <span class="fu">=</span> <span class="kw">do</span></code></pre></div>
+<h4 id="gi-initialization">GI initialization</h4>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  _ <span class="ot">&lt;-</span> GI.Gst.init <span class="dt">Nothing</span>
+  _ <span class="ot">&lt;-</span> GI.Gtk.init <span class="dt">Nothing</span></code></pre></div>
+<p>Here we initialize GStreamer and GTK+.</p>
+<h4 id="building-our-gui-widgets">Building our GUI widgets</h4>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  gladeFile <span class="ot">&lt;-</span> getDataFileName <span class="st">&quot;data/gui.glade&quot;</span>
+  builder <span class="ot">&lt;-</span> GI.Gtk.builderNewFromFile (pack gladeFile)
+
+  window <span class="ot">&lt;-</span> builderGetObject <span class="dt">GI.Gtk.Window</span> builder <span class="st">&quot;window&quot;</span>
+  fileChooserButton <span class="ot">&lt;-</span> builderGetObject <span class="dt">GI.Gtk.FileChooserButton</span> builder <span class="st">&quot;file-chooser-button&quot;</span>
+  drawingArea <span class="ot">&lt;-</span> builderGetObject <span class="dt">GI.Gtk.Widget</span> builder <span class="st">&quot;drawing-area&quot;</span>
+  seekScale <span class="ot">&lt;-</span> builderGetObject <span class="dt">GI.Gtk.Scale</span> builder <span class="st">&quot;seek-scale&quot;</span>
+  onOffSwitch <span class="ot">&lt;-</span> builderGetObject <span class="dt">GI.Gtk.Switch</span> builder <span class="st">&quot;on-off-switch&quot;</span>
+  volumeButton <span class="ot">&lt;-</span> builderGetObject <span class="dt">GI.Gtk.VolumeButton</span> builder <span class="st">&quot;volume-button&quot;</span>
+  desiredVideoWidthComboBox <span class="ot">&lt;-</span> builderGetObject <span class="dt">GI.Gtk.ComboBoxText</span> builder <span class="st">&quot;desired-video-width-combo-box&quot;</span>
+  errorMessageDialog <span class="ot">&lt;-</span> builderGetObject <span class="dt">GI.Gtk.MessageDialog</span> builder <span class="st">&quot;error-message-dialog&quot;</span>
+  aboutButton <span class="ot">&lt;-</span> builderGetObject <span class="dt">GI.Gtk.Button</span> builder <span class="st">&quot;about-button&quot;</span>
+  aboutDialog <span class="ot">&lt;-</span> builderGetObject <span class="dt">GI.Gtk.AboutDialog</span> builder <span class="st">&quot;about-dialog&quot;</span></code></pre></div>
+<p>As described earlier, we obtain the absolute path to the <code>data/gui.glade</code> file which is a <a href="https://github.com/lettier/movie-monad/blob/master/src/data/gui.glade">XML file</a> describing all of our GUI widgets. Next we create a builder from the file and acquire each of our GUI widgets. If we didn’t use Glade, we would have had to build all of these widgets manually which can become rather verbose and tedious.</p>
+<h4 id="playbin">Playbin</h4>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  playbin <span class="ot">&lt;-</span> fromJust <span class="fu">&lt;$&gt;</span> GI.Gst.elementFactoryMake <span class="st">&quot;playbin&quot;</span> (<span class="dt">Just</span> <span class="st">&quot;MultimediaPlayer&quot;</span>)</code></pre></div>
+<p>Here we create a GStreamer pipeline called <code>playbin</code>. This pipeline is setup to handle a wide variety of needs and saves us the time of having to build our own pipeline. We give this element the name <code>MultimediaPlayer</code>.</p>
+<h4 id="embedding-the-gstreamer-output">Embedding the GStreamer output</h4>
+<p>Two bring together GTK+ and GStreamer, we need a way to tell GStreamer where to render the video to. If we do not tell GStreamer where to render to, it will create its own window since we are using <code>playbin</code>.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  _ <span class="ot">&lt;-</span> GI.Gtk.onWidgetRealize drawingArea <span class="fu">$</span> <span class="kw">do</span>
+    gdkWindow <span class="ot">&lt;-</span> fromJust <span class="fu">&lt;$&gt;</span> GI.Gtk.widgetGetWindow drawingArea
+    x11Window <span class="ot">&lt;-</span> GI.Gtk.unsafeCastTo <span class="dt">GI.GdkX11.X11Window</span> gdkWindow
+
+    xid <span class="ot">&lt;-</span> GI.GdkX11.x11WindowGetXid x11Window
+    <span class="kw">let</span> xid' <span class="fu">=</span> fromIntegral<span class="ot"> xid ::</span> <span class="dt">CUIntPtr</span>
+
+    GI.GstVideo.videoOverlaySetWindowHandle (<span class="dt">GstElement</span> playbin) xid'</code></pre></div>
+<p>Here you see the callback setup for when our <code>drawingArea</code> widget is ready. The <code>drawingArea</code> is where we want GStreamer to render to. We obtain the parent GDK window for the drawing area widget. Next we get the window handle or <code>XID</code> of the X11 window powering our GTK+ window. The <code>CUIntPtr</code> line is converting the ID from <code>CULong</code> to <code>CUIntPtr</code> which <code>videoOverlaySetWindowHandle</code> expects. Once we have the correct type, we inform GStreamer that it can render the output of <code>playbin</code> to our window with the handle <code>xid'</code>.</p>
+<p>Note that here is where you would adapt Movie Monad to work with your windowing system if you are using something other than the X windowing system.</p>
+<h4 id="choosing-the-file">Choosing the file</h4>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  _ <span class="ot">&lt;-</span> GI.Gtk.onFileChooserButtonFileSet fileChooserButton <span class="fu">$</span> <span class="kw">do</span>
+    _ <span class="ot">&lt;-</span> GI.Gst.elementSetState playbin <span class="dt">GI.Gst.StateNull</span>
+
+    filename <span class="ot">&lt;-</span> fromJust <span class="fu">&lt;$&gt;</span> GI.Gtk.fileChooserGetFilename fileChooserButton
+    <span class="kw">let</span> uri <span class="fu">=</span> <span class="st">&quot;file://&quot;</span> <span class="fu">++</span> filename
+
+    volume <span class="ot">&lt;-</span> GI.Gtk.scaleButtonGetValue volumeButton
+    Data.GI.Base.Properties.setObjectPropertyDouble playbin <span class="st">&quot;volume&quot;</span> volume
+    Data.GI.Base.Properties.setObjectPropertyString playbin <span class="st">&quot;uri&quot;</span> (<span class="dt">Just</span> <span class="fu">$</span> pack uri)
+
+    desiredVideoWidth <span class="ot">&lt;-</span> getDesiredVideoWidth desiredVideoWidthComboBox
+    (success, width, height) <span class="ot">&lt;-</span> getWindowSize desiredVideoWidth filename
+
+    <span class="kw">if</span> success
+      <span class="kw">then</span> <span class="kw">do</span>
+        _ <span class="ot">&lt;-</span> GI.Gst.elementSetState playbin <span class="dt">GI.Gst.StatePlaying</span>
+        GI.Gtk.switchSetActive onOffSwitch <span class="dt">True</span>
+        setWindowSize width height fileChooserButton drawingArea window
+      <span class="kw">else</span> <span class="kw">do</span>
+        _ <span class="ot">&lt;-</span> GI.Gst.elementSetState playbin <span class="dt">GI.Gst.StatePaused</span>
+        GI.Gtk.switchSetActive onOffSwitch <span class="dt">False</span>
+        resetWindowSize desiredVideoWidth fileChooserButton drawingArea window
+        _ <span class="ot">&lt;-</span> GI.Gtk.onDialogResponse errorMessageDialog (\ _ <span class="ot">-&gt;</span> GI.Gtk.widgetHide errorMessageDialog)
+        void <span class="fu">$</span> GI.Gtk.dialogRun errorMessageDialog</code></pre></div>
+<p>To kick off a video playing session, the user must be able to pick a video file. When they do pick a file, we must perform some critical steps to ensure everything goes smoothly.</p>
+<ul>
+<li>Gather the file name from the file chooser widget</li>
+<li>Tell <code>playbin</code> what file it must play</li>
+<li>Set the <code>playbin</code> volume to the volume widget level</li>
+<li>Determine the appropriate window width and height based on the desired video width selection and the video size</li>
+<li>If getting the window size was a success
+<ul>
+<li>Start playing the video</li>
+<li>Set the toggle play/pause button to the on state</li>
+<li>Resize the window to fit the relative size of the video</li>
+</ul></li>
+<li>Else if getting the window size was a failure
+<ul>
+<li>Tell <code>playbin</code> to pause</li>
+<li>Set the toggle switch to the off position</li>
+<li>Reset the window size</li>
+<li>Display a small dialog box informing the user of an error occurring</li>
+</ul></li>
+</ul>
+<h4 id="play-and-pause">Play and pause</h4>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  _ <span class="ot">&lt;-</span> GI.Gtk.onSwitchStateSet onOffSwitch <span class="fu">$</span> \ switchOn <span class="ot">-&gt;</span> <span class="kw">do</span>
+    <span class="kw">if</span> switchOn
+      <span class="kw">then</span> void <span class="fu">$</span> GI.Gst.elementSetState playbin <span class="dt">GI.Gst.StatePlaying</span>
+      <span class="kw">else</span> void <span class="fu">$</span> GI.Gst.elementSetState playbin <span class="dt">GI.Gst.StatePaused</span>
+    return switchOn</code></pre></div>
+<p>Rather straight forward. If the toggle switch is on, we set the <code>playbin</code> element’s state to playing. Otherwise, we set the <code>playbin</code> element’s state to paused.</p>
+<h4 id="setting-the-volume">Setting the volume</h4>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  _ <span class="ot">&lt;-</span> GI.Gtk.onScaleButtonValueChanged volumeButton <span class="fu">$</span>
+      \ volume <span class="ot">-&gt;</span> void <span class="fu">$</span> Data.GI.Base.Properties.setObjectPropertyDouble playbin <span class="st">&quot;volume&quot;</span> volume</code></pre></div>
+<p>Whenever the volume widget level changes, we forward this level on to GStreamer so that it can adjust the video volume.</p>
+<h4 id="seek">Seek</h4>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  seekScaleHandlerId <span class="ot">&lt;-</span> GI.Gtk.onRangeValueChanged seekScale <span class="fu">$</span> <span class="kw">do</span>
+    (couldQueryDuration, duration) <span class="ot">&lt;-</span> GI.Gst.elementQueryDuration playbin <span class="dt">GI.Gst.FormatTime</span>
+
+    when couldQueryDuration <span class="fu">$</span> <span class="kw">do</span>
+      percentage' <span class="ot">&lt;-</span> GI.Gtk.rangeGetValue seekScale
+      <span class="kw">let</span> percentage <span class="fu">=</span> percentage' <span class="fu">/</span> <span class="fl">100.0</span>
+      <span class="kw">let</span> position <span class="fu">=</span> fromIntegral (round ((fromIntegral<span class="ot"> duration ::</span> <span class="dt">Double</span>) <span class="fu">*</span> percentage)<span class="ot"> ::</span> <span class="dt">Int</span>)<span class="ot"> ::</span> <span class="dt">Int64</span>
+      void <span class="fu">$</span> GI.Gst.elementSeekSimple playbin <span class="dt">GI.Gst.FormatTime</span> [ <span class="dt">GI.Gst.SeekFlagsFlush</span> ] position</code></pre></div>
+<p>Movie Monad comes with a seek scale where as you drag the slider forwards or backwards, you move forwards or backwards through the video’s frames.</p>
+<p>The scale of the seek slider is from zero to 100 and represents the percentage of video time passed. Advancing the slider to say 50, will move the video to the time marker that is half way between start and finish. We could set the slider’s scale to be from zero to however long the video is but this method allows us to generalize better.</p>
+<p>Note that for this callback, we keep around the signal ID (<code>seekScaleHandlerId</code>) since we will need it later.</p>
+<h4 id="seek-scale-update">Seek Scale update</h4>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  _ <span class="ot">&lt;-</span> GI.GLib.timeoutAddSeconds <span class="dt">GI.GLib.PRIORITY_DEFAULT</span> <span class="dv">1</span> <span class="fu">$</span> <span class="kw">do</span>
+    (couldQueryDuration, duration) <span class="ot">&lt;-</span> GI.Gst.elementQueryDuration playbin <span class="dt">GI.Gst.FormatTime</span>
+    (couldQueryPosition, position) <span class="ot">&lt;-</span> GI.Gst.elementQueryPosition playbin <span class="dt">GI.Gst.FormatTime</span>
+
+    <span class="kw">let</span> percentage <span class="fu">=</span>
+          <span class="kw">if</span> couldQueryDuration <span class="fu">&amp;&amp;</span> couldQueryPosition <span class="fu">&amp;&amp;</span> duration <span class="fu">&gt;</span> <span class="dv">0</span>
+            <span class="kw">then</span> <span class="fl">100.0</span> <span class="fu">*</span> (fromIntegral position <span class="fu">/</span> fromIntegral<span class="ot"> duration ::</span> <span class="dt">Double</span>)
+            <span class="kw">else</span> <span class="fl">0.0</span>
+
+    GI.GObject.signalHandlerBlock seekScale seekScaleHandlerId
+    GI.Gtk.rangeSetValue seekScale percentage
+    GI.GObject.signalHandlerUnblock seekScale seekScaleHandlerId
+
+    return <span class="dt">True</span></code></pre></div>
+<p>Too keep the seek scale in sync with the video’s progress, we must play messenger between GTK+ and GStreamer. Every second, we query for the video’s current position and update the seek scale to match. This way the user can know how far along they are into the video and if they go to slide the seeker, it will be in the correct state.</p>
+<p>As to not trigger the callback we setup earlier, we disable the <code>onRangeValueChanged</code> signal handler while we update the seek scale. The <code>onRangeValueChanged</code> callback should only run if the <em>user</em> changes the seek slider.</p>
+<h4 id="changing-the-video-size">Changing the video size</h4>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  _ <span class="ot">&lt;-</span> GI.Gtk.onComboBoxChanged desiredVideoWidthComboBox <span class="fu">$</span> <span class="kw">do</span>
+    filename' <span class="ot">&lt;-</span> GI.Gtk.fileChooserGetFilename fileChooserButton
+    <span class="kw">let</span> filename <span class="fu">=</span> fromMaybe <span class="st">&quot;&quot;</span> filename'
+
+    desiredVideoWidth <span class="ot">&lt;-</span> getDesiredVideoWidth desiredVideoWidthComboBox
+    (success, width, height) <span class="ot">&lt;-</span> getWindowSize desiredVideoWidth filename
+
+    <span class="kw">if</span> success
+      <span class="kw">then</span> setWindowSize width height fileChooserButton drawingArea window
+      <span class="kw">else</span> resetWindowSize desiredVideoWidth fileChooserButton drawingArea window</code></pre></div>
+<p>This widget lets the user select the desired width of the video. The height of the window will be set based on the aspect ratio of the video and the user’s width selection.</p>
+<h4 id="about">About</h4>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  _ <span class="ot">&lt;-</span> GI.Gtk.onWidgetButtonReleaseEvent aboutButton <span class="fu">$</span> \ _ <span class="ot">-&gt;</span> <span class="kw">do</span>
+    _ <span class="ot">&lt;-</span> GI.Gtk.onDialogResponse aboutDialog (\ _ <span class="ot">-&gt;</span> GI.Gtk.widgetHide aboutDialog)
+    void <span class="fu">$</span> GI.Gtk.dialogRun aboutDialog
+    return <span class="dt">True</span></code></pre></div>
+<p>The last widget we will cover is the about dialog window. Here we wire up the about dialog window to the about button shown on the main window.</p>
+<h4 id="teardown">Teardown</h4>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  _ <span class="ot">&lt;-</span> GI.Gtk.onWidgetDestroy window <span class="fu">$</span> <span class="kw">do</span>
+    _ <span class="ot">&lt;-</span> GI.Gst.elementSetState playbin <span class="dt">GI.Gst.StateNull</span>
+    _ <span class="ot">&lt;-</span> GI.Gst.objectUnref playbin
+    GI.Gtk.mainQuit</code></pre></div>
+<p>When the user destroys the window, destroy the <code>playbin</code> pipeline and quit the main GTK loop.</p>
+<h4 id="startup">Startup</h4>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  GI.Gtk.widgetShowAll window
+  GI.Gtk.main</code></pre></div>
+<p>At long last we show or render the main window and fire up the main GTK+ loop. This loop will block until <code>mainQuit</code> is called.</p>
+<h4 id="the-entire-main.hs-file">The entire Main.hs file</h4>
+<p>Below is the <code>movie-monad/src/Main.hs</code> file. The other portions not covered are various utility functions that dry up <code>main</code>.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">{-</span>
+<span class="co">  Movie Monad</span>
+<span class="co">  (C) 2017 David lettier</span>
+<span class="co">  lettier.com</span>
+<span class="co">-}</span>
+
+<span class="ot">{-# LANGUAGE OverloadedStrings #-}</span>
+<span class="ot">{-# LANGUAGE ScopedTypeVariables #-}</span>
+
+<span class="kw">module</span> <span class="dt">Main</span> <span class="kw">where</span>
+
+<span class="kw">import </span><span class="dt">Prelude</span>
+<span class="kw">import </span><span class="dt">Foreign.C.Types</span>
+<span class="kw">import </span><span class="dt">System.Process</span>
+<span class="kw">import </span><span class="dt">System.Exit</span>
+<span class="kw">import </span><span class="dt">Control.Monad</span>
+<span class="kw">import </span><span class="dt">Control.Exception</span>
+<span class="kw">import </span><span class="dt">Data.Maybe</span>
+<span class="kw">import </span><span class="dt">Data.Int</span>
+<span class="kw">import </span><span class="dt">Data.Text</span>
+<span class="kw">import </span><span class="dt">Data.String.Utils</span>
+<span class="kw">import </span><span class="dt">Data.GI.Base</span>
+<span class="kw">import </span><span class="dt">Data.GI.Base.Properties</span>
+<span class="kw">import </span><span class="dt">GI.GLib</span>
+<span class="kw">import </span><span class="dt">GI.GObject</span>
+<span class="kw">import qualified</span> <span class="dt">GI.Gtk</span>
+<span class="kw">import </span><span class="dt">GI.Gst</span>
+<span class="kw">import </span><span class="dt">GI.GstVideo</span>
+<span class="kw">import </span><span class="dt">GI.GdkX11</span>
+<span class="kw">import </span><span class="dt">Paths_movie_monad</span>
+
+<span class="co">-- Declare Element a type instance of IsVideoOverlay via a newtype wrapper</span>
+<span class="co">-- Our GStreamer element is playbin</span>
+<span class="co">-- Playbin implements the GStreamer VideoOverlay interface</span>
+<span class="kw">newtype</span> <span class="dt">GstElement</span> <span class="fu">=</span> <span class="dt">GstElement</span> <span class="dt">GI.Gst.Element</span>
+<span class="kw">instance</span> <span class="dt">GI.GstVideo.IsVideoOverlay</span> <span class="dt">GstElement</span>
+
+<span class="ot">main ::</span> <span class="dt">IO</span> ()
+main <span class="fu">=</span> <span class="kw">do</span>
+  _ <span class="ot">&lt;-</span> GI.Gst.init <span class="dt">Nothing</span>
+  _ <span class="ot">&lt;-</span> GI.Gtk.init <span class="dt">Nothing</span>
+
+  gladeFile <span class="ot">&lt;-</span> getDataFileName <span class="st">&quot;data/gui.glade&quot;</span>
+  builder <span class="ot">&lt;-</span> GI.Gtk.builderNewFromFile (pack gladeFile)
+
+  window <span class="ot">&lt;-</span> builderGetObject <span class="dt">GI.Gtk.Window</span> builder <span class="st">&quot;window&quot;</span>
+  fileChooserButton <span class="ot">&lt;-</span> builderGetObject <span class="dt">GI.Gtk.FileChooserButton</span> builder <span class="st">&quot;file-chooser-button&quot;</span>
+  drawingArea <span class="ot">&lt;-</span> builderGetObject <span class="dt">GI.Gtk.Widget</span> builder <span class="st">&quot;drawing-area&quot;</span>
+  seekScale <span class="ot">&lt;-</span> builderGetObject <span class="dt">GI.Gtk.Scale</span> builder <span class="st">&quot;seek-scale&quot;</span>
+  onOffSwitch <span class="ot">&lt;-</span> builderGetObject <span class="dt">GI.Gtk.Switch</span> builder <span class="st">&quot;on-off-switch&quot;</span>
+  volumeButton <span class="ot">&lt;-</span> builderGetObject <span class="dt">GI.Gtk.VolumeButton</span> builder <span class="st">&quot;volume-button&quot;</span>
+  desiredVideoWidthComboBox <span class="ot">&lt;-</span> builderGetObject <span class="dt">GI.Gtk.ComboBoxText</span> builder <span class="st">&quot;desired-video-width-combo-box&quot;</span>
+  errorMessageDialog <span class="ot">&lt;-</span> builderGetObject <span class="dt">GI.Gtk.MessageDialog</span> builder <span class="st">&quot;error-message-dialog&quot;</span>
+  aboutButton <span class="ot">&lt;-</span> builderGetObject <span class="dt">GI.Gtk.Button</span> builder <span class="st">&quot;about-button&quot;</span>
+  aboutDialog <span class="ot">&lt;-</span> builderGetObject <span class="dt">GI.Gtk.AboutDialog</span> builder <span class="st">&quot;about-dialog&quot;</span>
+
+  playbin <span class="ot">&lt;-</span> fromJust <span class="fu">&lt;$&gt;</span> GI.Gst.elementFactoryMake <span class="st">&quot;playbin&quot;</span> (<span class="dt">Just</span> <span class="st">&quot;MultimediaPlayer&quot;</span>)
+
+  _ <span class="ot">&lt;-</span> GI.Gtk.onWidgetRealize drawingArea <span class="fu">$</span> <span class="kw">do</span>
+    gdkWindow <span class="ot">&lt;-</span> fromJust <span class="fu">&lt;$&gt;</span> GI.Gtk.widgetGetWindow drawingArea
+    x11Window <span class="ot">&lt;-</span> GI.Gtk.unsafeCastTo <span class="dt">GI.GdkX11.X11Window</span> gdkWindow
+
+    xid <span class="ot">&lt;-</span> GI.GdkX11.x11WindowGetXid x11Window
+    <span class="kw">let</span> xid' <span class="fu">=</span> fromIntegral<span class="ot"> xid ::</span> <span class="dt">CUIntPtr</span>
+
+    GI.GstVideo.videoOverlaySetWindowHandle (<span class="dt">GstElement</span> playbin) xid'
+
+  _ <span class="ot">&lt;-</span> GI.Gtk.onFileChooserButtonFileSet fileChooserButton <span class="fu">$</span> <span class="kw">do</span>
+    _ <span class="ot">&lt;-</span> GI.Gst.elementSetState playbin <span class="dt">GI.Gst.StateNull</span>
+
+    filename <span class="ot">&lt;-</span> fromJust <span class="fu">&lt;$&gt;</span> GI.Gtk.fileChooserGetFilename fileChooserButton
+    <span class="kw">let</span> uri <span class="fu">=</span> <span class="st">&quot;file://&quot;</span> <span class="fu">++</span> filename
+
+    volume <span class="ot">&lt;-</span> GI.Gtk.scaleButtonGetValue volumeButton
+    Data.GI.Base.Properties.setObjectPropertyDouble playbin <span class="st">&quot;volume&quot;</span> volume
+    Data.GI.Base.Properties.setObjectPropertyString playbin <span class="st">&quot;uri&quot;</span> (<span class="dt">Just</span> <span class="fu">$</span> pack uri)
+
+    desiredVideoWidth <span class="ot">&lt;-</span> getDesiredVideoWidth desiredVideoWidthComboBox
+    (success, width, height) <span class="ot">&lt;-</span> getWindowSize desiredVideoWidth filename
+
+    <span class="kw">if</span> success
+      <span class="kw">then</span> <span class="kw">do</span>
+        _ <span class="ot">&lt;-</span> GI.Gst.elementSetState playbin <span class="dt">GI.Gst.StatePlaying</span>
+        GI.Gtk.switchSetActive onOffSwitch <span class="dt">True</span>
+        setWindowSize width height fileChooserButton drawingArea window
+      <span class="kw">else</span> <span class="kw">do</span>
+        _ <span class="ot">&lt;-</span> GI.Gst.elementSetState playbin <span class="dt">GI.Gst.StatePaused</span>
+        GI.Gtk.switchSetActive onOffSwitch <span class="dt">False</span>
+        resetWindowSize desiredVideoWidth fileChooserButton drawingArea window
+        _ <span class="ot">&lt;-</span> GI.Gtk.onDialogResponse errorMessageDialog (\ _ <span class="ot">-&gt;</span> GI.Gtk.widgetHide errorMessageDialog)
+        void <span class="fu">$</span> GI.Gtk.dialogRun errorMessageDialog
+
+  _ <span class="ot">&lt;-</span> GI.Gtk.onSwitchStateSet onOffSwitch <span class="fu">$</span> \ switchOn <span class="ot">-&gt;</span> <span class="kw">do</span>
+    <span class="kw">if</span> switchOn
+      <span class="kw">then</span> void <span class="fu">$</span> GI.Gst.elementSetState playbin <span class="dt">GI.Gst.StatePlaying</span>
+      <span class="kw">else</span> void <span class="fu">$</span> GI.Gst.elementSetState playbin <span class="dt">GI.Gst.StatePaused</span>
+    return switchOn
+
+  _ <span class="ot">&lt;-</span> GI.Gtk.onScaleButtonValueChanged volumeButton <span class="fu">$</span>
+      \ volume <span class="ot">-&gt;</span> void <span class="fu">$</span> Data.GI.Base.Properties.setObjectPropertyDouble playbin <span class="st">&quot;volume&quot;</span> volume
+
+  seekScaleHandlerId <span class="ot">&lt;-</span> GI.Gtk.onRangeValueChanged seekScale <span class="fu">$</span> <span class="kw">do</span>
+    (couldQueryDuration, duration) <span class="ot">&lt;-</span> GI.Gst.elementQueryDuration playbin <span class="dt">GI.Gst.FormatTime</span>
+
+    when couldQueryDuration <span class="fu">$</span> <span class="kw">do</span>
+      percentage' <span class="ot">&lt;-</span> GI.Gtk.rangeGetValue seekScale
+      <span class="kw">let</span> percentage <span class="fu">=</span> percentage' <span class="fu">/</span> <span class="fl">100.0</span>
+      <span class="kw">let</span> position <span class="fu">=</span> fromIntegral (round ((fromIntegral<span class="ot"> duration ::</span> <span class="dt">Double</span>) <span class="fu">*</span> percentage)<span class="ot"> ::</span> <span class="dt">Int</span>)<span class="ot"> ::</span> <span class="dt">Int64</span>
+      void <span class="fu">$</span> GI.Gst.elementSeekSimple playbin <span class="dt">GI.Gst.FormatTime</span> [ <span class="dt">GI.Gst.SeekFlagsFlush</span> ] position
+
+  _ <span class="ot">&lt;-</span> GI.GLib.timeoutAddSeconds <span class="dt">GI.GLib.PRIORITY_DEFAULT</span> <span class="dv">1</span> <span class="fu">$</span> <span class="kw">do</span>
+    (couldQueryDuration, duration) <span class="ot">&lt;-</span> GI.Gst.elementQueryDuration playbin <span class="dt">GI.Gst.FormatTime</span>
+    (couldQueryPosition, position) <span class="ot">&lt;-</span> GI.Gst.elementQueryPosition playbin <span class="dt">GI.Gst.FormatTime</span>
+
+    <span class="kw">let</span> percentage <span class="fu">=</span>
+          <span class="kw">if</span> couldQueryDuration <span class="fu">&amp;&amp;</span> couldQueryPosition <span class="fu">&amp;&amp;</span> duration <span class="fu">&gt;</span> <span class="dv">0</span>
+            <span class="kw">then</span> <span class="fl">100.0</span> <span class="fu">*</span> (fromIntegral position <span class="fu">/</span> fromIntegral<span class="ot"> duration ::</span> <span class="dt">Double</span>)
+            <span class="kw">else</span> <span class="fl">0.0</span>
+
+    GI.GObject.signalHandlerBlock seekScale seekScaleHandlerId
+    GI.Gtk.rangeSetValue seekScale percentage
+    GI.GObject.signalHandlerUnblock seekScale seekScaleHandlerId
+
+    return <span class="dt">True</span>
+
+  _ <span class="ot">&lt;-</span> GI.Gtk.onComboBoxChanged desiredVideoWidthComboBox <span class="fu">$</span> <span class="kw">do</span>
+    filename' <span class="ot">&lt;-</span> GI.Gtk.fileChooserGetFilename fileChooserButton
+    <span class="kw">let</span> filename <span class="fu">=</span> fromMaybe <span class="st">&quot;&quot;</span> filename'
+
+    desiredVideoWidth <span class="ot">&lt;-</span> getDesiredVideoWidth desiredVideoWidthComboBox
+    (success, width, height) <span class="ot">&lt;-</span> getWindowSize desiredVideoWidth filename
+
+    <span class="kw">if</span> success
+      <span class="kw">then</span> setWindowSize width height fileChooserButton drawingArea window
+      <span class="kw">else</span> resetWindowSize desiredVideoWidth fileChooserButton drawingArea window
+
+  _ <span class="ot">&lt;-</span> GI.Gtk.onWidgetButtonReleaseEvent aboutButton <span class="fu">$</span> \ _ <span class="ot">-&gt;</span> <span class="kw">do</span>
+    _ <span class="ot">&lt;-</span> GI.Gtk.onDialogResponse aboutDialog (\ _ <span class="ot">-&gt;</span> GI.Gtk.widgetHide aboutDialog)
+    void <span class="fu">$</span> GI.Gtk.dialogRun aboutDialog
+    return <span class="dt">True</span>
+
+  _ <span class="ot">&lt;-</span> GI.Gtk.onWidgetDestroy window <span class="fu">$</span> <span class="kw">do</span>
+    _ <span class="ot">&lt;-</span> GI.Gst.elementSetState playbin <span class="dt">GI.Gst.StateNull</span>
+    _ <span class="ot">&lt;-</span> GI.Gst.objectUnref playbin
+    GI.Gtk.mainQuit
+
+  GI.Gtk.widgetShowAll window
+  GI.Gtk.main
+
+builderGetObject <span class="ot">::</span>
+  (<span class="dt">GI.GObject.GObject</span> b, <span class="dt">GI.Gtk.IsBuilder</span> a) <span class="ot">=&gt;</span>
+  (<span class="dt">Data.GI.Base.ManagedPtr</span> b <span class="ot">-&gt;</span> b) <span class="ot">-&gt;</span>
+  a <span class="ot">-&gt;</span>
+  <span class="dt">Prelude.String</span> <span class="ot">-&gt;</span>
+  <span class="dt">IO</span> b
+builderGetObject objectTypeClass builder objectId <span class="fu">=</span>
+  fromJust <span class="fu">&lt;$&gt;</span> GI.Gtk.builderGetObject builder (pack objectId) <span class="fu">&gt;&gt;=</span>
+    GI.Gtk.unsafeCastTo objectTypeClass
+
+<span class="ot">getVideoInfo ::</span> <span class="dt">Prelude.String</span> <span class="ot">-&gt;</span> <span class="dt">Prelude.String</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Bool</span>, <span class="dt">Prelude.String</span>)
+getVideoInfo flag filename <span class="fu">=</span> <span class="kw">do</span>
+  (code, out, _) <span class="ot">&lt;-</span> catch (
+      readProcessWithExitCode
+        <span class="st">&quot;exiftool&quot;</span>
+        [flag, <span class="st">&quot;-s&quot;</span>, <span class="st">&quot;-S&quot;</span>, filename]
+        <span class="st">&quot;&quot;</span>
+    ) (\ (_<span class="ot"> ::</span> <span class="dt">Control.Exception.IOException</span>) <span class="ot">-&gt;</span> return (<span class="dt">ExitFailure</span> <span class="dv">1</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>))
+  return (code <span class="fu">==</span> <span class="dt">System.Exit.ExitSuccess</span>, out)
+
+<span class="ot">isVideo ::</span> <span class="dt">Prelude.String</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">Bool</span>
+isVideo filename <span class="fu">=</span> <span class="kw">do</span>
+  (success, out) <span class="ot">&lt;-</span> getVideoInfo <span class="st">&quot;-MIMEType&quot;</span> filename
+  return (success <span class="fu">&amp;&amp;</span> isInfixOf <span class="st">&quot;video&quot;</span> (pack out))
+
+<span class="ot">getWindowSize ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Prelude.String</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Bool</span>, <span class="dt">Int32</span>, <span class="dt">Int32</span>)
+getWindowSize desiredVideoWidth filename <span class="fu">=</span> <span class="kw">do</span>
+  <span class="kw">let</span> defaultWidth <span class="fu">=</span> <span class="dv">800</span>
+  <span class="kw">let</span> defaultHeight <span class="fu">=</span> <span class="dv">600</span>
+
+  video <span class="ot">&lt;-</span> isVideo filename
+
+  <span class="kw">if</span> video
+    <span class="kw">then</span> <span class="kw">do</span>
+      (success, out) <span class="ot">&lt;-</span> getVideoInfo <span class="st">&quot;-ImageSize&quot;</span> filename
+      <span class="kw">if</span> success <span class="fu">&amp;&amp;</span> isInfixOf <span class="st">&quot;x&quot;</span> (pack out)
+        <span class="kw">then</span> <span class="kw">do</span>
+          <span class="kw">let</span> (width'''<span class="fu">:</span>height'''<span class="fu">:</span>_) <span class="fu">=</span>
+                Data.String.Utils.split <span class="st">&quot;x&quot;</span> <span class="fu">$</span> Data.String.Utils.strip out
+
+          <span class="kw">let</span> width'' <span class="fu">=</span> read<span class="ot"> width''' ::</span> <span class="dt">Int</span>
+          <span class="kw">let</span> height'' <span class="fu">=</span> read<span class="ot"> height''' ::</span> <span class="dt">Int</span>
+
+          <span class="kw">let</span> ratio <span class="fu">=</span> fromIntegral height'' <span class="fu">/</span> fromIntegral<span class="ot"> width'' ::</span> <span class="dt">Double</span>
+          <span class="kw">let</span> width' <span class="fu">=</span> fromIntegral<span class="ot"> desiredVideoWidth ::</span> <span class="dt">Double</span>
+          <span class="kw">let</span> height' <span class="fu">=</span> width' <span class="fu">*</span> ratio
+          <span class="kw">let</span> width <span class="fu">=</span> fromIntegral (round<span class="ot"> width' ::</span> <span class="dt">Int</span>)<span class="ot"> ::</span> <span class="dt">Int32</span>
+          <span class="kw">let</span> height <span class="fu">=</span> fromIntegral (round<span class="ot"> height' ::</span> <span class="dt">Int</span>)<span class="ot"> ::</span> <span class="dt">Int32</span>
+
+          return (<span class="dt">True</span>, width, height)
+        <span class="kw">else</span> return (<span class="dt">False</span>, defaultHeight, defaultWidth)
+    <span class="kw">else</span> return (<span class="dt">False</span>, defaultHeight, defaultWidth)
+
+<span class="ot">getDesiredVideoWidth ::</span> <span class="dt">GI.Gtk.ComboBoxText</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">Int</span>
+getDesiredVideoWidth <span class="fu">=</span> fmap (\ x <span class="ot">-&gt;</span> read (Data.Text.unpack x)<span class="ot"> ::</span> <span class="dt">Int</span>) <span class="fu">.</span> GI.Gtk.comboBoxTextGetActiveText
+
+setWindowSize <span class="ot">::</span>
+  <span class="dt">Int32</span> <span class="ot">-&gt;</span>
+  <span class="dt">Int32</span> <span class="ot">-&gt;</span>
+  <span class="dt">GI.Gtk.FileChooserButton</span> <span class="ot">-&gt;</span>
+  <span class="dt">GI.Gtk.Widget</span> <span class="ot">-&gt;</span>
+  <span class="dt">GI.Gtk.Window</span> <span class="ot">-&gt;</span>
+  <span class="dt">IO</span> ()
+setWindowSize width height fileChooserButton drawingArea window <span class="fu">=</span> <span class="kw">do</span>
+  GI.Gtk.setWidgetWidthRequest fileChooserButton width
+
+  GI.Gtk.setWidgetWidthRequest drawingArea width
+  GI.Gtk.setWidgetHeightRequest drawingArea height
+
+  GI.Gtk.setWidgetWidthRequest window width
+  GI.Gtk.setWidgetHeightRequest window height
+  GI.Gtk.windowResize window width (<span class="kw">if</span> height <span class="fu">&lt;=</span> <span class="dv">0</span> <span class="kw">then</span> <span class="dv">1</span> <span class="kw">else</span> height)
+
+resetWindowSize <span class="ot">::</span>
+  (<span class="dt">Integral</span> a) <span class="ot">=&gt;</span>
+  a <span class="ot">-&gt;</span>
+  <span class="dt">GI.Gtk.FileChooserButton</span> <span class="ot">-&gt;</span>
+  <span class="dt">GI.Gtk.Widget</span> <span class="ot">-&gt;</span>
+  <span class="dt">GI.Gtk.Window</span> <span class="ot">-&gt;</span>
+  <span class="dt">IO</span> ()
+resetWindowSize width' fileChooserButton drawingArea window <span class="fu">=</span> <span class="kw">do</span>
+  <span class="kw">let</span> width <span class="fu">=</span> fromIntegral<span class="ot"> width' ::</span> <span class="dt">Int32</span>
+  setWindowSize width <span class="dv">0</span> fileChooserButton drawingArea window</code></pre></div>
+<h2 id="building-movie-monad">Building Movie Monad</h2>
+<p>Now that we have setup our build environment and have all of the source code in place, we can build Movie Monad and run the executable/binary.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">cd</span> movie-monad/
+<span class="kw">stack</span> clean
+<span class="kw">stack</span> build --pedantic
+<span class="kw">stack</span> install
+<span class="kw">movie-monad</span> <span class="co"># Or if you prefer `stack exec -- movie-monad`</span></code></pre></div>
+<p>If all is in order, Movie Monad should run.</p>
+<h2 id="wrap-up">Wrap-up</h2>
+<p>Revisiting the <a href="https://github.com/lettier/movie-monad">Movie Monad</a> project, we remade the application using the software libraries GTK+ and GStreamer. By using GTK+ and GStreamer, the application remains as portable as the Electron version. Movie Monad can now handle large video files and comes with all of the standard controls one would expect.</p>
+<p>Another benefit to the GTK+ approach is the smaller footprint. Comparing the resident size in memory on start up, the GTK+ version only requires ~50 MB while the Electron version requires ~300 MB (a 500% increase).</p>
+<p>In the end, the GTK+ approach came with fewer limitations and required less engineering. To offer the same functionality, the Electron approach would require a tedious client server architecture. However, thanks to the excellent haskell-gi bindings, we were able to avoid the web-based approach altogether.</p>
+<p>If you would like to see another GTK+ application built with Haskell, be sure to checkout <a href="https://github.com/lettier/gifcurry">Gifcurry</a>. Gifcurry allows you take video files and produce GIFs optionally overlaid with text.</p>
+</div>
+<div class="post-footer">
+  <div class="display-left">
+    <h2 class="post-footer-cta">
+      Want more?
+      <a href="../" title="Home">Browse</a>
+      and subscribe to the
+      <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
+      for more content.
+      <!--Return to the <a href="#top" title="top">top</a>.-->
+    </h2>
+  </div>
+  <div class="display-right text-align-right post-footer-copyright">
+    <h4>
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2015</span> David Lettier
+    </h4>
+  </div>
+</div>
+<script>
+  (function () {
+    document.getElementById('copyrightYear').innerHTML = new Date().getFullYear();
+  })();
+</script>
+
+    </div>
+    <div class="share-toolbox addthis_sharing_toolbox"></div>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4fc2bc7a00a9352b"></script>
+    <script>
+      (function(i,s,o,g,r,a,m){
+        i.GoogleAnalyticsObject = r;
+        i[r] = i[r] || function () { (i[r].q = i[r].q || []).push(arguments); };
+        i[r].l=1*new Date();
+        a=s.createElement(o);
+        m=s.getElementsByTagName(o)[0];
+        a.async=1;
+        a.src=g;
+        m.parentNode.insertBefore(a,m);
+      })(
+        window,
+        document,
+        'script',
+        '//www.google-analytics.com/analytics.js',
+        'ga'
+      );
+      ga('create', 'UA-34323684-2', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </body>
+</html>
