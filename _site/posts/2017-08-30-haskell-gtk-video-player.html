@@ -228,11 +228,17 @@ GDK is an important part of GTK+’s portability. Since low-level cross-platform
 <p>Before we can play a video in Movie Monad, we will need to gather some details about the file the user selected. We will be using <a href="https://www.sno.phy.queensu.ca/~phil/exiftool/install.html">ExifTool</a> to gather these details. If you are using some Linux distribution, there is a good chance that you already have it (<code>which exiftool</code>). ExifTool is available for Windows, Mac, and Linux.</p>
 <h3 id="project-files">Project files</h3>
 <p>There are three ways you can obtain the project files.</p>
-<ul>
-<li>You can download the <a href="https://github.com/lettier/movie-monad/archive/master.zip">ZIP</a> and extract it</li>
-<li>You can clone the Git repository using the command <code>git clone git@github.com:lettier/movie-monad.git</code></li>
-<li>You can clone the Git repository using the command <code>git clone https://github.com/lettier/movie-monad.git</code></li>
-</ul>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">wget</span> https://github.com/lettier/movie-monad/archive/master.zip
+<span class="kw">unzip</span> master.zip
+<span class="kw">mv</span> movie-monad-master movie-monad
+<span class="kw">cd</span> movie-monad/</code></pre></div>
+<p>You can download the <a href="https://github.com/lettier/movie-monad/archive/master.zip">ZIP</a> and extract it.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">git</span> clone git@github.com:lettier/movie-monad.git
+<span class="kw">cd</span> movie-monad/</code></pre></div>
+<p>You can Git clone it with SSH.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">git</span> clone https://github.com/lettier/movie-monad.git
+<span class="kw">cd</span> movie-monad/</code></pre></div>
+<p>You can Git clone it with HTTPS.</p>
 <h3 id="haskell-gi">haskell-gi</h3>
 <p><a href="https://github.com/haskell-gi/haskell-gi">haskell-gi</a> is capable of generating Haskell bindings for libraries that use the <a href="https://wiki.gnome.org/Projects/GObjectIntrospection">GObject introspection middleware</a>. At the time of this writing, certain bindings we will need are not available on <a href="https://hackage.haskell.org/packages/search?terms=gi">Hackage</a>. Thus we will use haskell-gi to generate these bindings for us. For now, let us install haskell-gi.</p>
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">cd</span> movie-monad/

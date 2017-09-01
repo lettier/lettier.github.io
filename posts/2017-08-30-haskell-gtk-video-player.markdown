@@ -88,9 +88,27 @@ ExifTool is available for Windows, Mac, and Linux.
 
 There are three ways you can obtain the project files.
 
-* You can download the [ZIP](https://github.com/lettier/movie-monad/archive/master.zip) and extract it
-* You can clone the Git repository using the command `git clone git@github.com:lettier/movie-monad.git`
-* You can clone the Git repository using the command `git clone https://github.com/lettier/movie-monad.git`
+```bash
+wget https://github.com/lettier/movie-monad/archive/master.zip
+unzip master.zip
+mv movie-monad-master movie-monad
+cd movie-monad/
+```
+You can download the [ZIP](https://github.com/lettier/movie-monad/archive/master.zip) and extract it.
+
+```bash
+git clone git@github.com:lettier/movie-monad.git
+cd movie-monad/
+```
+
+You can Git clone it with SSH.
+
+```bash
+git clone https://github.com/lettier/movie-monad.git
+cd movie-monad/
+```
+
+You can Git clone it with HTTPS.
 
 ### haskell-gi
 
