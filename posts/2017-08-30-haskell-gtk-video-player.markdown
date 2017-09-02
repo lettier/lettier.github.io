@@ -158,7 +158,7 @@ stack install --dependencies-only
 ## The code
 
 We are now setup to implement Movie Monad.
-You can either delete the source files and recreate it them or just follow along.
+You can either delete the source files and recreate them or just follow along.
 
 ### Paths_movie_monad.hs
 
@@ -492,9 +492,9 @@ Note that for this callback, we keep around the signal ID (`seekScaleHandlerId`)
     return True
 ```
 
-Too keep the seek scale in sync with the video's progress, we must play messenger between GTK+ and GStreamer.
-Every second, we query for the video's current position and update the seek scale to match.
-This way the user can know how far along they are into the video and if they go to slide the seeker, it will
+To keep the seek scale in sync with the video's progress, we must play messenger between GTK+ and GStreamer.
+Every second, we query the video's current position and update the seek scale to match.
+By doing this, the user will know how far along they are and if they go to slide the seeker, it will
 be in the correct state.
 
 As to not trigger the callback we setup earlier, we disable the `onRangeValueChanged` signal handler while we update the seek scale.

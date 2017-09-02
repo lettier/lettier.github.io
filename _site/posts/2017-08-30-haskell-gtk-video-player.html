@@ -257,7 +257,7 @@ GDK is an important part of GTK+’s portability. Since low-level cross-platform
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">cd</span> movie-monad/
 <span class="kw">stack</span> install --dependencies-only</code></pre></div>
 <h2 id="the-code">The code</h2>
-<p>We are now setup to implement Movie Monad. You can either delete the source files and recreate it them or just follow along.</p>
+<p>We are now setup to implement Movie Monad. You can either delete the source files and recreate them or just follow along.</p>
 <h3 id="paths_movie_monad.hs">Paths_movie_monad.hs</h3>
 <p><code>Paths_movie_monad.hs</code> is used to find our <a href="https://glade.gnome.org/">Glade</a> XML GUI file at runtime. While we are developing, we use a dummy module (<code>movie-monad/src/dev/Paths_movie_monad.hs</code>) to find the <code>movie-monad/src/data/gui.glade</code> file. After we build/install the project, the real <code>Paths_movie_monad</code> module is auto generated. This auto generated module provides us with the <code>getDataFileName</code> function. <code>getDataFileName</code> prefixes its input with the absolute path to where the <code>data-dir</code> (<code>movie-monad/src/</code>) <code>data-files</code> were copied or installed to.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE OverloadedStrings #-}</span>
@@ -478,7 +478,7 @@ main <span class="fu">=</span> <span class="kw">do</span></code></pre></div>
     GI.GObject.signalHandlerUnblock seekScale seekScaleHandlerId
 
     return <span class="dt">True</span></code></pre></div>
-<p>Too keep the seek scale in sync with the video’s progress, we must play messenger between GTK+ and GStreamer. Every second, we query for the video’s current position and update the seek scale to match. This way the user can know how far along they are into the video and if they go to slide the seeker, it will be in the correct state.</p>
+<p>To keep the seek scale in sync with the video’s progress, we must play messenger between GTK+ and GStreamer. Every second, we query the video’s current position and update the seek scale to match. By doing this, the user will know how far along they are and if they go to slide the seeker, it will be in the correct state.</p>
 <p>As to not trigger the callback we setup earlier, we disable the <code>onRangeValueChanged</code> signal handler while we update the seek scale. The <code>onRangeValueChanged</code> callback should only run if the <em>user</em> changes the seek slider.</p>
 <h4 id="changing-the-video-size">Changing the video size</h4>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  _ <span class="ot">&lt;-</span> GI.Gtk.onComboBoxChanged desiredVideoWidthComboBox <span class="fu">$</span> <span class="kw">do</span>
