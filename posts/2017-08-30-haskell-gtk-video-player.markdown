@@ -269,17 +269,20 @@ import System.Process
 import System.Exit
 import Control.Monad
 import Control.Exception
+import Text.Read
+import Data.IORef
 import Data.Maybe
 import Data.Int
 import Data.Text
-import Data.String.Utils
 import Data.GI.Base
+import Data.GI.Base.Signals
 import Data.GI.Base.Properties
 import GI.GLib
 import GI.GObject
 import qualified GI.Gtk
 import GI.Gst
 import GI.GstVideo
+import GI.Gdk
 import GI.GdkX11
 import Paths_movie_monad
 ```
@@ -334,6 +337,7 @@ Here we initialize GStreamer and GTK+.
   onOffSwitch <- builderGetObject GI.Gtk.Switch builder "on-off-switch"
   volumeButton <- builderGetObject GI.Gtk.VolumeButton builder "volume-button"
   desiredVideoWidthComboBox <- builderGetObject GI.Gtk.ComboBoxText builder "desired-video-width-combo-box"
+  fullscreenButton <- builderGetObject GI.Gtk.Button builder "fullscreen-button"
   errorMessageDialog <- builderGetObject GI.Gtk.MessageDialog builder "error-message-dialog"
   aboutButton <- builderGetObject GI.Gtk.Button builder "about-button"
   aboutDialog <- builderGetObject GI.Gtk.AboutDialog builder "about-dialog"
@@ -362,14 +366,25 @@ Two bring together GTK+ and GStreamer, we need a way to tell GStreamer where to 
 If we do not tell GStreamer where to render to, it will create its own window since we are using `playbin`.
 
 ```haskell
-  _ <- GI.Gtk.onWidgetRealize drawingArea $ do
-    gdkWindow <- fromJust <$> GI.Gtk.widgetGetWindow drawingArea
-    x11Window <- GI.Gtk.unsafeCastTo GI.GdkX11.X11Window gdkWindow
+  _ <- GI.Gtk.onWidgetRealize drawingArea $ onDrawingAreaRealize drawingArea playbin fullscreenButton
 
-    xid <- GI.GdkX11.x11WindowGetXid x11Window
-    let xid' = fromIntegral xid :: CUIntPtr
+-- ...
 
-    GI.GstVideo.videoOverlaySetWindowHandle (GstElement playbin) xid'
+onDrawingAreaRealize ::
+  GI.Gtk.Widget ->
+  GI.Gst.Element ->
+  GI.Gtk.Button ->
+  GI.Gtk.WidgetRealizeCallback
+onDrawingAreaRealize drawingArea playbin fullscreenButton = do
+  gdkWindow <- fromJust <$> GI.Gtk.widgetGetWindow drawingArea
+  x11Window <- GI.Gtk.unsafeCastTo GI.GdkX11.X11Window gdkWindow
+
+  xid <- GI.GdkX11.x11WindowGetXid x11Window
+  let xid' = fromIntegral xid :: CUIntPtr
+
+  GI.GstVideo.videoOverlaySetWindowHandle (GstElement playbin) xid'
+
+  GI.Gtk.widgetHide fullscreenButton
 ```
 
 Here you see the callback setup for when our `drawingArea` widget is ready.
@@ -379,36 +394,80 @@ Next we get the window handle or `XID` of the X11 window powering our GTK+ windo
 The `CUIntPtr` line is converting the ID from `CULong` to `CUIntPtr` which `videoOverlaySetWindowHandle` expects.
 Once we have the correct type, we inform GStreamer that it can render the output of `playbin` to our window with the handle `xid'`.
 
+Due to a bug in Glade, we programmatically hide the fullscreen widget here since unchecking the visible box in Glade does not hide
+the widget.
+
 Note that here is where you would adapt Movie Monad to work with your windowing system if you are using something other than the
 X windowing system.
 
 #### Choosing the file
 
 ```haskell
-  _ <- GI.Gtk.onFileChooserButtonFileSet fileChooserButton $ do
-    _ <- GI.Gst.elementSetState playbin GI.Gst.StateNull
+  _ <- GI.Gtk.onFileChooserButtonFileSet fileChooserButton $
+    onFileChooserButtonFileSet
+      playbin
+      fileChooserButton
+      volumeButton
+      isWindowFullScreenRef
+      desiredVideoWidthComboBox
+      onOffSwitch
+      fullscreenButton
+      drawingArea
+      window
+      errorMessageDialog
 
-    filename <- fromJust <$> GI.Gtk.fileChooserGetFilename fileChooserButton
-    let uri = "file://" ++ filename
+-- ...
 
-    volume <- GI.Gtk.scaleButtonGetValue volumeButton
-    Data.GI.Base.Properties.setObjectPropertyDouble playbin "volume" volume
-    Data.GI.Base.Properties.setObjectPropertyString playbin "uri" (Just $ pack uri)
+onFileChooserButtonFileSet ::
+  GI.Gst.Element ->
+  GI.Gtk.FileChooserButton ->
+  GI.Gtk.VolumeButton ->
+  IORef Bool ->
+  GI.Gtk.ComboBoxText ->
+  GI.Gtk.Switch ->
+  GI.Gtk.Button ->
+  GI.Gtk.Widget ->
+  GI.Gtk.Window ->
+  GI.Gtk.MessageDialog ->
+  GI.Gtk.FileChooserButtonFileSetCallback
+onFileChooserButtonFileSet
+  playbin
+  fileChooserButton
+  volumeButton
+  isWindowFullScreenRef
+  desiredVideoWidthComboBox
+  onOffSwitch
+  fullscreenButton
+  drawingArea
+  window
+  errorMessageDialog
+  = do
+  _ <- GI.Gst.elementSetState playbin GI.Gst.StateNull
 
-    desiredVideoWidth <- getDesiredVideoWidth desiredVideoWidthComboBox
-    (success, width, height) <- getWindowSize desiredVideoWidth filename
+  filename <- fromJust <$> GI.Gtk.fileChooserGetFilename fileChooserButton
 
-    if success
-      then do
-        _ <- GI.Gst.elementSetState playbin GI.Gst.StatePlaying
-        GI.Gtk.switchSetActive onOffSwitch True
-        setWindowSize width height fileChooserButton drawingArea window
-      else do
-        _ <- GI.Gst.elementSetState playbin GI.Gst.StatePaused
-        GI.Gtk.switchSetActive onOffSwitch False
-        resetWindowSize desiredVideoWidth fileChooserButton drawingArea window
-        _ <- GI.Gtk.onDialogResponse errorMessageDialog (\ _ -> GI.Gtk.widgetHide errorMessageDialog)
-        void $ GI.Gtk.dialogRun errorMessageDialog
+  setPlaybinUriAndVolume playbin filename volumeButton
+
+  isWindowFullScreen <- readIORef isWindowFullScreenRef
+
+  desiredVideoWidth <- getDesiredVideoWidth desiredVideoWidthComboBox
+  maybeWindowSize <- getWindowSize desiredVideoWidth filename
+
+  case maybeWindowSize of
+    Nothing -> do
+      _ <- GI.Gst.elementSetState playbin GI.Gst.StatePaused
+      GI.Gtk.windowUnfullscreen window
+      GI.Gtk.switchSetActive onOffSwitch False
+      GI.Gtk.widgetHide fullscreenButton
+      GI.Gtk.widgetShow desiredVideoWidthComboBox
+      resetWindowSize desiredVideoWidth fileChooserButton drawingArea window
+      _ <- GI.Gtk.onDialogResponse errorMessageDialog (\ _ -> GI.Gtk.widgetHide errorMessageDialog)
+      void $ GI.Gtk.dialogRun errorMessageDialog
+    Just (width, height) -> do
+      _ <- GI.Gst.elementSetState playbin GI.Gst.StatePlaying
+      GI.Gtk.switchSetActive onOffSwitch True
+      GI.Gtk.widgetShow fullscreenButton
+      unless isWindowFullScreen $ setWindowSize width height fileChooserButton drawingArea window
 ```
 
 To kick off a video playing session, the user must be able to pick a video file.
@@ -421,21 +480,32 @@ When they do pick a file, we must perform some critical steps to ensure everythi
 * If getting the window size was a success
     * Start playing the video
     * Set the toggle play/pause button to the on state
-    * Resize the window to fit the relative size of the video
+    * Show the fullscreen widget
+    * If the video is not in fullscreen mode
+        * Resize the window to fit the relative size of the video
 * Else if getting the window size was a failure
     * Tell `playbin` to pause
     * Set the toggle switch to the off position
+    * Take the window out of fullscreen mode if applicable
     * Reset the window size
     * Display a small dialog box informing the user of an error occurring
 
 #### Play and pause
 
 ```haskell
-  _ <- GI.Gtk.onSwitchStateSet onOffSwitch $ \ switchOn -> do
-    if switchOn
-      then void $ GI.Gst.elementSetState playbin GI.Gst.StatePlaying
-      else void $ GI.Gst.elementSetState playbin GI.Gst.StatePaused
-    return switchOn
+  _ <- GI.Gtk.onSwitchStateSet onOffSwitch (onSwitchStateSet playbin)
+
+-- ...
+
+onSwitchStateSet ::
+  GI.Gst.Element ->
+  Bool ->
+  IO Bool
+onSwitchStateSet playbin switchOn = do
+  if switchOn
+    then void $ GI.Gst.elementSetState playbin GI.Gst.StatePlaying
+    else void $ GI.Gst.elementSetState playbin GI.Gst.StatePaused
+  return switchOn
 ```
 
 Rather straight forward.
@@ -445,8 +515,16 @@ Otherwise, we set the `playbin` element's state to paused.
 #### Setting the volume
 
 ```haskell
-  _ <- GI.Gtk.onScaleButtonValueChanged volumeButton $
-      \ volume -> void $ Data.GI.Base.Properties.setObjectPropertyDouble playbin "volume" volume
+  _ <- GI.Gtk.onScaleButtonValueChanged volumeButton (onScaleButtonValueChanged playbin)
+
+-- ...
+
+onScaleButtonValueChanged ::
+  GI.Gst.Element ->
+  Double ->
+  IO ()
+onScaleButtonValueChanged playbin volume =
+    void $ Data.GI.Base.Properties.setObjectPropertyDouble playbin "volume" volume
 ```
 
 Whenever the volume widget level changes, we forward this level on to GStreamer so that it can adjust the video volume.
@@ -454,14 +532,22 @@ Whenever the volume widget level changes, we forward this level on to GStreamer 
 #### Seek
 
 ```haskell
-  seekScaleHandlerId <- GI.Gtk.onRangeValueChanged seekScale $ do
-    (couldQueryDuration, duration) <- GI.Gst.elementQueryDuration playbin GI.Gst.FormatTime
+  seekScaleHandlerId <- GI.Gtk.onRangeValueChanged seekScale (onRangeValueChanged playbin seekScale)
 
-    when couldQueryDuration $ do
-      percentage' <- GI.Gtk.rangeGetValue seekScale
-      let percentage = percentage' / 100.0
-      let position = fromIntegral (round ((fromIntegral duration :: Double) * percentage) :: Int) :: Int64
-      void $ GI.Gst.elementSeekSimple playbin GI.Gst.FormatTime [ GI.Gst.SeekFlagsFlush ] position
+-- ...
+
+onRangeValueChanged ::
+  GI.Gst.Element ->
+  GI.Gtk.Scale ->
+  IO ()
+onRangeValueChanged playbin seekScale = do
+  (couldQueryDuration, duration) <- GI.Gst.elementQueryDuration playbin GI.Gst.FormatTime
+
+  when couldQueryDuration $ do
+    percentage' <- GI.Gtk.rangeGetValue seekScale
+    let percentage = percentage' / 100.0
+    let position = fromIntegral (round ((fromIntegral duration :: Double) * percentage) :: Int) :: Int64
+    void $ GI.Gst.elementSeekSimple playbin GI.Gst.FormatTime [ GI.Gst.SeekFlagsFlush ] position
 ```
 
 Movie Monad comes with a seek scale where as you drag the slider forwards or backwards,
@@ -476,20 +562,29 @@ Note that for this callback, we keep around the signal ID (`seekScaleHandlerId`)
 #### Seek Scale update
 
 ```haskell
-  _ <- GI.GLib.timeoutAddSeconds GI.GLib.PRIORITY_DEFAULT 1 $ do
-    (couldQueryDuration, duration) <- GI.Gst.elementQueryDuration playbin GI.Gst.FormatTime
-    (couldQueryPosition, position) <- GI.Gst.elementQueryPosition playbin GI.Gst.FormatTime
+  _ <- GI.GLib.timeoutAddSeconds GI.GLib.PRIORITY_DEFAULT 1 (updateSeekScale playbin seekScale seekScaleHandlerId)
 
-    let percentage =
-          if couldQueryDuration && couldQueryPosition && duration > 0
-            then 100.0 * (fromIntegral position / fromIntegral duration :: Double)
-            else 0.0
+-- ...
 
-    GI.GObject.signalHandlerBlock seekScale seekScaleHandlerId
-    GI.Gtk.rangeSetValue seekScale percentage
-    GI.GObject.signalHandlerUnblock seekScale seekScaleHandlerId
+updateSeekScale ::
+  GI.Gst.Element ->
+  GI.Gtk.Scale ->
+  Data.GI.Base.Signals.SignalHandlerId ->
+  IO Bool
+updateSeekScale playbin seekScale seekScaleHandlerId = do
+  (couldQueryDuration, duration) <- GI.Gst.elementQueryDuration playbin GI.Gst.FormatTime
+  (couldQueryPosition, position) <- GI.Gst.elementQueryPosition playbin GI.Gst.FormatTime
 
-    return True
+  let percentage =
+        if couldQueryDuration && couldQueryPosition && duration > 0
+          then 100.0 * (fromIntegral position / fromIntegral duration :: Double)
+          else 0.0
+
+  GI.GObject.signalHandlerBlock seekScale seekScaleHandlerId
+  GI.Gtk.rangeSetValue seekScale percentage
+  GI.GObject.signalHandlerUnblock seekScale seekScaleHandlerId
+
+  return True
 ```
 
 To keep the seek scale in sync with the video's progress, we must play messenger between GTK+ and GStreamer.
@@ -503,28 +598,119 @@ The `onRangeValueChanged` callback should only run if the _user_ changes the see
 #### Changing the video size
 
 ```haskell
-  _ <- GI.Gtk.onComboBoxChanged desiredVideoWidthComboBox $ do
-    filename' <- GI.Gtk.fileChooserGetFilename fileChooserButton
-    let filename = fromMaybe "" filename'
+  _ <- GI.Gtk.onComboBoxChanged desiredVideoWidthComboBox $
+      onComboBoxChanged fileChooserButton desiredVideoWidthComboBox drawingArea window
 
-    desiredVideoWidth <- getDesiredVideoWidth desiredVideoWidthComboBox
-    (success, width, height) <- getWindowSize desiredVideoWidth filename
+-- ...
 
-    if success
-      then setWindowSize width height fileChooserButton drawingArea window
-      else resetWindowSize desiredVideoWidth fileChooserButton drawingArea window
+onComboBoxChanged ::
+  GI.Gtk.FileChooserButton ->
+  GI.Gtk.ComboBoxText ->
+  GI.Gtk.Widget ->
+  GI.Gtk.Window ->
+  IO ()
+onComboBoxChanged
+  fileChooserButton
+  desiredVideoWidthComboBox
+  drawingArea
+  window
+  = do
+  filename' <- GI.Gtk.fileChooserGetFilename fileChooserButton
+  let filename = fromMaybe "" filename'
+
+  desiredVideoWidth <- getDesiredVideoWidth desiredVideoWidthComboBox
+  maybeWindowSize <- getWindowSize desiredVideoWidth filename
+
+  case maybeWindowSize of
+    Nothing -> resetWindowSize desiredVideoWidth fileChooserButton drawingArea window
+    Just (width, height) -> setWindowSize width height fileChooserButton drawingArea window
 ```
 
 This widget lets the user select the desired width of the video.
 The height of the window will be set based on the aspect ratio of the video and the user's width selection.
 
+#### Fullscreen
+
+```haskell
+  _ <- GI.Gtk.onWidgetButtonReleaseEvent fullscreenButton
+      (onFullscreenButtonRelease isWindowFullScreenRef desiredVideoWidthComboBox fileChooserButton window)
+
+-- ...
+
+onFullscreenButtonRelease ::
+  IORef Bool ->
+  GI.Gtk.ComboBoxText ->
+  GI.Gtk.FileChooserButton ->
+  GI.Gtk.Window ->
+  GI.Gdk.EventButton ->
+  IO Bool
+onFullscreenButtonRelease
+  isWindowFullScreenRef
+  desiredVideoWidthComboBox
+  fileChooserButton
+  window
+  _
+  = do
+  isWindowFullScreen <- readIORef isWindowFullScreenRef
+  if isWindowFullScreen
+    then do
+      GI.Gtk.widgetShow desiredVideoWidthComboBox
+      GI.Gtk.widgetShow fileChooserButton
+      void $ GI.Gtk.windowUnfullscreen window
+    else do
+      GI.Gtk.widgetHide desiredVideoWidthComboBox
+      GI.Gtk.widgetHide fileChooserButton
+      void $ GI.Gtk.windowFullscreen window
+  return True
+```
+
+Once the user releases the fullscreen widget button, we toggle the window's fullscreen state.
+When going fullscreen, we hide the file chooser and the desired video width widget.
+When going out of fullscreen, we restore the file chooser and the desired video width widget.
+
+Note that we do not show the fullscreen widget unless we have a valid video.
+
+```haskell
+  _ <- GI.Gtk.onWidgetWindowStateEvent window (onWidgetWindowStateEvent isWindowFullScreenRef)
+
+-- ...
+
+onWidgetWindowStateEvent ::
+  IORef Bool ->
+  GI.Gdk.EventWindowState ->
+  IO Bool
+onWidgetWindowStateEvent isWindowFullScreenRef eventWindowState = do
+  windowStates <- GI.Gdk.getEventWindowStateNewWindowState eventWindowState
+  let isWindowFullScreen = Prelude.foldl (\ acc x -> acc || GI.Gdk.WindowStateFullscreen == x) False windowStates
+  writeIORef isWindowFullScreenRef isWindowFullScreen
+  return True
+```
+
+In order to manage the fullscreen state of the window, we must setup a callback to fire whenever the state of the window changes.
+Various callbacks rely on knowing the fullscreen state of the window.
+To facilitate this, we use an `IORef` that each function reads from and this callback writes to.
+This `IORef` is a mutable (and shared) reference.
+Ideally we would query the window at precisely the time we must know its fullscreen state but there is no API for this.
+Thus we must use this mutable reference.
+
+With only one writer and all of our signal callbacks being run on the main thread, we avoid the may pitfalls of shared mutable state.
+If we were concerned about thread safety, we could use a `MVar`, `TVar`, or use `atomicModifyIORef` instead.
+
 #### About
 
 ```haskell
-  _ <- GI.Gtk.onWidgetButtonReleaseEvent aboutButton $ \ _ -> do
-    _ <- GI.Gtk.onDialogResponse aboutDialog (\ _ -> GI.Gtk.widgetHide aboutDialog)
-    void $ GI.Gtk.dialogRun aboutDialog
-    return True
+  _ <- GI.Gtk.onWidgetButtonReleaseEvent aboutButton (onAboutButtonRelease aboutDialog)
+
+-- ...
+
+onAboutButtonRelease ::
+  GI.Gtk.AboutDialog ->
+  GI.Gdk.EventButton ->
+  IO Bool
+onAboutButtonRelease aboutDialog _ = do
+  _ <- GI.Gtk.onDialogResponse aboutDialog (\ _ -> GI.Gtk.widgetHide aboutDialog)
+  _ <- GI.Gtk.dialogRun aboutDialog
+  return True
 ```
 
 The last widget we will cover is the about dialog window.
@@ -533,10 +719,17 @@ Here we wire up the about dialog window to the about button shown on the main wi
 #### Teardown
 
 ```haskell
-  _ <- GI.Gtk.onWidgetDestroy window $ do
-    _ <- GI.Gst.elementSetState playbin GI.Gst.StateNull
-    _ <- GI.Gst.objectUnref playbin
-    GI.Gtk.mainQuit
+  _ <- GI.Gtk.onWidgetDestroy window (onWindowDestroy playbin)
+
+-- ...
+
+onWindowDestroy ::
+  GI.Gst.Element ->
+  IO ()
+onWindowDestroy playbin = do
+  _ <- GI.Gst.elementSetState playbin GI.Gst.StateNull
+  _ <- GI.Gst.objectUnref playbin
+  GI.Gtk.mainQuit
 ```
 
 When the user destroys the window, destroy the `playbin` pipeline and quit the main GTK loop.
@@ -573,17 +766,20 @@ import System.Process
 import System.Exit
 import Control.Monad
 import Control.Exception
+import Text.Read
+import Data.IORef
 import Data.Maybe
 import Data.Int
 import Data.Text
-import Data.String.Utils
 import Data.GI.Base
+import Data.GI.Base.Signals
 import Data.GI.Base.Properties
 import GI.GLib
 import GI.GObject
 import qualified GI.Gtk
 import GI.Gst
 import GI.GstVideo
+import GI.Gdk
 import GI.GdkX11
 import Paths_movie_monad
 
@@ -608,99 +804,49 @@ main = do
   onOffSwitch <- builderGetObject GI.Gtk.Switch builder "on-off-switch"
   volumeButton <- builderGetObject GI.Gtk.VolumeButton builder "volume-button"
   desiredVideoWidthComboBox <- builderGetObject GI.Gtk.ComboBoxText builder "desired-video-width-combo-box"
+  fullscreenButton <- builderGetObject GI.Gtk.Button builder "fullscreen-button"
   errorMessageDialog <- builderGetObject GI.Gtk.MessageDialog builder "error-message-dialog"
   aboutButton <- builderGetObject GI.Gtk.Button builder "about-button"
   aboutDialog <- builderGetObject GI.Gtk.AboutDialog builder "about-dialog"
 
   playbin <- fromJust <$> GI.Gst.elementFactoryMake "playbin" (Just "MultimediaPlayer")
 
-  _ <- GI.Gtk.onWidgetRealize drawingArea $ do
-    gdkWindow <- fromJust <$> GI.Gtk.widgetGetWindow drawingArea
-    x11Window <- GI.Gtk.unsafeCastTo GI.GdkX11.X11Window gdkWindow
+  isWindowFullScreenRef <- newIORef False
 
-    xid <- GI.GdkX11.x11WindowGetXid x11Window
-    let xid' = fromIntegral xid :: CUIntPtr
+  _ <- GI.Gtk.onWidgetRealize drawingArea $ onDrawingAreaRealize drawingArea playbin fullscreenButton
 
-    GI.GstVideo.videoOverlaySetWindowHandle (GstElement playbin) xid'
+  _ <- GI.Gtk.onFileChooserButtonFileSet fileChooserButton $
+    onFileChooserButtonFileSet
+      playbin
+      fileChooserButton
+      volumeButton
+      isWindowFullScreenRef
+      desiredVideoWidthComboBox
+      onOffSwitch
+      fullscreenButton
+      drawingArea
+      window
+      errorMessageDialog
 
-  _ <- GI.Gtk.onFileChooserButtonFileSet fileChooserButton $ do
-    _ <- GI.Gst.elementSetState playbin GI.Gst.StateNull
+  _ <- GI.Gtk.onSwitchStateSet onOffSwitch (onSwitchStateSet playbin)
 
-    filename <- fromJust <$> GI.Gtk.fileChooserGetFilename fileChooserButton
-    let uri = "file://" ++ filename
+  _ <- GI.Gtk.onScaleButtonValueChanged volumeButton (onScaleButtonValueChanged playbin)
 
-    volume <- GI.Gtk.scaleButtonGetValue volumeButton
-    Data.GI.Base.Properties.setObjectPropertyDouble playbin "volume" volume
-    Data.GI.Base.Properties.setObjectPropertyString playbin "uri" (Just $ pack uri)
+  seekScaleHandlerId <- GI.Gtk.onRangeValueChanged seekScale (onRangeValueChanged playbin seekScale)
 
-    desiredVideoWidth <- getDesiredVideoWidth desiredVideoWidthComboBox
-    (success, width, height) <- getWindowSize desiredVideoWidth filename
+  _ <- GI.GLib.timeoutAddSeconds GI.GLib.PRIORITY_DEFAULT 1 (updateSeekScale playbin seekScale seekScaleHandlerId)
 
-    if success
-      then do
-        _ <- GI.Gst.elementSetState playbin GI.Gst.StatePlaying
-        GI.Gtk.switchSetActive onOffSwitch True
-        setWindowSize width height fileChooserButton drawingArea window
-      else do
-        _ <- GI.Gst.elementSetState playbin GI.Gst.StatePaused
-        GI.Gtk.switchSetActive onOffSwitch False
-        resetWindowSize desiredVideoWidth fileChooserButton drawingArea window
-        _ <- GI.Gtk.onDialogResponse errorMessageDialog (\ _ -> GI.Gtk.widgetHide errorMessageDialog)
-        void $ GI.Gtk.dialogRun errorMessageDialog
+  _ <- GI.Gtk.onComboBoxChanged desiredVideoWidthComboBox $
+      onComboBoxChanged fileChooserButton desiredVideoWidthComboBox drawingArea window
 
-  _ <- GI.Gtk.onSwitchStateSet onOffSwitch $ \ switchOn -> do
-    if switchOn
-      then void $ GI.Gst.elementSetState playbin GI.Gst.StatePlaying
-      else void $ GI.Gst.elementSetState playbin GI.Gst.StatePaused
-    return switchOn
+  _ <- GI.Gtk.onWidgetButtonReleaseEvent fullscreenButton
+      (onFullscreenButtonRelease isWindowFullScreenRef desiredVideoWidthComboBox fileChooserButton window)
 
-  _ <- GI.Gtk.onScaleButtonValueChanged volumeButton $
-      \ volume -> void $ Data.GI.Base.Properties.setObjectPropertyDouble playbin "volume" volume
+  _ <- GI.Gtk.onWidgetWindowStateEvent window (onWidgetWindowStateEvent isWindowFullScreenRef)
 
-  seekScaleHandlerId <- GI.Gtk.onRangeValueChanged seekScale $ do
-    (couldQueryDuration, duration) <- GI.Gst.elementQueryDuration playbin GI.Gst.FormatTime
+  _ <- GI.Gtk.onWidgetButtonReleaseEvent aboutButton (onAboutButtonRelease aboutDialog)
 
-    when couldQueryDuration $ do
-      percentage' <- GI.Gtk.rangeGetValue seekScale
-      let percentage = percentage' / 100.0
-      let position = fromIntegral (round ((fromIntegral duration :: Double) * percentage) :: Int) :: Int64
-      void $ GI.Gst.elementSeekSimple playbin GI.Gst.FormatTime [ GI.Gst.SeekFlagsFlush ] position
-
-  _ <- GI.GLib.timeoutAddSeconds GI.GLib.PRIORITY_DEFAULT 1 $ do
-    (couldQueryDuration, duration) <- GI.Gst.elementQueryDuration playbin GI.Gst.FormatTime
-    (couldQueryPosition, position) <- GI.Gst.elementQueryPosition playbin GI.Gst.FormatTime
-
-    let percentage =
-          if couldQueryDuration && couldQueryPosition && duration > 0
-            then 100.0 * (fromIntegral position / fromIntegral duration :: Double)
-            else 0.0
-
-    GI.GObject.signalHandlerBlock seekScale seekScaleHandlerId
-    GI.Gtk.rangeSetValue seekScale percentage
-    GI.GObject.signalHandlerUnblock seekScale seekScaleHandlerId
-
-    return True
-
-  _ <- GI.Gtk.onComboBoxChanged desiredVideoWidthComboBox $ do
-    filename' <- GI.Gtk.fileChooserGetFilename fileChooserButton
-    let filename = fromMaybe "" filename'
-
-    desiredVideoWidth <- getDesiredVideoWidth desiredVideoWidthComboBox
-    (success, width, height) <- getWindowSize desiredVideoWidth filename
-
-    if success
-      then setWindowSize width height fileChooserButton drawingArea window
-      else resetWindowSize desiredVideoWidth fileChooserButton drawingArea window
-
-  _ <- GI.Gtk.onWidgetButtonReleaseEvent aboutButton $ \ _ -> do
-    _ <- GI.Gtk.onDialogResponse aboutDialog (\ _ -> GI.Gtk.widgetHide aboutDialog)
-    void $ GI.Gtk.dialogRun aboutDialog
-    return True
-
-  _ <- GI.Gtk.onWidgetDestroy window $ do
-    _ <- GI.Gst.elementSetState playbin GI.Gst.StateNull
-    _ <- GI.Gst.objectUnref playbin
-    GI.Gtk.mainQuit
+  _ <- GI.Gtk.onWidgetDestroy window (onWindowDestroy playbin)
 
   GI.Gtk.widgetShowAll window
   GI.Gtk.main
@@ -715,7 +861,210 @@ builderGetObject objectTypeClass builder objectId =
   fromJust <$> GI.Gtk.builderGetObject builder (pack objectId) >>=
     GI.Gtk.unsafeCastTo objectTypeClass
 
-getVideoInfo :: Prelude.String -> Prelude.String -> IO (Bool, Prelude.String)
+onDrawingAreaRealize ::
+  GI.Gtk.Widget ->
+  GI.Gst.Element ->
+  GI.Gtk.Button ->
+  GI.Gtk.WidgetRealizeCallback
+onDrawingAreaRealize drawingArea playbin fullscreenButton = do
+  gdkWindow <- fromJust <$> GI.Gtk.widgetGetWindow drawingArea
+  x11Window <- GI.Gtk.unsafeCastTo GI.GdkX11.X11Window gdkWindow
+
+  xid <- GI.GdkX11.x11WindowGetXid x11Window
+  let xid' = fromIntegral xid :: CUIntPtr
+
+  GI.GstVideo.videoOverlaySetWindowHandle (GstElement playbin) xid'
+
+  GI.Gtk.widgetHide fullscreenButton
+
+onFileChooserButtonFileSet ::
+  GI.Gst.Element ->
+  GI.Gtk.FileChooserButton ->
+  GI.Gtk.VolumeButton ->
+  IORef Bool ->
+  GI.Gtk.ComboBoxText ->
+  GI.Gtk.Switch ->
+  GI.Gtk.Button ->
+  GI.Gtk.Widget ->
+  GI.Gtk.Window ->
+  GI.Gtk.MessageDialog ->
+  GI.Gtk.FileChooserButtonFileSetCallback
+onFileChooserButtonFileSet
+  playbin
+  fileChooserButton
+  volumeButton
+  isWindowFullScreenRef
+  desiredVideoWidthComboBox
+  onOffSwitch
+  fullscreenButton
+  drawingArea
+  window
+  errorMessageDialog
+  = do
+  _ <- GI.Gst.elementSetState playbin GI.Gst.StateNull
+
+  filename <- fromJust <$> GI.Gtk.fileChooserGetFilename fileChooserButton
+
+  setPlaybinUriAndVolume playbin filename volumeButton
+
+  isWindowFullScreen <- readIORef isWindowFullScreenRef
+
+  desiredVideoWidth <- getDesiredVideoWidth desiredVideoWidthComboBox
+  maybeWindowSize <- getWindowSize desiredVideoWidth filename
+
+  case maybeWindowSize of
+    Nothing -> do
+      _ <- GI.Gst.elementSetState playbin GI.Gst.StatePaused
+      GI.Gtk.windowUnfullscreen window
+      GI.Gtk.switchSetActive onOffSwitch False
+      GI.Gtk.widgetHide fullscreenButton
+      GI.Gtk.widgetShow desiredVideoWidthComboBox
+      resetWindowSize desiredVideoWidth fileChooserButton drawingArea window
+      _ <- GI.Gtk.onDialogResponse errorMessageDialog (\ _ -> GI.Gtk.widgetHide errorMessageDialog)
+      void $ GI.Gtk.dialogRun errorMessageDialog
+    Just (width, height) -> do
+      _ <- GI.Gst.elementSetState playbin GI.Gst.StatePlaying
+      GI.Gtk.switchSetActive onOffSwitch True
+      GI.Gtk.widgetShow fullscreenButton
+      unless isWindowFullScreen $ setWindowSize width height fileChooserButton drawingArea window
+
+onSwitchStateSet ::
+  GI.Gst.Element ->
+  Bool ->
+  IO Bool
+onSwitchStateSet playbin switchOn = do
+  if switchOn
+    then void $ GI.Gst.elementSetState playbin GI.Gst.StatePlaying
+    else void $ GI.Gst.elementSetState playbin GI.Gst.StatePaused
+  return switchOn
+
+onScaleButtonValueChanged ::
+  GI.Gst.Element ->
+  Double ->
+  IO ()
+onScaleButtonValueChanged playbin volume =
+    void $ Data.GI.Base.Properties.setObjectPropertyDouble playbin "volume" volume
+
+onRangeValueChanged ::
+  GI.Gst.Element ->
+  GI.Gtk.Scale ->
+  IO ()
+onRangeValueChanged playbin seekScale = do
+  (couldQueryDuration, duration) <- GI.Gst.elementQueryDuration playbin GI.Gst.FormatTime
+
+  when couldQueryDuration $ do
+    percentage' <- GI.Gtk.rangeGetValue seekScale
+    let percentage = percentage' / 100.0
+    let position = fromIntegral (round ((fromIntegral duration :: Double) * percentage) :: Int) :: Int64
+    void $ GI.Gst.elementSeekSimple playbin GI.Gst.FormatTime [ GI.Gst.SeekFlagsFlush ] position
+
+updateSeekScale ::
+  GI.Gst.Element ->
+  GI.Gtk.Scale ->
+  Data.GI.Base.Signals.SignalHandlerId ->
+  IO Bool
+updateSeekScale playbin seekScale seekScaleHandlerId = do
+  (couldQueryDuration, duration) <- GI.Gst.elementQueryDuration playbin GI.Gst.FormatTime
+  (couldQueryPosition, position) <- GI.Gst.elementQueryPosition playbin GI.Gst.FormatTime
+
+  let percentage =
+        if couldQueryDuration && couldQueryPosition && duration > 0
+          then 100.0 * (fromIntegral position / fromIntegral duration :: Double)
+          else 0.0
+
+  GI.GObject.signalHandlerBlock seekScale seekScaleHandlerId
+  GI.Gtk.rangeSetValue seekScale percentage
+  GI.GObject.signalHandlerUnblock seekScale seekScaleHandlerId
+
+  return True
+
+onComboBoxChanged ::
+  GI.Gtk.FileChooserButton ->
+  GI.Gtk.ComboBoxText ->
+  GI.Gtk.Widget ->
+  GI.Gtk.Window ->
+  IO ()
+onComboBoxChanged
+  fileChooserButton
+  desiredVideoWidthComboBox
+  drawingArea
+  window
+  = do
+  filename' <- GI.Gtk.fileChooserGetFilename fileChooserButton
+  let filename = fromMaybe "" filename'
+
+  desiredVideoWidth <- getDesiredVideoWidth desiredVideoWidthComboBox
+  maybeWindowSize <- getWindowSize desiredVideoWidth filename
+
+  case maybeWindowSize of
+    Nothing -> resetWindowSize desiredVideoWidth fileChooserButton drawingArea window
+    Just (width, height) -> setWindowSize width height fileChooserButton drawingArea window
+
+onFullscreenButtonRelease ::
+  IORef Bool ->
+  GI.Gtk.ComboBoxText ->
+  GI.Gtk.FileChooserButton ->
+  GI.Gtk.Window ->
+  GI.Gdk.EventButton ->
+  IO Bool
+onFullscreenButtonRelease
+  isWindowFullScreenRef
+  desiredVideoWidthComboBox
+  fileChooserButton
+  window
+  _
+  = do
+  isWindowFullScreen <- readIORef isWindowFullScreenRef
+  if isWindowFullScreen
+    then do
+      GI.Gtk.widgetShow desiredVideoWidthComboBox
+      GI.Gtk.widgetShow fileChooserButton
+      void $ GI.Gtk.windowUnfullscreen window
+    else do
+      GI.Gtk.widgetHide desiredVideoWidthComboBox
+      GI.Gtk.widgetHide fileChooserButton
+      void $ GI.Gtk.windowFullscreen window
+  return True
+
+onWidgetWindowStateEvent ::
+  IORef Bool ->
+  GI.Gdk.EventWindowState ->
+  IO Bool
+onWidgetWindowStateEvent isWindowFullScreenRef eventWindowState = do
+  windowStates <- GI.Gdk.getEventWindowStateNewWindowState eventWindowState
+  let isWindowFullScreen = Prelude.foldl (\ acc x -> acc || GI.Gdk.WindowStateFullscreen == x) False windowStates
+  writeIORef isWindowFullScreenRef isWindowFullScreen
+  return True
+
+onAboutButtonRelease ::
+  GI.Gtk.AboutDialog ->
+  GI.Gdk.EventButton ->
+  IO Bool
+onAboutButtonRelease aboutDialog _ = do
+  _ <- GI.Gtk.onDialogResponse aboutDialog (\ _ -> GI.Gtk.widgetHide aboutDialog)
+  _ <- GI.Gtk.dialogRun aboutDialog
+  return True
+
+onWindowDestroy ::
+  GI.Gst.Element ->
+  IO ()
+onWindowDestroy playbin = do
+  _ <- GI.Gst.elementSetState playbin GI.Gst.StateNull
+  _ <- GI.Gst.objectUnref playbin
+  GI.Gtk.mainQuit
+
+setPlaybinUriAndVolume ::
+  GI.Gst.Element ->
+  Prelude.String ->
+  GI.Gtk.VolumeButton ->
+  IO ()
+setPlaybinUriAndVolume playbin filename volumeButton = do
+  let uri = "file://" ++ filename
+  volume <- GI.Gtk.scaleButtonGetValue volumeButton
+  Data.GI.Base.Properties.setObjectPropertyDouble playbin "volume" volume
+  Data.GI.Base.Properties.setObjectPropertyString playbin "uri" (Just $ pack uri)
+
+getVideoInfo :: Prelude.String -> Prelude.String -> IO (Maybe Prelude.String)
 getVideoInfo flag filename = do
   (code, out, _) <- catch (
       readProcessWithExitCode
@@ -723,40 +1072,43 @@ getVideoInfo flag filename = do
         [flag, "-s", "-S", filename]
         ""
     ) (\ (_ :: Control.Exception.IOException) -> return (ExitFailure 1, "", ""))
-  return (code == System.Exit.ExitSuccess, out)
+  if code == System.Exit.ExitSuccess
+    then return (Just out)
+    else return Nothing
 
 isVideo :: Prelude.String -> IO Bool
 isVideo filename = do
-  (success, out) <- getVideoInfo "-MIMEType" filename
-  return (success && isInfixOf "video" (pack out))
+  maybeOut <- getVideoInfo "-MIMEType" filename
+  case maybeOut of
+    Nothing -> return False
+    Just out -> return ("video" `isInfixOf` pack out)
 
-getWindowSize :: Int -> Prelude.String -> IO (Bool, Int32, Int32)
-getWindowSize desiredVideoWidth filename = do
-  let defaultWidth = 800
-  let defaultHeight = 600
-
-  video <- isVideo filename
-
-  if video
-    then do
-      (success, out) <- getVideoInfo "-ImageSize" filename
-      if success && isInfixOf "x" (pack out)
-        then do
-          let (width''':height''':_) =
-                Data.String.Utils.split "x" $ Data.String.Utils.strip out
-
-          let width'' = read width''' :: Int
-          let height'' = read height''' :: Int
-
-          let ratio = fromIntegral height'' / fromIntegral width'' :: Double
-          let width' = fromIntegral desiredVideoWidth :: Double
-          let height' = width' * ratio
-          let width = fromIntegral (round width' :: Int) :: Int32
-          let height = fromIntegral (round height' :: Int) :: Int32
-
-          return (True, width, height)
-        else return (False, defaultHeight, defaultWidth)
-    else return (False, defaultHeight, defaultWidth)
+getWindowSize :: Int -> Prelude.String -> IO (Maybe (Int32, Int32))
+getWindowSize desiredVideoWidth filename =
+  isVideo filename >>=
+  getWidthHeightString >>=
+  splitWidthHeightString >>=
+  widthHeightToDouble >>=
+  ratio >>=
+  windowSize
+  where
+    getWidthHeightString :: Bool -> IO (Maybe Prelude.String)
+    getWidthHeightString False = return Nothing
+    getWidthHeightString True = getVideoInfo "-ImageSize" filename
+    splitWidthHeightString :: Maybe Prelude.String -> IO (Maybe [Text])
+    splitWidthHeightString Nothing = return Nothing
+    splitWidthHeightString (Just string) = return (Just (Data.Text.splitOn "x" (pack string)))
+    widthHeightToDouble :: Maybe [Text] -> IO (Maybe Double, Maybe Double)
+    widthHeightToDouble (Just (x:y:_)) = return (readMaybe (unpack x) :: Maybe Double, readMaybe (unpack y) :: Maybe Double)
+    widthHeightToDouble _ = return (Nothing, Nothing)
+    ratio :: (Maybe Double, Maybe Double) -> IO (Maybe Double)
+    ratio (Just width, Just height) =
+      if width <= 0.0 then return Nothing else return (Just (height / width))
+    ratio _ = return Nothing
+    windowSize :: Maybe Double -> IO (Maybe (Int32, Int32))
+    windowSize Nothing = return Nothing
+    windowSize (Just ratio') =
+      return (Just (fromIntegral desiredVideoWidth :: Int32, round ((fromIntegral desiredVideoWidth :: Double) *  ratio') :: Int32))
 
 getDesiredVideoWidth :: GI.Gtk.ComboBoxText -> IO Int
 getDesiredVideoWidth = fmap (\ x -> read (Data.Text.unpack x) :: Int) . GI.Gtk.comboBoxTextGetActiveText
@@ -787,6 +1139,7 @@ resetWindowSize ::
   IO ()
 resetWindowSize width' fileChooserButton drawingArea window = do
   let width = fromIntegral width' :: Int32
+  GI.Gtk.widgetQueueDraw drawingArea
   setWindowSize width 0 fileChooserButton drawingArea window
 ```
 
