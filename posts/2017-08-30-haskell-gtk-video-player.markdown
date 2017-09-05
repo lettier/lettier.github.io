@@ -117,34 +117,8 @@ for libraries that use the
 [GObject introspection middleware](
 https://wiki.gnome.org/Projects/GObjectIntrospection
 ).
-At the time of this writing, certain bindings we will need are not available on
+At the time of this writing, all of our needed bindings are on
 [Hackage](https://hackage.haskell.org/packages/search?terms=gi).
-Thus we will use haskell-gi to generate these bindings for us.
-For now, let us install haskell-gi.
-
-```bash
-cd movie-monad/
-stack setup
-stack install haskell-gi
-```
-
-### xlib
-
-We will need a binding to the xlib library.
-
-```bash
-cd movie-monad/
-haskell-gi -o lib/gi-xlib/xlib.overrides -O lib/gi-xlib xlib
-```
-
-### GdkX11-3.0
-
-We will need a binding to the GdkX11 library.
-
-```bash
-cd movie-monad/
-haskell-gi -o lib/gi-gdkx11/GdkX11.overrides -O lib/gi-gdkx11 GdkX11-3.0
-```
 
 ### Dependencies
 
@@ -1151,9 +1125,9 @@ we can build Movie Monad and run the executable/binary.
 ```bash
 cd movie-monad/
 stack clean
-stack build --pedantic
 stack install
-movie-monad # Or if you prefer `stack exec -- movie-monad`
+stack exec -- movie-monad
+# Or just `movie-monad` if `stack path | grep local-bin-path` is in your `echo $PATH`
 ```
 
 If all is in order, Movie Monad should run.

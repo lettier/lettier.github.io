@@ -240,18 +240,7 @@ GDK is an important part of GTK+’s portability. Since low-level cross-platform
 <span class="kw">cd</span> movie-monad/</code></pre></div>
 <p>You can Git clone it with HTTPS.</p>
 <h3 id="haskell-gi">haskell-gi</h3>
-<p><a href="https://github.com/haskell-gi/haskell-gi">haskell-gi</a> is capable of generating Haskell bindings for libraries that use the <a href="https://wiki.gnome.org/Projects/GObjectIntrospection">GObject introspection middleware</a>. At the time of this writing, certain bindings we will need are not available on <a href="https://hackage.haskell.org/packages/search?terms=gi">Hackage</a>. Thus we will use haskell-gi to generate these bindings for us. For now, let us install haskell-gi.</p>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">cd</span> movie-monad/
-<span class="kw">stack</span> setup
-<span class="kw">stack</span> install haskell-gi</code></pre></div>
-<h3 id="xlib">xlib</h3>
-<p>We will need a binding to the xlib library.</p>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">cd</span> movie-monad/
-<span class="kw">haskell-gi</span> -o lib/gi-xlib/xlib.overrides -O lib/gi-xlib xlib</code></pre></div>
-<h3 id="gdkx11-3.0">GdkX11-3.0</h3>
-<p>We will need a binding to the GdkX11 library.</p>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">cd</span> movie-monad/
-<span class="kw">haskell-gi</span> -o lib/gi-gdkx11/GdkX11.overrides -O lib/gi-gdkx11 GdkX11-3.0</code></pre></div>
+<p><a href="https://github.com/haskell-gi/haskell-gi">haskell-gi</a> is capable of generating Haskell bindings for libraries that use the <a href="https://wiki.gnome.org/Projects/GObjectIntrospection">GObject introspection middleware</a>. At the time of this writing, all of our needed bindings are on <a href="https://hackage.haskell.org/packages/search?terms=gi">Hackage</a>.</p>
 <h3 id="dependencies">Dependencies</h3>
 <p>Go ahead now and install the project dependencies.</p>
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">cd</span> movie-monad/
@@ -1080,9 +1069,9 @@ resetWindowSize width' fileChooserButton drawingArea window <span class="fu">=</
 <p>Now that we have setup our build environment and have all of the source code in place, we can build Movie Monad and run the executable/binary.</p>
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">cd</span> movie-monad/
 <span class="kw">stack</span> clean
-<span class="kw">stack</span> build --pedantic
 <span class="kw">stack</span> install
-<span class="kw">movie-monad</span> <span class="co"># Or if you prefer `stack exec -- movie-monad`</span></code></pre></div>
+<span class="kw">stack</span> exec -- movie-monad
+<span class="co"># Or just `movie-monad` if `stack path | grep local-bin-path` is in your `echo $PATH`</span></code></pre></div>
 <p>If all is in order, Movie Monad should run.</p>
 <h2 id="wrap-up">Wrap-up</h2>
 <p>Revisiting the <a href="https://github.com/lettier/movie-monad">Movie Monad</a> project, we remade the application using the software libraries GTK+ and GStreamer. By using GTK+ and GStreamer, the application remains as portable as the Electron version. Movie Monad can now handle large video files and comes with all of the standard controls one would expect.</p>
