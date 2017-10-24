@@ -56,6 +56,10 @@ p {
   font-size: 150%;
 }
 
+em {
+  padding-right: 2px;
+}
+
 p > i {
   margin-right: 4px;
 }
@@ -82,12 +86,15 @@ code {
 
 p > code {
   font-weight: normal;
-  font-size: 100%;
   white-space: pre-wrap;
   white-space: -moz-pre-wrap;
   white-space: -pre-wrap;
   white-space: -o-pre-wrap;
   word-wrap: break-word;
+  font-weight: bold;
+  font-family: 'Roboto Condensed';
+  letter-spacing: 2px;
+  padding-left: 1px;
 }
 
 pre code {
@@ -248,9 +255,11 @@ pre code {
 }
 
 .jumbotron-background-image {
+  background: url("/images/jumbotron_image_default.jpg") no-repeat center center;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
   background-size: cover;
-  background: url("/images/jumbotron_image_default.jpg") center center;
-  background-position: 0% 10%;
 }
 
 .jumbotron-text-container {

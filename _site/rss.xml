@@ -9,6 +9,20 @@
   
   <item>
     
+    <media:content url="https://lettier.github.io/images/2017-10-23-animation-purescript-cpp-sfml/preview-image.jpg"></media:content>
+    
+    <title>Let's make an Animation with PureScript and C++</title>
+    
+    <dc:creator>David Lettier</dc:creator>
+    
+    <pubDate>Mon, 23 Oct 2017 00:00:00 EST</pubDate>
+    <description>Using PureScript, Pure11, C++, and SFML, we programmatically create a recursive animation.</description>
+    <link>https://lettier.github.io/posts/2017-10-23-animation-purescript-cpp-sfml.html</link>
+    <guid>https://lettier.github.io/posts/2017-10-23-animation-purescript-cpp-sfml.html</guid>
+  </item>
+  
+  <item>
+    
     <media:content url="https://lettier.github.io/images/2017-08-30-haskell-gtk-video-player/preview_image.jpg"></media:content>
     
     <title>Let's make a GTK Video Player with Haskell</title>
