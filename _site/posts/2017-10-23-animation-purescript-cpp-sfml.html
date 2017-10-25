@@ -505,7 +505,7 @@ By definition, pass by value means you are making a copy in memory of the actual
     };
   }</code></pre></div>
 <p>For example, take a look at <code>windowClose</code>. It takes an address to an <code>any</code> instance and returns a lambda that captures <code>w</code> by value, makes <code>w</code> read only, takes no arguments, and returns the <code>any</code> type. Note that its real return type is <code>void</code> since there is no <code>return</code> statement.</p>
-<p>Fortunately, for foreign functions (these functions are foreign to PureScript) that take more than one parameter, we do not have to have to write them as curried functions.</p>
+<p>Fortunately, for foreign functions (these functions are foreign to PureScript) that take one or more parameters, we do not have to write them as curried functions.</p>
 <div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">  <span class="kw">auto</span> windowClear(<span class="dt">const</span> any&amp; w) -&gt; any {
     <span class="kw">return</span> [=](<span class="dt">const</span> any&amp; c) -&gt; any {
       <span class="kw">return</span> [=]() -&gt; any {

@@ -422,8 +422,8 @@ takes no arguments,
 and returns the `any` type.
 Note that its real return type is `void` since there is no `return` statement.
 
-Fortunately, for foreign functions (these functions are foreign to PureScript) that take more than one parameter,
-we do not have to have to write them as curried functions.
+Fortunately, for foreign functions (these functions are foreign to PureScript) that take one or more parameters,
+we do not have to write them as curried functions.
 
 ```cpp
   auto windowClear(const any& w) -> any {
