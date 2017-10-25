@@ -19,7 +19,7 @@ licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode
 ## Who this is for
 
 * Programmers looking to try out PureScript
-* PureScript prorammers looking to target the desktop
+* PureScript programmers looking to target the desktop
 * Programmers interested in functional programming
 * Game developers interested in SFML
 * Recursion enthusiasts
