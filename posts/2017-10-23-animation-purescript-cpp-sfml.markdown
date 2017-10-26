@@ -1000,10 +1000,10 @@ And so on and so forth.
   transformableSetScale    fgShape' scaleTemp scaleTemp
 ```
 
-Our animation works by only operating on the foreground image while leaving the background image in state it was
-last in before we flipped it from foreground to background.
+Our animation works by only operating on the foreground image while leaving the background image in the state it
+was in just before we flipped it from foreground to background.
 The number 34 was found through trial and error.
-Once the scale reaches  34 or greater, we make the foreground image the background image and vice versa.
+Once the scale reaches 34 or greater, we make the foreground image the background image and vice versa.
 
 Before we render the images to the screen, we update the rotation and scale of the foreground shape/image.
 

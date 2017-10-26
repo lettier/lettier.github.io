@@ -947,7 +947,7 @@ iteration
 
   transformableSetRotation fgShape' rotation'
   transformableSetScale    fgShape' scaleTemp scaleTemp</code></pre></div>
-<p>Our animation works by only operating on the foreground image while leaving the background image in state it was last in before we flipped it from foreground to background. The number 34 was found through trial and error. Once the scale reaches 34 or greater, we make the foreground image the background image and vice versa.</p>
+<p>Our animation works by only operating on the foreground image while leaving the background image in the state it was in just before we flipped it from foreground to background. The number 34 was found through trial and error. Once the scale reaches 34 or greater, we make the foreground image the background image and vice versa.</p>
 <p>Before we render the images to the screen, we update the rotation and scale of the foreground shape/image.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  windowPollEvent window (\ event <span class="ot">-&gt;</span> <span class="kw">do</span>
       isClosed <span class="ot">&lt;-</span> eventIsClosed event
