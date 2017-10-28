@@ -1,4 +1,4 @@
-![](readme_preview.jpg)
+![](screenshot.png)
 
 # Lettier Blog
 
