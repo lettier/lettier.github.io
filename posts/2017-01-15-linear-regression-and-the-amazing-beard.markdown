@@ -9,6 +9,10 @@ author: David Lettier
 
 ## The Code and final build
 
+![](
+/images/2017-01-15-linear-regression-and-the-amazing-beard/linear-regression-purescript-demo.gif
+){.post-img .post-img-small .post-img-limit}
+
 You can try out the final build of the simple linear regression calculator at
 [lettier.com/simple-linear-regression](https://lettier.com/simple-linear-regression/).
 All of the code for the project is hosted on [GitHub](https://github.com/lettier/interactive-simple-linear-regression).
