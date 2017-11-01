@@ -1,5 +1,5 @@
 ---
-title: Let's make an Animation with PureScript and C++
+title: Leverage C++ to Build Awesome Apps with PureScript
 jumbotron_image: /images/2017-10-23-animation-purescript-cpp-sfml/jumbotron-image.jpg
 preview_image: /images/2017-10-23-animation-purescript-cpp-sfml/preview-image.jpg
 description: Using PureScript, Pure11, C++, and SFML, we programmatically create a recursive animation.
@@ -8,7 +8,10 @@ author: David Lettier
 
 <!--https://pixabay.com/en/staircase-staircase-spiral-france-2607787/-->
 
-## The animation
+## The final product
+
+Below is a GIF of what we'll end up with at the end.
+The animation will continuously play until the user closes the window.
 
 ![](/images/2017-10-23-animation-purescript-cpp-sfml/purescript-animation.gif){.post-img .post-img-small .post-img-limit}
 
@@ -18,10 +21,10 @@ licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode
 
 ## Who this is for
 
-* Programmers looking to try out PureScript
-* PureScript programmers looking to target the desktop
-* Programmers interested in functional programming
-* Game developers interested in SFML
+* Programmers interested in PureScript
+* PureScript programmers wanting to target the desktop
+* Programmers curious about functional programming
+* Game developers looking to build a 2D game with SFML
 * Recursion enthusiasts
 
 ## What we'll cover
@@ -206,7 +209,8 @@ are one in the same.
 In other words, the `any` inside the function is a _not_ a copy of the one outside the function.
 
 <blockquote>
-By definition, pass by value means you are making a copy in memory of the actual parameter's value that is passed in, a copy of the contents of the actual parameter. [...]
+By definition, pass by value means you are making a copy in memory of the actual parameter's value that is passed in,
+a copy of the contents of the actual parameter. [...]
 In pass by reference (also called pass by address), a copy of the address of the actual parameter is stored.
 <footer>
 [
@@ -401,7 +405,7 @@ and which ones are impure
 (side effects do occur meaning something outside the function is mutated or at least accessed).
 
 We will designate `toNumber` and `easeIn` as pure.
-The rest of the functions will be designate as having effects.
+The rest of the functions will be designated as having effects.
 
 For impure functions, which take one or more arguments/parameters (an arity of one or more),
 we will have to use a C++11 lambda (an anonymous function, that is, a function with no identifier).

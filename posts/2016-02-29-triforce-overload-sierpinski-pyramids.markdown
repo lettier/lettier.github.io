@@ -1,5 +1,5 @@
 ---
-title: Triforce Overload, Sierpinski Pyramids
+title: Unlock your WebGL magic, how to render Sierpinkski Pyramids
 jumbotron_image: /images/2016-02-29-triforce-overload-sierpinski-pyramids/jumbotron_image.jpg
 preview_image: /images/2016-02-29-triforce-overload-sierpinski-pyramids/preview_image.jpg
 description: Using only the WebGL, we implement an explorable environment containing two 3D
@@ -7,23 +7,31 @@ description: Using only the WebGL, we implement an explorable environment contai
 author: David Lettier
 ---
 
-<blockquote>
-The Sierpinski tetrahedron or tetrix is the three-dimensional analogue of the
-Sierpinski triangle, formed by repeatedly shrinking a regular tetrahedron to one
-half its original height, putting together four copies of this tetrahedron with
-corners touching, and then repeating the process.
+## The final product
 
-<footer>[Sierpinski triangle, Wikipedia, the free encyclopedia](https://en.wikipedia.org/wiki/Sierpinski_triangle)</footer>
-</blockquote>
+![](/images/2016-02-29-triforce-overload-sierpinski-pyramids/demo.jpg){.post-img .post-img-small .post-img-limit}
 
-The code for this project can be found [here](https://github.com/lettier/sierpinski) with the playable version being found
-[here](http://www.lettier.com/sierpinski/).
+Be sure to try out the final build at [lettier.com/sierpinski](https://www.lettier.com/sierpinski).
+Press `m` to start flying around with the mouse and the `wasd` keys.
+Note that you can find all of the project's files on [GitHub](https://github.com/lettier/sierpinski).
+
+## Overview
 
 Our goal is to produce 3D rotating Sierpinski Pyramids using JavaScript and WebGL.
 The user will be able to control the amount of subdivisions.
 As an added bonus, we'll implement a realistic lighting system to render our pyramids.
 
-# Boilerplate
+<blockquote>
+The Sierpinski tetrahedron or tetrix is the three-dimensional analogue of the
+Sierpinski triangle, formed by repeatedly shrinking a regular tetrahedron to one
+half its original height, putting together four copies of this tetrahedron with
+corners touching, and then repeating the process.
+<footer>
+[Sierpinski triangle, Wikipedia, the free encyclopedia](https://en.wikipedia.org/wiki/Sierpinski_triangle)
+</footer>
+</blockquote>
+
+## Boilerplate
 
 Everything starts with the HTML canvas element.
 This will display each frame buffer as it is rendered.
@@ -38,7 +46,7 @@ canvas.height = window.innerHeight;
 document.body.appendChild( canvas );
 ```
 
-After the canvas comes initialization of the WebGL context where we specify the view-port width and height.
+After the canvas comes the initialization of the WebGL context where we specify the view-port width and height.
 It is here that we test if the user's browser supports WebGL.
 
 ```javascript
@@ -158,7 +166,7 @@ window.onkeyup = function ( event ) {
 // ...
 ```
 
-# The Tetrahedron
+## The Tetrahedron
 
 Let us begin by defining the initial tetrahedron that will be recursively subdivided by the user.
 Increasing or decreasing `r` adjusts the overall size of the pyramid.
@@ -228,7 +236,7 @@ pyramidVertexColorBuffer.numItems = vertex_colors.length / 4;
 
 ![Single Tetrahedron (Pyramid)](/images/2016-02-29-triforce-overload-sierpinski-pyramids/tetra_four_view.png){.post-img .post-img-fill}
 
-# Algorithm
+## Algorithm
 
 The algorithm revolves around finding the midpoint.
 There are six midpoints we must find for each pyramid.
@@ -428,7 +436,7 @@ To recap, we start with one pyramid.
 We then subdivide it into 4, 16, 64, ..., 4<sup>count</sup> pyramids based on the user's selected subdivision amount `> 0`.
 Once `count` is `0`, the recursion is complete and we then push the new vertices, colors, and normals to their appropriate buffers.
 
-# Camera System
+## Camera System
 
 ![Camera system with up, side and direction vectors.](
   /images/2016-02-29-triforce-overload-sierpinski-pyramids/camera_four_view.png
@@ -611,7 +619,7 @@ camera_direction_vector = vec3.normalize( camera_direction_vector, camera_direct
 /images/2016-02-29-triforce-overload-sierpinski-pyramids/camera_vectors.png
 ){.post-img .post-img-fill}
 
-# Lighting System
+## Lighting System
 
 For a more realistic scene, we will use per fragment lighting.
 Stated earlier, we need to acquire the ambient, location, and color fragment shader variable indexes for our single point light
@@ -754,7 +762,7 @@ fragment_shader.innerHTML  += "   gl_FragColor = mix( fog_color, final_color, ve
 fragment_shader.innerHTML  += "}";
 ```
 
-# Wrap-up
+## Wrap-up
 
 We defined the HTML canvas and WebGL context.
 The shaders were loaded and indexes to their variables were gathered.

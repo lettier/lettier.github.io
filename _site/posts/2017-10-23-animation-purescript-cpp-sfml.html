@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta property="og:site_name" content="Lettier">
     <meta property="og:type" content="article">
-    <meta property="og:title" content="Let's make an Animation with PureScript and C++ by David Lettier">
+    <meta property="og:title" content="Leverage C++ to Build Awesome Apps with PureScript by David Lettier">
     <meta property="og:image" content="https://lettier.github.io/images/2017-10-23-animation-purescript-cpp-sfml/jumbotron-image.jpg">
     <meta property="og:url" content="https://lettier.github.io/posts/2017-10-23-animation-purescript-cpp-sfml.html">
     <meta property="og:description" content="Using PureScript, Pure11, C++, and SFML, we programmatically create a recursive animation.">
@@ -18,7 +18,7 @@
     <link rel="stylesheet" type="text/css" href="../css/default.css">
     <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
     
-      <title>Let's make an Animation with PureScript and C++ by David Lettier</title>
+      <title>Leverage C++ to Build Awesome Apps with PureScript by David Lettier</title>
     
   </head>
   <body>
@@ -84,7 +84,7 @@
                 <div class="jumbotron-text-container">
                   <h1 class="jumbotron-text jumbotron-text-background">
                     
-                      Let's make an Animation with PureScript and C++
+                      Leverage C++ to Build Awesome Apps with PureScript
                     
                   </h1>
                 </div>
@@ -106,7 +106,8 @@
 </div>
 <div class="post-body">
   <!--https://pixabay.com/en/staircase-staircase-spiral-france-2607787/-->
-<h2 id="the-animation">The animation</h2>
+<h2 id="the-final-product">The final product</h2>
+<p>Below is a GIF of what we’ll end up with at the end. The animation will continuously play until the user closes the window.</p>
 <div class="figure">
 <img src="../images/2017-10-23-animation-purescript-cpp-sfml/purescript-animation.gif" class="post-img post-img-small post-img-limit" />
 
@@ -114,10 +115,10 @@
 <p>Note that the animation contains the <a href="https://github.com/purescript/logo">“PureScript Logo”</a> by Gareth Hughes, licensed under <a href="https://creativecommons.org/licenses/by/4.0/legalcode">CC BY 4.0</a> / “PURESCRIPT” text removed from the original.</p>
 <h2 id="who-this-is-for">Who this is for</h2>
 <ul>
-<li>Programmers looking to try out PureScript</li>
-<li>PureScript programmers looking to target the desktop</li>
-<li>Programmers interested in functional programming</li>
-<li>Game developers interested in SFML</li>
+<li>Programmers interested in PureScript</li>
+<li>PureScript programmers wanting to target the desktop</li>
+<li>Programmers curious about functional programming</li>
+<li>Game developers looking to build a 2D game with SFML</li>
 <li>Recursion enthusiasts</li>
 </ul>
 <h2 id="what-well-cover">What we’ll cover</h2>
@@ -416,7 +417,7 @@ By definition, pass by value means you are making a copy in memory of the actual
 }</code></pre></div>
 <p>At the top of the file we include/import our dependencies. This is where we import the SFML graphics API. As we did in <code>Main.hh</code>, we declare our <code>Main</code> namespace. The <code>sf</code> namespace (that we let the compiler know we are using) is for SFML.</p>
 <p>When writing bindings to a library, not written in PureScript for the use in PureScript, we have to decide which functions are pure (the function always returns the same output for the same input and no side effects occur, that is, nothing outside the function is mutated or accessed) and which ones are impure (side effects do occur meaning something outside the function is mutated or at least accessed).</p>
-<p>We will designate <code>toNumber</code> and <code>easeIn</code> as pure. The rest of the functions will be designate as having effects.</p>
+<p>We will designate <code>toNumber</code> and <code>easeIn</code> as pure. The rest of the functions will be designated as having effects.</p>
 <p>For impure functions, which take one or more arguments/parameters (an arity of one or more), we will have to use a C++11 lambda (an anonymous function, that is, a function with no identifier).</p>
 <div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">  <span class="kw">auto</span> windowClose(<span class="dt">const</span> any&amp; w) -&gt; any {
     <span class="kw">return</span> [=]() -&gt; any {

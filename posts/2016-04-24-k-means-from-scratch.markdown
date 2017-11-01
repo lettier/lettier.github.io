@@ -1,5 +1,5 @@
 ---
-title: K-Means from Scratch
+title: Boost your skills, how to easily write K-Means
 jumbotron_image: /images/2016-04-24-k-means-from-scratch/jumbotron_image.jpg
 preview_image: /images/2016-04-24-k-means-from-scratch/preview_image.jpg
 description: Using vanilla JavaScript, we build an interactive k-means clustering application
@@ -7,19 +7,17 @@ description: Using vanilla JavaScript, we build an interactive k-means clusterin
 author: David Lettier
 ---
 
-# Demo and Codebase
+## The final product
 
 ![](/images/2016-04-24-k-means-from-scratch/demo.gif){.post-img .post-img-limit .post-img-small}
 
-If you would like to play with the k-means clustering algorithm in your browser,
-try out the visually interactive [demo](http://www.lettier.com/kmeans).
-All of the code for the demo is hosted on [GitHub](https://github.com/lettier/interactivekmeans).
-Stars are always appreciated.
+You can play with the final build at [lettier.com/kmeans](http://www.lettier.com/kmeans).
+All of its source is stored on [GitHub](https://github.com/lettier/interactivekmeans).
 
-# K-Means
+## K-Means
 
-An unsupervised machine learning technique that clusters (hopefully) similar items/data-points given.
-The entire algorithm consists of three major steps:
+K-Means is an unsupervised machine learning technique that (hopefully) clusters similar items/data-points given.
+The entire algorithm consists of the following three major steps.
 
 * Initialization
 * Assignment
@@ -33,7 +31,7 @@ observation belongs to the cluster with the nearest mean, serving as a prototype
 
 One of the caveats with k-means is that you must know (or guess) the number of clusters `k` before clustering.
 
-## Mean Initialization
+### Mean initialization
 
 At the start of the algorithm you must initialize the means' features/coordinates in the X dimensional space your data points reside in.
 For example, the features/dimensions for fruit could be:
@@ -49,7 +47,7 @@ We will offer two initialization methods for our k-means object:
 
 Other methods include randomly choosing `k` data points as the starting means and _k-means++_.
 
-### Random
+#### Random
 
 The first method randomly scatters the `k` means throughout the feature space making sure not to go outside the bounds
 of the input data points.
@@ -78,7 +76,7 @@ KMeans.prototype.initializeMeansMethod0 = function () {
 };
 ```
 
-### The Fouad Khan Method
+#### The Fouad Khan method
 
 The following initialization method is outlined in
 <!--
@@ -470,7 +468,7 @@ which are the two points across the large cap and in between their closest neigh
 
 ![Initialized Means](/images/2016-04-24-k-means-from-scratch/means_init.svg){.post-img .post-img-fill}
 
-## Assignment
+### Assignment
 
 With our means initialized, we can begin assigning them to each data point.
 
@@ -501,7 +499,7 @@ KMeans.prototype.assignmentStep = function () {
 Each data point is assigned to its closest mean based on the euclidean distance from it to the mean.
 We keep track of the assignment by setting the mean ID on the data point object. Each mean has a unique identifier.
 
-## Update
+### Update
 
 With every data point assigned to a mean, we can now update each mean's features based on the data points assigned to each one.
 
@@ -552,7 +550,7 @@ For each cluster, these averaged features become the new features/coordinates of
 Each time this is called, the means will move across the dimensional space until the updates no longer change.
 When no changes occur we can say the algorithm converged.
 
-## Iterate
+### Iterate
 
 ```javascript
 KMeans.prototype.iterate = function () {
@@ -594,7 +592,7 @@ the dots' cluster membership colors.
 This allows the user to see k-means progress instead of just seeing the final result after the stop criteria is met.
 Another approach would be to use `setTimeout`.
 
-# Silhouette Coefficient Metric
+## Silhouette Coefficient Metric
 
 Even though k-means is unsupervised we can still check its solution using the silhouette coefficient metric.
 Not all cluster configurations produced by k-means will be the most optimal or even remotely correct.
@@ -604,7 +602,7 @@ The silhouette coefficient for a single data point is `s = (b - a) / max(b, a)` 
 distance between a data point and its cluster members and `b` is the mean distance between a data point and the cluster members
 of the nearest cluster closest to the data point's cluster.
 
-## Constructor
+### Constructor
 
 ```javascript
 function SilhouetteCoefficient(params) {
@@ -620,11 +618,11 @@ The constructor requires three functions:
 * One to return the cluster members of the nearest cluster to the cluster a data point is assigned to
 * One to calculate the distance
 
-## The Formula
+### The formula
 
 Recall that the formula for the Silhouette Coefficient is `s = (b - a) / max(b, a)`.
 
-### A
+#### A
 
 ```javascript
 SilhouetteCoefficient.prototype.a = function (dataPoint) {
@@ -634,7 +632,7 @@ SilhouetteCoefficient.prototype.a = function (dataPoint) {
 };
 ```
 
-### B
+#### B
 
 ```javascript
 SilhouetteCoefficient.prototype.b = function(dataPoint) {
@@ -646,7 +644,7 @@ SilhouetteCoefficient.prototype.b = function(dataPoint) {
 };
 ```
 
-### S
+#### S
 
 ```javascript
 SilhouetteCoefficient.prototype.s = function (a, b) {
@@ -657,7 +655,7 @@ SilhouetteCoefficient.prototype.s = function (a, b) {
 };
 ```
 
-## Multiple Data Points
+### Multiple data points
 
 To compute the silhouette coefficient for multiple data points we must compute it for each, sum them, and then
 divide by the number of data points given.
@@ -705,7 +703,7 @@ By using `requestAnimationFrame` our calls to `cycle` will queue and thus not lo
 You will notice that even after k-means finishes, the `silhouetteCoefficient` takes a bit longer to update
 but you can still interact with the dots.
 
-## Cases
+### Edge cases
 
 ![Perfect score when k equals the amount of data points.](/images/2016-04-24-k-means-from-scratch/10_perfect.jpg){.post-img .post-img-fill}
 
@@ -729,7 +727,7 @@ Clearly we have two perfect clusters and we appropriately set `k = 2`.
 However, we only received a score of roughly `0.95` versus the `1` you would have expected.
 The score was high but not perfect even though our clusters were.
 
-# Wrap-up
+## Wrap-up
 
 Using plain vanilla JavaScript, we built the k-means algorithm from scratch as well as the silhouette coefficient metric.
 We discussed different mean initialization techniques and went into depth about Fouad Kahn's approach.

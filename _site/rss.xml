@@ -11,7 +11,7 @@
     
     <media:content url="https://lettier.github.io/images/2017-10-23-animation-purescript-cpp-sfml/preview-image.jpg"></media:content>
     
-    <title>Let's make an Animation with PureScript and C++</title>
+    <title>Leverage C++ to Build Awesome Apps with PureScript</title>
     
     <dc:creator>David Lettier</dc:creator>
     
@@ -221,7 +221,7 @@
     
     <media:content url="https://lettier.github.io/images/2016-04-24-k-means-from-scratch/preview_image.jpg"></media:content>
     
-    <title>K-Means from Scratch</title>
+    <title>Boost your skills, how to easily write K-Means</title>
     
     <dc:creator>David Lettier</dc:creator>
     
@@ -291,7 +291,7 @@
     
     <media:content url="https://lettier.github.io/images/2016-02-29-triforce-overload-sierpinski-pyramids/preview_image.jpg"></media:content>
     
-    <title>Triforce Overload, Sierpinski Pyramids</title>
+    <title>Unlock your WebGL magic, how to render Sierpinkski Pyramids</title>
     
     <dc:creator>David Lettier</dc:creator>
     

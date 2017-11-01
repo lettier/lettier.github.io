@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta property="og:site_name" content="Lettier">
     <meta property="og:type" content="article">
-    <meta property="og:title" content="K-Means from Scratch by David Lettier">
+    <meta property="og:title" content="Boost your skills, how to easily write K-Means by David Lettier">
     <meta property="og:image" content="https://lettier.github.io/images/2016-04-24-k-means-from-scratch/jumbotron_image.jpg">
     <meta property="og:url" content="https://lettier.github.io/posts/2016-04-24-k-means-from-scratch.html">
     <meta property="og:description" content="Using vanilla JavaScript, we build an interactive k-means clustering application from scratch and test the clusters using the silhouette coefficient metric.">
@@ -18,7 +18,7 @@
     <link rel="stylesheet" type="text/css" href="../css/default.css">
     <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
     
-      <title>K-Means from Scratch by David Lettier</title>
+      <title>Boost your skills, how to easily write K-Means by David Lettier</title>
     
   </head>
   <body>
@@ -84,7 +84,7 @@
                 <div class="jumbotron-text-container">
                   <h1 class="jumbotron-text jumbotron-text-background">
                     
-                      K-Means from Scratch
+                      Boost your skills, how to easily write K-Means
                     
                   </h1>
                 </div>
@@ -105,14 +105,14 @@
   </div>
 </div>
 <div class="post-body">
-  <h1 id="demo-and-codebase">Demo and Codebase</h1>
+  <h2 id="the-final-product">The final product</h2>
 <div class="figure">
 <img src="../images/2016-04-24-k-means-from-scratch/demo.gif" class="post-img post-img-limit post-img-small" />
 
 </div>
-<p>If you would like to play with the k-means clustering algorithm in your browser, try out the visually interactive <a href="http://www.lettier.com/kmeans">demo</a>. All of the code for the demo is hosted on <a href="https://github.com/lettier/interactivekmeans">GitHub</a>. Stars are always appreciated.</p>
-<h1 id="k-means">K-Means</h1>
-<p>An unsupervised machine learning technique that clusters (hopefully) similar items/data-points given. The entire algorithm consists of three major steps:</p>
+<p>You can play with the final build at <a href="http://www.lettier.com/kmeans">lettier.com/kmeans</a>. All of its source is stored on <a href="https://github.com/lettier/interactivekmeans">GitHub</a>.</p>
+<h2 id="k-means">K-Means</h2>
+<p>K-Means is an unsupervised machine learning technique that (hopefully) clusters similar items/data-points given. The entire algorithm consists of the following three major steps.</p>
 <ul>
 <li>Initialization</li>
 <li>Assignment</li>
@@ -125,7 +125,7 @@ K-means clustering aims to partition <code>n</code> observations into <code>k</c
 </footer>
 </blockquote>
 <p>One of the caveats with k-means is that you must know (or guess) the number of clusters <code>k</code> before clustering.</p>
-<h2 id="mean-initialization">Mean Initialization</h2>
+<h3 id="mean-initialization">Mean initialization</h3>
 <p>At the start of the algorithm you must initialize the means’ features/coordinates in the X dimensional space your data points reside in. For example, the features/dimensions for fruit could be:</p>
 <div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">[circumfrence<span class="op">,</span> height<span class="op">,</span> volume<span class="op">,</span> sugar grams<span class="op">,</span> ...]</code></pre></div>
 <p>We will offer two initialization methods for our k-means object:</p>
@@ -134,7 +134,7 @@ K-means clustering aims to partition <code>n</code> observations into <code>k</c
 <li>The Fouad Khan Method</li>
 </ul>
 <p>Other methods include randomly choosing <code>k</code> data points as the starting means and <em>k-means++</em>.</p>
-<h3 id="random">Random</h3>
+<h4 id="random">Random</h4>
 <p>The first method randomly scatters the <code>k</code> means throughout the feature space making sure not to go outside the bounds of the input data points.</p>
 <div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">KMeans</span>.<span class="va">prototype</span>.<span class="at">initializeMeansMethod0</span> <span class="op">=</span> <span class="kw">function</span> () <span class="op">{</span>
   <span class="cf">if</span> (<span class="kw">this</span>.<span class="va">means</span>.<span class="at">length</span> <span class="op">==</span> <span class="kw">this</span>.<span class="at">k</span>) <span class="op">{</span>
@@ -157,7 +157,7 @@ K-means clustering aims to partition <code>n</code> observations into <code>k</c
     <span class="kw">this</span>.<span class="va">means</span>.<span class="at">push</span>(mean)<span class="op">;</span>
   <span class="op">}</span>
 <span class="op">};</span></code></pre></div>
-<h3 id="the-fouad-khan-method">The Fouad Khan Method</h3>
+<h4 id="the-fouad-khan-method">The Fouad Khan method</h4>
 <p>The following initialization method is outlined in <!--
 https://www.academia.edu/5988806/An_initial_seed_selection_algorithm_for_k-means_clustering_of_georeferenced_data_to_improve_replicability_of_cluster_assignments_for_mapping_application
 --> <a href="http://bit.ly/28XOO5y">Fouad Khan’s paper</a>.</p>
@@ -463,7 +463,7 @@ meant <span class="dv">1</span><span class="op">:</span>
 <img src="../images/2016-04-24-k-means-from-scratch/means_init.svg" alt="Initialized Means" class="post-img post-img-fill" />
 <p class="caption">Initialized Means</p>
 </div>
-<h2 id="assignment">Assignment</h2>
+<h3 id="assignment">Assignment</h3>
 <p>With our means initialized, we can begin assigning them to each data point.</p>
 <div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">KMeans</span>.<span class="va">prototype</span>.<span class="at">assignmentStep</span> <span class="op">=</span> <span class="kw">function</span> () <span class="op">{</span>
   <span class="cf">for</span> (<span class="kw">var</span> i<span class="op">=</span><span class="dv">0</span><span class="op">;</span> i<span class="op">&lt;</span><span class="kw">this</span>.<span class="va">dataPoints</span>.<span class="at">length</span><span class="op">;</span> <span class="op">++</span>i) <span class="op">{</span>
@@ -487,7 +487,7 @@ meant <span class="dv">1</span><span class="op">:</span>
   <span class="op">}</span>
 <span class="op">};</span></code></pre></div>
 <p>Each data point is assigned to its closest mean based on the euclidean distance from it to the mean. We keep track of the assignment by setting the mean ID on the data point object. Each mean has a unique identifier.</p>
-<h2 id="update">Update</h2>
+<h3 id="update">Update</h3>
 <p>With every data point assigned to a mean, we can now update each mean’s features based on the data points assigned to each one.</p>
 <div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">KMeans</span>.<span class="va">prototype</span>.<span class="at">updateStep</span> <span class="op">=</span> <span class="kw">function</span> () <span class="op">{</span>
   <span class="kw">var</span> newMeans <span class="op">=</span> []<span class="op">;</span>
@@ -528,7 +528,7 @@ meant <span class="dv">1</span><span class="op">:</span>
   <span class="cf">if</span> (converged <span class="op">===</span> <span class="kw">this</span>.<span class="at">k</span>) <span class="op">{</span><span class="kw">this</span>.<span class="at">converged</span> <span class="op">=</span> <span class="kw">true</span><span class="op">;}</span>
 <span class="op">};</span></code></pre></div>
 <p>First we reset the clusters and then cluster each data point based on its mean ID. With the clusters populated, we compute the mean of all the features of all the data points per cluster. For each cluster, these averaged features become the new features/coordinates of the mean. Each time this is called, the means will move across the dimensional space until the updates no longer change. When no changes occur we can say the algorithm converged.</p>
-<h2 id="iterate">Iterate</h2>
+<h3 id="iterate">Iterate</h3>
 <div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">KMeans</span>.<span class="va">prototype</span>.<span class="at">iterate</span> <span class="op">=</span> <span class="kw">function</span> () <span class="op">{</span>
   <span class="kw">var</span> iterations <span class="op">=</span> <span class="dv">0</span><span class="op">;</span>
   <span class="kw">var</span> that <span class="op">=</span> <span class="kw">this</span><span class="op">;</span>
@@ -556,10 +556,10 @@ meant <span class="dv">1</span><span class="op">:</span>
 <span class="op">};</span></code></pre></div>
 <p>Each iteration involves one assignment step and one update step. Remember that each assignment step assigns each data point to its closest mean and that each update steps moves the mean based on the average features of all the data points in its cluster.</p>
 <p>So that we do not hang the browser while k-means runs, we perform the iterations by queuing requested animation frames. This allows the application to still be responsive while we progress towards convergence (or max iterations, whichever comes first). While we are not explicitly doing any actual animation each call, the <code>onIterate</code> function callback is called. When the <code>KMeans</code> object is used in <code>canvas.js</code>, the <code>onIterate</code> callback does update the visual means’ positions and the dots’ cluster membership colors. This allows the user to see k-means progress instead of just seeing the final result after the stop criteria is met. Another approach would be to use <code>setTimeout</code>.</p>
-<h1 id="silhouette-coefficient-metric">Silhouette Coefficient Metric</h1>
+<h2 id="silhouette-coefficient-metric">Silhouette Coefficient Metric</h2>
 <p>Even though k-means is unsupervised we can still check its solution using the silhouette coefficient metric. Not all cluster configurations produced by k-means will be the most optimal or even remotely correct. This is especially the case when the wrong <code>k</code> is chosen.</p>
 <p>The silhouette coefficient for a single data point is <code>s = (b - a) / max(b, a)</code> where <code>a</code> is the mean distance between a data point and its cluster members and <code>b</code> is the mean distance between a data point and the cluster members of the nearest cluster closest to the data point’s cluster.</p>
-<h2 id="constructor">Constructor</h2>
+<h3 id="constructor">Constructor</h3>
 <div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">function</span> <span class="at">SilhouetteCoefficient</span>(params) <span class="op">{</span>
   <span class="kw">this</span>.<span class="at">dataPointClusterMembersFunction</span> <span class="op">=</span> <span class="va">params</span>.<span class="at">dataPointClusterMembersFunction</span><span class="op">;</span>
   <span class="kw">this</span>.<span class="at">dataPointNearestClusterMembersFunction</span> <span class="op">=</span> <span class="va">params</span>.<span class="at">dataPointNearestClusterMembersFunction</span><span class="op">;</span>
@@ -571,15 +571,15 @@ meant <span class="dv">1</span><span class="op">:</span>
 <li>One to return the cluster members of the nearest cluster to the cluster a data point is assigned to</li>
 <li>One to calculate the distance</li>
 </ul>
-<h2 id="the-formula">The Formula</h2>
+<h3 id="the-formula">The formula</h3>
 <p>Recall that the formula for the Silhouette Coefficient is <code>s = (b - a) / max(b, a)</code>.</p>
-<h3 id="a">A</h3>
+<h4 id="a">A</h4>
 <div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">SilhouetteCoefficient</span>.<span class="va">prototype</span>.<span class="at">a</span> <span class="op">=</span> <span class="kw">function</span> (dataPoint) <span class="op">{</span>
   <span class="kw">var</span> dataPointClusterMembers <span class="op">=</span> <span class="kw">this</span>.<span class="at">dataPointClusterMembersFunction</span>(dataPoint)<span class="op">;</span>
 
   <span class="cf">return</span> <span class="kw">this</span>.<span class="at">meanDistance</span>(dataPoint<span class="op">,</span> dataPointClusterMembers)<span class="op">;</span>
 <span class="op">};</span></code></pre></div>
-<h3 id="b">B</h3>
+<h4 id="b">B</h4>
 <div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">SilhouetteCoefficient</span>.<span class="va">prototype</span>.<span class="at">b</span> <span class="op">=</span> <span class="kw">function</span>(dataPoint) <span class="op">{</span>
   <span class="kw">var</span> dataPointNearestClusterMembers <span class="op">=</span> <span class="kw">this</span>.<span class="at">dataPointNearestClusterMembersFunction</span>(
     dataPoint
@@ -587,14 +587,14 @@ meant <span class="dv">1</span><span class="op">:</span>
 
   <span class="cf">return</span> <span class="kw">this</span>.<span class="at">meanDistance</span>(dataPoint<span class="op">,</span> dataPointNearestClusterMembers)<span class="op">;</span>
 <span class="op">};</span></code></pre></div>
-<h3 id="s">S</h3>
+<h4 id="s">S</h4>
 <div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">SilhouetteCoefficient</span>.<span class="va">prototype</span>.<span class="at">s</span> <span class="op">=</span> <span class="kw">function</span> (a<span class="op">,</span> b) <span class="op">{</span>
   <span class="kw">var</span> max <span class="op">=</span> <span class="va">Math</span>.<span class="at">max</span>(a<span class="op">,</span> b)<span class="op">;</span>
   <span class="cf">if</span> (max <span class="op">===</span> <span class="dv">0</span>) <span class="op">{</span><span class="cf">return</span> <span class="fl">0.0</span><span class="op">;}</span>
 
   <span class="cf">return</span> (b <span class="op">-</span> a) / max<span class="op">;</span>
 <span class="op">};</span></code></pre></div>
-<h2 id="multiple-data-points">Multiple Data Points</h2>
+<h3 id="multiple-data-points">Multiple data points</h3>
 <p>To compute the silhouette coefficient for multiple data points we must compute it for each, sum them, and then divide by the number of data points given.</p>
 <div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">SilhouetteCoefficient</span>.<span class="va">prototype</span>.<span class="at">dataPoints</span> <span class="op">=</span> <span class="kw">function</span> (dataPoints<span class="op">,</span> onComplete) <span class="op">{</span>
   <span class="kw">var</span> that <span class="op">=</span> <span class="kw">this</span><span class="op">;</span>
@@ -632,7 +632,7 @@ meant <span class="dv">1</span><span class="op">:</span>
   <span class="va">window</span>.<span class="at">requestAnimationFrame</span>(cycle)<span class="op">;</span>
 <span class="op">};</span></code></pre></div>
 <p>The <code>cycle</code> function is the workhorse. It runs with each call to <code>requestAnimationFrame</code>. By using <code>requestAnimationFrame</code> our calls to <code>cycle</code> will queue and thus not lock up the browser window. You will notice that even after k-means finishes, the <code>silhouetteCoefficient</code> takes a bit longer to update but you can still interact with the dots.</p>
-<h2 id="cases">Cases</h2>
+<h3 id="edge-cases">Edge cases</h3>
 <div class="figure">
 <img src="../images/2016-04-24-k-means-from-scratch/10_perfect.jpg" alt="Perfect score when k equals the amount of data points." class="post-img post-img-fill" />
 <p class="caption">Perfect score when k equals the amount of data points.</p>
@@ -649,7 +649,7 @@ meant <span class="dv">1</span><span class="op">:</span>
 <p class="caption">Two perfect clusters but the score is not a perfect one.</p>
 </div>
 <p>Clearly we have two perfect clusters and we appropriately set <code>k = 2</code>. However, we only received a score of roughly <code>0.95</code> versus the <code>1</code> you would have expected. The score was high but not perfect even though our clusters were.</p>
-<h1 id="wrap-up">Wrap-up</h1>
+<h2 id="wrap-up">Wrap-up</h2>
 <p>Using plain vanilla JavaScript, we built the k-means algorithm from scratch as well as the silhouette coefficient metric. We discussed different mean initialization techniques and went into depth about Fouad Kahn’s approach. The assignment and update steps were discussed where the data points are assigned to their closest means and the means are updated by averaging the features of their currently assigned data points. To not lock up our interface we used <code>requestAnimationFrame</code> and cycled our iterations for both k-means and the silhouette coefficient metric. Lastly, we discussed one way of determining how well our data is clustered using the silhouette coefficient metric and went over some unintuitive cases.</p>
 <p>Clustering is a viable technique when you have unlabeled data but if you have labeled data take a look at <a href="2016-06-10-k-nearest-neighbors-from-scratch.html">K-Nearest Neighbors from Scratch</a>–a supervised clustering method.</p>
 </div>
