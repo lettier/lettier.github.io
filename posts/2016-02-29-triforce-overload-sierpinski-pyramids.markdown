@@ -1,5 +1,5 @@
 ---
-title: Unlock your WebGL magic, how to render Sierpinkski Pyramids
+title: Unlock your WebGL magic, how to render Sierpinski Pyramids
 jumbotron_image: /images/2016-02-29-triforce-overload-sierpinski-pyramids/jumbotron_image.jpg
 preview_image: /images/2016-02-29-triforce-overload-sierpinski-pyramids/preview_image.jpg
 description: Using only the WebGL, we implement an explorable environment containing two 3D
