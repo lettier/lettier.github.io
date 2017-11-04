@@ -1,5 +1,5 @@
 ---
-title: Matthews Correlation Coefficient
+title: You need to know about the Matthews Correlation Coefficient
 jumbotron_image: /images/2016-08-05-matthews-correlation-coefficient/jumbotron_image.jpg
 preview_image: /images/2016-08-05-matthews-correlation-coefficient/preview_image.jpg
 description: Using a fictitious scenario, we explore the Matthews Correlation Coefficient quality measure of binary classification.
@@ -7,14 +7,14 @@ author: David Lettier
 ---
 <!--https://pixabay.com/en/eggs-bowl-easter-holiday-1278166/-->
 
-# The Scenario
+## The Scenario
 
 You've recently acquired a job at your local egg processing plant.
 This plant takes in large deliveries of eggs sourced from local farms.
 Your job, near the end of the processing pipeline, is to pluck the rotten eggs off of the conveyor belt.
 Most of the eggs are fine but a certain few are rotten to the yolk.
 
-![Picture this but with eggs.](/images/2016-08-05-matthews-correlation-coefficient/factory_worker.jpg){.post-img .post-img-limit}
+![](/images/2016-08-05-matthews-correlation-coefficient/egg-conveyor.gif){.post-img .post-img-limit}
 
 <!--https://pixabay.com/en/produce-food-canning-processing-448536/-->
 
@@ -22,7 +22,7 @@ Since you are new to the job, they have put you on a probationary period to dete
 Further down the conveyor belt is a senior employee who is perfect at spotting rotten eggs.
 They will be able to catch any rotten eggs that you miss.
 
-# Matthews Correlation Coefficient
+## Matthews Correlation Coefficient
 
 The Matthews Correlation Coefficient (MCC) has a range of -1 to 1 where -1 indicates a completely wrong binary classifier while
 1 indicates a completely correct binary classifier.
@@ -57,12 +57,12 @@ while the denominator consists of the four outer cells (the totals) of the confu
 
 ![Prediction versus reality.](/images/2016-08-05-matthews-correlation-coefficient/eggs.svg){.post-img .post-img-limit}
 
-# Evaluation
+## Evaluation
 
 Upper management has decided on using the MCC to rate your rotten egg spotting abilities since the two classes (rotten, not rotten) are
 not evenly balance given any sample of the conveyor belt.
 
-## All Negative
+### All Negative
 
 You are feeling lazy so you decide to say that any egg that passes by is fine (not rotten).
 
@@ -97,7 +97,7 @@ accuracy = (TP + TN) / Total = (0 + 327) / 351 = .932
 
 A great score for not even trying!
 
-## All Positive
+### All Positive
 
 Today is Friday and you cannot be bothered so you decide to say that any egg that passes by is rotten.
 
@@ -130,7 +130,7 @@ recall = TP / (TP + FN) = 24 / (24 + 0) = 1.0
 
 Perfect recall even though you wasted 327 perfectly good eggs.
 
-## All Correct
+### All Correct
 
 Something is in the air and after work you plan on playing the lottery but today you feel extremely precise.
 Despite all the odds, you managed to correctly classify/label/say what each egg actually was.
@@ -156,7 +156,7 @@ MCC = 1.0 = ---------------------------
 It seems that giving you the two previous passes has paid off since your score is 1.
 However, management deems it a fluke and would like to evaluate you one more time.
 
-## All Wrong
+### All Wrong
 
 All of your lotto tickets didn't pay off and today is just not your day.
 On top of spilling your coffee all over the factory floor you managed to get every classification backwards.
@@ -183,10 +183,11 @@ MCC = -1.0 = ---------------------------
 One of the managers yells out, "I knew it. Fired!"
 It seems that your previous score of 1 was indeed a fluke.
 Your new score is the absolute worst at -1.
-As they walk you out the door, you try explaining that they could just flip whatever
-you say and they'd get a perfect worker but their minds are already made up.
 
-# Wrap-up
+As they walk you out the door, you try explaining that they could just flip whatever
+you say and they'd get a perfect worker but they had already finished the paperwork.
+
+## Wrap-up
 
 Using a fictitious story about egg classification, we explored the edge cases of the Matthews Correlation Coefficient.
 For the cases where we labeled every egg rotten or every egg not rotten (regardless of their actual class),

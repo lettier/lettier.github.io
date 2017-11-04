@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta property="og:site_name" content="Lettier">
     <meta property="og:type" content="article">
-    <meta property="og:title" content="Matthews Correlation Coefficient by David Lettier">
+    <meta property="og:title" content="You need to know about the Matthews Correlation Coefficient by David Lettier">
     <meta property="og:image" content="https://lettier.github.io/images/2016-08-05-matthews-correlation-coefficient/jumbotron_image.jpg">
     <meta property="og:url" content="https://lettier.github.io/posts/2016-08-05-matthews-correlation-coefficient.html">
     <meta property="og:description" content="Using a fictitious scenario, we explore the Matthews Correlation Coefficient quality measure of binary classification.">
@@ -18,7 +18,7 @@
     <link rel="stylesheet" type="text/css" href="../css/default.css">
     <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
     
-      <title>Matthews Correlation Coefficient by David Lettier</title>
+      <title>You need to know about the Matthews Correlation Coefficient by David Lettier</title>
     
   </head>
   <body>
@@ -84,7 +84,7 @@
                 <div class="jumbotron-text-container">
                   <h1 class="jumbotron-text jumbotron-text-background">
                     
-                      Matthews Correlation Coefficient
+                      You need to know about the Matthews Correlation Coefficient
                     
                   </h1>
                 </div>
@@ -106,15 +106,15 @@
 </div>
 <div class="post-body">
   <!--https://pixabay.com/en/eggs-bowl-easter-holiday-1278166/-->
-<h1 id="the-scenario">The Scenario</h1>
+<h2 id="the-scenario">The Scenario</h2>
 <p>You’ve recently acquired a job at your local egg processing plant. This plant takes in large deliveries of eggs sourced from local farms. Your job, near the end of the processing pipeline, is to pluck the rotten eggs off of the conveyor belt. Most of the eggs are fine but a certain few are rotten to the yolk.</p>
 <div class="figure">
-<img src="../images/2016-08-05-matthews-correlation-coefficient/factory_worker.jpg" alt="Picture this but with eggs." class="post-img post-img-limit" />
-<p class="caption">Picture this but with eggs.</p>
+<img src="../images/2016-08-05-matthews-correlation-coefficient/egg-conveyor.gif" class="post-img post-img-limit" />
+
 </div>
 <!--https://pixabay.com/en/produce-food-canning-processing-448536/-->
 <p>Since you are new to the job, they have put you on a probationary period to determine how well you spot the rotten eggs. Further down the conveyor belt is a senior employee who is perfect at spotting rotten eggs. They will be able to catch any rotten eggs that you miss.</p>
-<h1 id="matthews-correlation-coefficient">Matthews Correlation Coefficient</h1>
+<h2 id="matthews-correlation-coefficient">Matthews Correlation Coefficient</h2>
 <p>The Matthews Correlation Coefficient (MCC) has a range of -1 to 1 where -1 indicates a completely wrong binary classifier while 1 indicates a completely correct binary classifier. Using the MCC allows one to gauge how well their classification model/function is performing. Another method for evaluating classifiers is known as the <a href="../posts/2016-03-28-reelin-and-rocin-receiver-operating-characteristic.html">ROC curve</a>.</p>
 <blockquote>
 [MCC] takes into account true and false positives and negatives and is generally regarded as a balanced measure which can be used even if the classes are of very different sizes.
@@ -139,9 +139,9 @@ MCC <span class="op">=</span> <span class="op">---------------------------------
 <img src="../images/2016-08-05-matthews-correlation-coefficient/eggs.svg" alt="Prediction versus reality." class="post-img post-img-limit" />
 <p class="caption">Prediction versus reality.</p>
 </div>
-<h1 id="evaluation">Evaluation</h1>
+<h2 id="evaluation">Evaluation</h2>
 <p>Upper management has decided on using the MCC to rate your rotten egg spotting abilities since the two classes (rotten, not rotten) are not evenly balance given any sample of the conveyor belt.</p>
-<h2 id="all-negative">All Negative</h2>
+<h3 id="all-negative">All Negative</h3>
 <p>You are feeling lazy so you decide to say that any egg that passes by is fine (not rotten).</p>
 <div class="figure">
 <img src="../images/2016-08-05-matthews-correlation-coefficient/eggs_all_negative.svg" alt="An all negative prediction." class="post-img post-img-limit" />
@@ -163,7 +163,7 @@ MCC <span class="op">=</span> <span class="fl">0.0</span> <span class="op">=</sp
 <p>Too bad they didn’t look at say accuracy.</p>
 <div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">accuracy <span class="op">=</span> (TP <span class="op">+</span> TN) / Total <span class="op">=</span> (<span class="dv">0</span> <span class="op">+</span> <span class="dv">327</span>) / <span class="dv">351</span> <span class="op">=</span> .<span class="dv">932</span></code></pre></div>
 <p>A great score for not even trying!</p>
-<h2 id="all-positive">All Positive</h2>
+<h3 id="all-positive">All Positive</h3>
 <p>Today is Friday and you cannot be bothered so you decide to say that any egg that passes by is rotten.</p>
 <div class="figure">
 <img src="../images/2016-08-05-matthews-correlation-coefficient/eggs_all_positive.svg" alt="An all positive prediction." class="post-img post-img-limit" />
@@ -185,7 +185,7 @@ MCC <span class="op">=</span> <span class="fl">0.0</span> <span class="op">=</sp
 <p>If only they had looked at recall instead–you might have been promoted.</p>
 <div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">recall <span class="op">=</span> TP / (TP <span class="op">+</span> FN) <span class="op">=</span> <span class="dv">24</span> / (<span class="dv">24</span> <span class="op">+</span> <span class="dv">0</span>) <span class="op">=</span> <span class="fl">1.0</span></code></pre></div>
 <p>Perfect recall even though you wasted 327 perfectly good eggs.</p>
-<h2 id="all-correct">All Correct</h2>
+<h3 id="all-correct">All Correct</h3>
 <p>Something is in the air and after work you plan on playing the lottery but today you feel extremely precise. Despite all the odds, you managed to correctly classify/label/say what each egg actually was.</p>
 <div class="figure">
 <img src="../images/2016-08-05-matthews-correlation-coefficient/eggs_all_correct.svg" alt="An all correct prediction." class="post-img post-img-limit" />
@@ -204,7 +204,7 @@ Actually Not Rotten <span class="op">|</span>   <span class="dv">0</span> (FP)  
 MCC <span class="op">=</span> <span class="fl">1.0</span> <span class="op">=</span> <span class="op">---------------------------</span>
             (<span class="dv">24</span> <span class="op">*</span> <span class="dv">327</span> <span class="op">*</span> <span class="dv">327</span> <span class="op">*</span> <span class="dv">24</span>)<span class="op">^</span>(<span class="dv">1</span>/<span class="dv">2</span>)</code></pre></div>
 <p>It seems that giving you the two previous passes has paid off since your score is 1. However, management deems it a fluke and would like to evaluate you one more time.</p>
-<h2 id="all-wrong">All Wrong</h2>
+<h3 id="all-wrong">All Wrong</h3>
 <p>All of your lotto tickets didn’t pay off and today is just not your day. On top of spilling your coffee all over the factory floor you managed to get every classification backwards. If the egg was rotten you said not rotten and if the egg was not rotten you said it was rotten.</p>
 <div class="figure">
 <img src="../images/2016-08-05-matthews-correlation-coefficient/eggs_all_incorrect.svg" alt="An all incorrect prediction." class="post-img post-img-limit" />
@@ -222,8 +222,9 @@ Actually Not Rotten <span class="op">|</span> <span class="dv">327</span> (FP)  
              <span class="dv">0</span> <span class="op">*</span> <span class="dv">0</span> <span class="op">-</span> <span class="dv">327</span> <span class="op">*</span> <span class="dv">24</span>
 MCC <span class="op">=</span> <span class="op">-</span><span class="fl">1.0</span> <span class="op">=</span> <span class="op">---------------------------</span>
              (<span class="dv">327</span> <span class="op">*</span> <span class="dv">24</span> <span class="op">*</span> <span class="dv">327</span> <span class="op">*</span> <span class="dv">24</span>)<span class="op">^</span>(<span class="dv">1</span>/<span class="dv">2</span>)</code></pre></div>
-<p>One of the managers yells out, “I knew it. Fired!” It seems that your previous score of 1 was indeed a fluke. Your new score is the absolute worst at -1. As they walk you out the door, you try explaining that they could just flip whatever you say and they’d get a perfect worker but their minds are already made up.</p>
-<h1 id="wrap-up">Wrap-up</h1>
+<p>One of the managers yells out, “I knew it. Fired!” It seems that your previous score of 1 was indeed a fluke. Your new score is the absolute worst at -1.</p>
+<p>As they walk you out the door, you try explaining that they could just flip whatever you say and they’d get a perfect worker but they had already finished the paperwork.</p>
+<h2 id="wrap-up">Wrap-up</h2>
 <p>Using a fictitious story about egg classification, we explored the edge cases of the Matthews Correlation Coefficient. For the cases where we labeled every egg rotten or every egg not rotten (regardless of their actual class), we compared the MCC score to other well known evaluation metrics (accuracy and recall). In these particular cases, the other metrics indicated a much more positive result than the MCC score showed.</p>
 </div>
 <div class="post-footer">
