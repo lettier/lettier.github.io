@@ -1092,7 +1092,7 @@ trying to access memory it does not have access to.
 
 If everything went well, you should see the animation shown earlier.
 
-## Wrap-up
+## Recap
 
 Using [PureScript](http://www.purescript.org/),
 the [Pure11](https://github.com/pure11) back end,

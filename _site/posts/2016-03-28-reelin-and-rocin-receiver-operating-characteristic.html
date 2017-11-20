@@ -18,12 +18,14 @@
     <link rel="stylesheet" type="text/css" href="../css/default.css">
     <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
     
-      <title>Reelin' and ROCin', Receiver Operating Characteristic by David Lettier</title>
+      
+        <title>Reelin' and ROCin', Receiver Operating Characteristic by David Lettier</title>
+      
     
   </head>
   <body>
     <div id="top"></div>
-    <div class="nav-bar-container nav-bar-transparent">
+    <div class="nav-bar-container nav-bar-background">
       <div class="nav-bar-buttons-container">
         <a href="../" title="Home">
           <div class="nav-bar-button-container">
@@ -76,35 +78,22 @@
         </a>
       </div>
     </div>
-    
-        <div class="jumbotron full-page-width-drop-shadow jumbotron-background-image" style="background-image: url('/images/2016-03-28-reelin-and-rocin-receiver-operating-characteristic/jumbotron_image.jpg');">
-          <div>
-            <div class="jumbotron">
-              <div class="container vertical-center">
-                <div class="jumbotron-text-container">
-                  <h1 class="jumbotron-text jumbotron-text-background">
-                    
-                      Reelin' and ROCin', Receiver Operating Characteristic
-                    
-                  </h1>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-    
-    <div class="container page-container">
-      <div class="post-header">
-  <div class="display-left">
-  </div>
-  <div class="display-right date-author">
-    <p>2016-03-28 &nbsp; <i class="fa fa-calendar"></i></p>
-    
-      <p>David Lettier &nbsp; <i class="fa fa-user"></i></p>
-    
-  </div>
-</div>
-<div class="post-body">
+    <div class="jumbotron">
+      <div class="absolute-top jumbotron jumbotron-background-image" style="background-image: url('/images/2016-03-28-reelin-and-rocin-receiver-operating-characteristic/jumbotron_image.jpg');">
+      </div>
+    </div>
+    <div class="container jumbotron-text-position-container">
+      <div class="jumbotron-text-width-container">
+        <h1 class="jumbotron-text jumbotron-text-background">
+          
+            Reelin' and ROCin', Receiver Operating Characteristic
+          
+          <span class="title-cursor">|</span>
+        </h1>
+      </div>
+    </div>
+    <div class="container content-container">
+      <div class="post-body">
   <h1 id="the-scenario">The Scenario</h1>
 <p>Imagine standing by a murky stream. You notice objects floating passed you. Pulling out your notebook, you write down for each object how confident you are that it is a fish (between 0.0 and 1.0). Not all are fish with some pieces being trash. Downstream, your friend scoops up each object and writes down what it actually is.</p>
 <div class="figure">
@@ -191,31 +180,25 @@ FPR <span class="op">=</span> FP <span class="op">/</span> FP <span class="op">+
 <p>If you set <code>0.0</code> as the threshold then you would label every object in the stream as a fish. This wouldn’t be very useful but you would get all of the true positives but would also get all of the false positives (64 in total for the recording period). With <code>0.0</code> being the threshold, all of the fish would be left in the stream but so would all of the trash.</p>
 <p>Setting the threshold to <code>1.0</code>, you would rarely call out fish unless you were 100% certain. Of course when you did yell out fish, you would probably never be wrong resulting in no false positives. However, you would miss most of the true positives resulting in most of the fish <i>and</i> trash being taken out of the stream. In other words, since you barely ever call out fish, your friend downstream assumes almost everything floating down is trash. Going with <code>1.0</code> would suffocate a lot of fish but would get most if not all of the trash.</p>
 <p>Based on the curve, the best threshold turns out to be <code>0.6</code> such that if you are <code>&gt;=</code> 60% sure you call out fish. Notice that the <code>0.6</code> threshold point on the ROC curve is the closest to <code>(0.0 FPR, 1.0 TPR)</code>—a perfect classifier capturing all of the true positives and making no false positives.</p>
-<h1 id="wrap-up">Wrap-up</h1>
+<h1 id="recap">Recap</h1>
 <p>Coming up with a fake scenario, we built up a binary classification problem. We discussed the ROC curve charting the FPR vs TPR trade offs at various threshold levels of class probability. Looking at the curve, we picked the best threshold for the best classifier.</p>
 </div>
 <div class="post-footer">
   <div class="display-left">
     <h2 class="post-footer-cta">
-      Want more?
+      Hi there!
       <a href="../" title="Home">Browse</a>
       and subscribe to the
       <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
       for more content.
-      <!--Return to the <a href="#top" title="top">top</a>.-->
     </h2>
   </div>
   <div class="display-right text-align-right post-footer-copyright">
     <h4>
-      <i class="fa fa-copyright"></i> <span id="copyrightYear">2015</span> David Lettier
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2017</span> David Lettier
     </h4>
   </div>
 </div>
-<script>
-  (function () {
-    document.getElementById('copyrightYear').innerHTML = new Date().getFullYear();
-  })();
-</script>
 
     </div>
     <div class="share-toolbox addthis_sharing_toolbox"></div>

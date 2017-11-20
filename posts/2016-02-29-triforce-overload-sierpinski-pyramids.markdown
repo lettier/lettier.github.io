@@ -762,7 +762,7 @@ fragment_shader.innerHTML  += "   gl_FragColor = mix( fog_color, final_color, ve
 fragment_shader.innerHTML  += "}";
 ```
 
-## Wrap-up
+## Recap
 
 We defined the HTML canvas and WebGL context.
 The shaders were loaded and indexes to their variables were gathered.

@@ -285,7 +285,7 @@ Once counted, you sort the class types by their counts and take the class type w
 This most-seen-class type becomes the class type for your unclassified data point.
 
 
-# Wrap-up
+# Recap
 
 We discussed the details of the k-Nearest Neighbors algorithm using a fictitious story about classifying unknown plants.
 Along the way, we looked at how each step is implemented in the [interactive demo](http://www.lettier.com/knearestneighbors/).

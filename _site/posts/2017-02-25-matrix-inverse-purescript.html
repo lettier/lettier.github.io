@@ -18,12 +18,14 @@
     <link rel="stylesheet" type="text/css" href="../css/default.css">
     <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
     
-      <title>Let's make a Matrix Inverse Calculator with PureScript by David Lettier</title>
+      
+        <title>Let's make a Matrix Inverse Calculator with PureScript by David Lettier</title>
+      
     
   </head>
   <body>
     <div id="top"></div>
-    <div class="nav-bar-container nav-bar-transparent">
+    <div class="nav-bar-container nav-bar-background">
       <div class="nav-bar-buttons-container">
         <a href="../" title="Home">
           <div class="nav-bar-button-container">
@@ -76,35 +78,22 @@
         </a>
       </div>
     </div>
-    
-        <div class="jumbotron full-page-width-drop-shadow jumbotron-background-image" style="background-image: url('/images/2017-02-25-matrix-inverse-purescript/jumbotron_image.jpg');">
-          <div>
-            <div class="jumbotron">
-              <div class="container vertical-center">
-                <div class="jumbotron-text-container">
-                  <h1 class="jumbotron-text jumbotron-text-background">
-                    
-                      Let's make a Matrix Inverse Calculator with PureScript
-                    
-                  </h1>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-    
-    <div class="container page-container">
-      <div class="post-header">
-  <div class="display-left">
-  </div>
-  <div class="display-right date-author">
-    <p>2017-02-25 &nbsp; <i class="fa fa-calendar"></i></p>
-    
-      <p>David Lettier &nbsp; <i class="fa fa-user"></i></p>
-    
-  </div>
-</div>
-<div class="post-body">
+    <div class="jumbotron">
+      <div class="absolute-top jumbotron jumbotron-background-image" style="background-image: url('/images/2017-02-25-matrix-inverse-purescript/jumbotron_image.jpg');">
+      </div>
+    </div>
+    <div class="container jumbotron-text-position-container">
+      <div class="jumbotron-text-width-container">
+        <h1 class="jumbotron-text jumbotron-text-background">
+          
+            Let's make a Matrix Inverse Calculator with PureScript
+          
+          <span class="title-cursor">|</span>
+        </h1>
+      </div>
+    </div>
+    <div class="container content-container">
+      <div class="post-body">
   <!--https://pixabay.com/en/storage-sort-sorting-container-1209606/-->
 <h2 id="the-code-and-final-build">The Code and final build</h2>
 <div class="figure">
@@ -1774,32 +1763,26 @@ PureScript’s purescript-eff package defines a monad called Eff, which is used 
 <span class="kw">yarn</span> run buildDist
 <span class="kw">cd</span> dist
 <span class="kw">xdg-open</span> index.html <span class="co"># Or point your browser to file://.../matrix-inverse-calculator/dist/index.html</span></code></pre></div>
-<h2 id="wrap-up">Wrap-up</h2>
+<h2 id="recap">Recap</h2>
 <p>From the ground up, we implemented a matrix inverse calculator using <a href="http://www.purescript.org/">PureScript</a> and <a href="https://github.com/slamdata/purescript-halogen">PureScript-Halogen</a>. We discussed using NVM and Yarn to manage our dependencies and automate the building of our project. We looked at the what, why, and how of inverting a matrix. We covered the basic Gauss-Jordan elimination algorithm for turning the input matrix into the identity matrix and the identity matrix into the inverse of the input matrix. We took our pseudo code and turned it into our matrix inverse PureScript module. We defined the dynamically generated HTML and query message handlers that power our user interface. And lastly we compiled and linked our application together getting it ready for distribution.</p>
 <p>If you enjoyed this tutorial be sure to read <a href="../posts/2017-01-15-linear-regression-and-the-amazing-beard.html">Let’s make a Linear Regression Calculator with PureScript</a> where we use PureScript to make an interactive, browser-based simple linear regression calculator.</p>
 </div>
 <div class="post-footer">
   <div class="display-left">
     <h2 class="post-footer-cta">
-      Want more?
+      Hi there!
       <a href="../" title="Home">Browse</a>
       and subscribe to the
       <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
       for more content.
-      <!--Return to the <a href="#top" title="top">top</a>.-->
     </h2>
   </div>
   <div class="display-right text-align-right post-footer-copyright">
     <h4>
-      <i class="fa fa-copyright"></i> <span id="copyrightYear">2015</span> David Lettier
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2017</span> David Lettier
     </h4>
   </div>
 </div>
-<script>
-  (function () {
-    document.getElementById('copyrightYear').innerHTML = new Date().getFullYear();
-  })();
-</script>
 
     </div>
     <div class="share-toolbox addthis_sharing_toolbox"></div>

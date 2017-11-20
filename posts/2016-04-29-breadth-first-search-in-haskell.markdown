@@ -218,7 +218,7 @@ a.2 --- b.1 -   - f.1 --- h.2
 c.2 --- d.1 -   - g.1 --- i.2
 ```
 
-## Wrap-up
+## Recap
 
 Using Haskell, we defined a graph as a list of vertexes and a vertex as a data structure consisting of a label,
 an adjacency list, a distance to the root, and a parent vertex label.

@@ -18,12 +18,14 @@
     <link rel="stylesheet" type="text/css" href="../css/default.css">
     <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
     
-      <title>Building a Haskell Web API by David Lettier</title>
+      
+        <title>Building a Haskell Web API by David Lettier</title>
+      
     
   </head>
   <body>
     <div id="top"></div>
-    <div class="nav-bar-container nav-bar-transparent">
+    <div class="nav-bar-container nav-bar-background">
       <div class="nav-bar-buttons-container">
         <a href="../" title="Home">
           <div class="nav-bar-button-container">
@@ -76,35 +78,22 @@
         </a>
       </div>
     </div>
-    
-        <div class="jumbotron full-page-width-drop-shadow jumbotron-background-image" style="background-image: url('/images/2016-07-15-building-a-haskell-web-api/jumbotron_image.jpg');">
-          <div>
-            <div class="jumbotron">
-              <div class="container vertical-center">
-                <div class="jumbotron-text-container">
-                  <h1 class="jumbotron-text jumbotron-text-background">
-                    
-                      Building a Haskell Web API
-                    
-                  </h1>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-    
-    <div class="container page-container">
-      <div class="post-header">
-  <div class="display-left">
-  </div>
-  <div class="display-right date-author">
-    <p>2016-07-15 &nbsp; <i class="fa fa-calendar"></i></p>
-    
-      <p>David Lettier &nbsp; <i class="fa fa-user"></i></p>
-    
-  </div>
-</div>
-<div class="post-body">
+    <div class="jumbotron">
+      <div class="absolute-top jumbotron jumbotron-background-image" style="background-image: url('/images/2016-07-15-building-a-haskell-web-api/jumbotron_image.jpg');">
+      </div>
+    </div>
+    <div class="container jumbotron-text-position-container">
+      <div class="jumbotron-text-width-container">
+        <h1 class="jumbotron-text jumbotron-text-background">
+          
+            Building a Haskell Web API
+          
+          <span class="title-cursor">|</span>
+        </h1>
+      </div>
+    </div>
+    <div class="container content-container">
+      <div class="post-body">
   <!--https://www.flickr.com/photos/fccdotgov/4808162555/in/photolist-o3uW7b-ohXHeC-nEoPvx-jD9Atv-8jT5MT-8jT5iv-8jT5a2-ojZfig-8S5DNp-8jWfTy-8jT5S8-8jWeUf-8jWf3q-o3uAV7-cEE7gE-8jT4DK-8jT6dp-8jWgyu-pi65gm-8jT6tM-8jT6Be-8jT4HD-8jWgBA-G99zCa-rYU1km-rGrNS7-r31SxA-rGsaoY-rYTXqJ-rZ1Vdg-rGsnVS-rGrYXs-rYWKW4-rGrL7C-rYX7yM-rGrXcU-fz5gkM-ojGFLa-o3uM4n-8P2mKm-9XWM9Z-rGqMWu-rYXsTp-rYTtiG-rYWDie-rGqptU-rGrEt3-r31Jao-r31XUC-rWHRqJ-->
 <!--https://flic.kr/p/8jT6dp-->
 <h1 id="overview">Overview</h1>
@@ -721,31 +710,25 @@ main <span class="fu">=</span> <span class="kw">do</span>
 <img src="../images/2016-07-15-building-a-haskell-web-api/get_index_empty.png" class="post-img post-img-small post-img-limit" />
 
 </div>
-<h1 id="wrap-up">Wrap-up</h1>
+<h1 id="recap">Recap</h1>
 <p>Using Persistent and the <a href="http://snapframework.com/">Snap Haskell web framework</a> , we built a RESTful CRUD API for creating, reading, updating, and deleting web bookmarks. We followed the <a href="https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller">MVC architecture pattern</a> and split our application into <code>Main.hs</code>, <code>Database.hs</code>, <code>Model.hs</code>, <code>View.hs</code>, and <code>Controller.hs</code>.</p>
 </div>
 <div class="post-footer">
   <div class="display-left">
     <h2 class="post-footer-cta">
-      Want more?
+      Hi there!
       <a href="../" title="Home">Browse</a>
       and subscribe to the
       <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
       for more content.
-      <!--Return to the <a href="#top" title="top">top</a>.-->
     </h2>
   </div>
   <div class="display-right text-align-right post-footer-copyright">
     <h4>
-      <i class="fa fa-copyright"></i> <span id="copyrightYear">2015</span> David Lettier
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2017</span> David Lettier
     </h4>
   </div>
 </div>
-<script>
-  (function () {
-    document.getElementById('copyrightYear').innerHTML = new Date().getFullYear();
-  })();
-</script>
 
     </div>
     <div class="share-toolbox addthis_sharing_toolbox"></div>

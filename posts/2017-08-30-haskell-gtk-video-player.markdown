@@ -1132,7 +1132,7 @@ stack exec -- movie-monad
 
 If all is in order, Movie Monad should run.
 
-## Wrap-up
+## Recap
 
 Revisiting the [Movie Monad](https://github.com/lettier/movie-monad) project,
 we remade the application using the software libraries GTK+ and GStreamer.

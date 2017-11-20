@@ -188,7 +188,7 @@ With the time-stamp in hand, we can now print it out in its more natural textual
 Time: Tue Apr 26 02:22:46 2016
 ```
 
-## Wrap-up
+## Recap
 
 Using the C programming language, we built a NTP client. This client can communicate with a remote NTP server using UDP on port 123.
 The message format was a 48 byte structure that we partially filled out and sent off to the server.

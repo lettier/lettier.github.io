@@ -896,7 +896,7 @@ Below are the cluster labels found by PMI:
 - Cluster 39: `jewelry designer`
 - Cluster 40: `ac`
 
-# Wrap-up
+# Recap
 
 We collected, parsed, and mined the prior occupations of current death row inmates.
 Interesting patterns discovered were the large portion of blue-collar occupations (most notably `laborer`)

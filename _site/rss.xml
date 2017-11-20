@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom">
 <channel>
-  <title>Lettier Blog RSS Feed</title>
-  <description>RSS feed for https://lettier.github.io.</description>
+  <title>Content by David Lettier</title>
+  <description>Data, solutions, and machines.</description>
   <link>https://lettier.github.io/rss.xml</link>
   <atom:link href="https://lettier.github.io/rss.xml" rel="self" type="application/rss+xml"></atom:link>
-  <copyright>Copyright David Lettier (C) 2016. All rights reserved.</copyright>
+  <copyright>(C) 2017 David Lettier. All rights reserved.</copyright>
   
   <item>
     

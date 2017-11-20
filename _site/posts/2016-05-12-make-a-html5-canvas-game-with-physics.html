@@ -18,12 +18,14 @@
     <link rel="stylesheet" type="text/css" href="../css/default.css">
     <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
     
-      <title>Make a HTML5 Canvas Game with Physics by David Lettier</title>
+      
+        <title>Make a HTML5 Canvas Game with Physics by David Lettier</title>
+      
     
   </head>
   <body>
     <div id="top"></div>
-    <div class="nav-bar-container nav-bar-transparent">
+    <div class="nav-bar-container nav-bar-background">
       <div class="nav-bar-buttons-container">
         <a href="../" title="Home">
           <div class="nav-bar-button-container">
@@ -76,35 +78,22 @@
         </a>
       </div>
     </div>
-    
-        <div class="jumbotron full-page-width-drop-shadow jumbotron-background-image" style="background-image: url('/images/2016-05-12-make-a-html5-canvas-game-with-physics/jumbotron_image.jpg');">
-          <div>
-            <div class="jumbotron">
-              <div class="container vertical-center">
-                <div class="jumbotron-text-container">
-                  <h1 class="jumbotron-text jumbotron-text-background">
-                    
-                      Make a HTML5 Canvas Game with Physics
-                    
-                  </h1>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-    
-    <div class="container page-container">
-      <div class="post-header">
-  <div class="display-left">
-  </div>
-  <div class="display-right date-author">
-    <p>2016-05-12 &nbsp; <i class="fa fa-calendar"></i></p>
-    
-      <p>David Lettier &nbsp; <i class="fa fa-user"></i></p>
-    
-  </div>
-</div>
-<div class="post-body">
+    <div class="jumbotron">
+      <div class="absolute-top jumbotron jumbotron-background-image" style="background-image: url('/images/2016-05-12-make-a-html5-canvas-game-with-physics/jumbotron_image.jpg');">
+      </div>
+    </div>
+    <div class="container jumbotron-text-position-container">
+      <div class="jumbotron-text-width-container">
+        <h1 class="jumbotron-text jumbotron-text-background">
+          
+            Make a HTML5 Canvas Game with Physics
+          
+          <span class="title-cursor">|</span>
+        </h1>
+      </div>
+    </div>
+    <div class="container content-container">
+      <div class="post-body">
   <h1 id="dubul-rubul">Dubul Rubul</h1>
 <div class="figure">
 <img src="../images/2016-05-12-make-a-html5-canvas-game-with-physics/dubulrubul.gif" class="post-img post-img-small post-img-limit" />
@@ -204,31 +193,25 @@
 <p>The <code>Referee</code> object handles most of the <a href="https://en.wikipedia.org/wiki/Business_logic">Business Logic</a> or gameplay mechanics. It listens for the <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/referee.js#L32">noMoreBlocks</a> message. Once received, it will publish the <code>gameOver</code> message. This <code>gameOver</code> message will be picked up by the <code>Application</code> object, <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/application.js#L224">resetting</a> the game.</p>
 <p>The <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/referee.js#L44">blockBallHit</a> collision, published by the <code>Canvas</code> object, translates into a point scheme. When the player loses points to the computer, the <code>Referee</code> publishes the <code>shakeCanvas</code> <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/referee.js#L61">message</a>. This provides a visual cue to the player that they are missing out on points.</p>
 <p>The computer or player can lose points to the opposite side if they <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/referee.js#L78">touch</a> the other side’s ball with their own paddle. If the ball <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/referee.js#L96">touches</a> the bounding box, the opposite side earns a point.</p>
-<h1 id="wrap-up">Wrap-up</h1>
+<h1 id="recap">Recap</h1>
 <p>Using <a href="https://github.com/lettier/dubulrubul/blob/master/src/js/canvas.js#L544">functional programming</a>, a HTML5 canvas, a physics simulation, and a publish subscribe message model, we built Dubul Rubul–a video game playable in any modern browser. In future posts we will revisit the computer paddle’s AI and look at adding sound effects for added immersion.</p>
 </div>
 <div class="post-footer">
   <div class="display-left">
     <h2 class="post-footer-cta">
-      Want more?
+      Hi there!
       <a href="../" title="Home">Browse</a>
       and subscribe to the
       <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
       for more content.
-      <!--Return to the <a href="#top" title="top">top</a>.-->
     </h2>
   </div>
   <div class="display-right text-align-right post-footer-copyright">
     <h4>
-      <i class="fa fa-copyright"></i> <span id="copyrightYear">2015</span> David Lettier
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2017</span> David Lettier
     </h4>
   </div>
 </div>
-<script>
-  (function () {
-    document.getElementById('copyrightYear').innerHTML = new Date().getFullYear();
-  })();
-</script>
 
     </div>
     <div class="share-toolbox addthis_sharing_toolbox"></div>

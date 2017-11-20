@@ -259,7 +259,7 @@ If the second parameter is zero, we just output the first absolute value of the 
 Otherwise we recursively call `gcd'` where the first parameter was the second parameter and the second parameter
 is the remainder of `a` divided by `b`.
 
-## Wrap-up
+## Recap
 
 Solving whiteboard problems every now and then can never hurt. We discussed the Fibonacci sequence, LCM and GCD.
 All solutions were written in Haskell but the algorithms easily translate to other languages.
