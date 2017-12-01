@@ -204,7 +204,7 @@ To automate our build process, we will use `make`. If you have ever used NPM scr
 Install `make` for your platform and then put the following in `~/movieMonad/makefile`
 
 ```makefile
-# David Lettier (C) 2106
+# David Lettier (C) 2016
 # http://www.lettier.com/
 
 .RECIPEPREFIX != ps
