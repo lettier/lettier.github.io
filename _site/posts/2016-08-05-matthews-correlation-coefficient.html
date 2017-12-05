@@ -18,12 +18,14 @@
     <link rel="stylesheet" type="text/css" href="../css/default.css">
     <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
     
-      <title>You need to know about the Matthews Correlation Coefficient by David Lettier</title>
+      
+        <title>You need to know about the Matthews Correlation Coefficient by David Lettier</title>
+      
     
   </head>
   <body>
     <div id="top"></div>
-    <div class="nav-bar-container nav-bar-transparent">
+    <div class="nav-bar-container nav-bar-background">
       <div class="nav-bar-buttons-container">
         <a href="../" title="Home">
           <div class="nav-bar-button-container">
@@ -76,35 +78,22 @@
         </a>
       </div>
     </div>
-    
-        <div class="jumbotron full-page-width-drop-shadow jumbotron-background-image" style="background-image: url('/images/2016-08-05-matthews-correlation-coefficient/jumbotron_image.jpg');">
-          <div>
-            <div class="jumbotron">
-              <div class="container vertical-center">
-                <div class="jumbotron-text-container">
-                  <h1 class="jumbotron-text jumbotron-text-background">
-                    
-                      You need to know about the Matthews Correlation Coefficient
-                    
-                  </h1>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-    
-    <div class="container page-container">
-      <div class="post-header">
-  <div class="display-left">
-  </div>
-  <div class="display-right date-author">
-    <p>2016-08-05 &nbsp; <i class="fa fa-calendar"></i></p>
-    
-      <p>David Lettier &nbsp; <i class="fa fa-user"></i></p>
-    
-  </div>
-</div>
-<div class="post-body">
+    <div class="jumbotron">
+      <div class="absolute-top jumbotron jumbotron-background-image" style="background-image: url('/images/2016-08-05-matthews-correlation-coefficient/jumbotron_image.jpg');">
+      </div>
+    </div>
+    <div class="container jumbotron-text-position-container">
+      <div class="jumbotron-text-width-container">
+        <h1 class="jumbotron-text jumbotron-text-background">
+          
+            You need to know about the Matthews Correlation Coefficient
+          
+          <span class="title-cursor">|</span>
+        </h1>
+      </div>
+    </div>
+    <div class="container content-container">
+      <div class="post-body">
   <!--https://pixabay.com/en/eggs-bowl-easter-holiday-1278166/-->
 <h2 id="the-scenario">The Scenario</h2>
 <p>You’ve recently acquired a job at your local egg processing plant. This plant takes in large deliveries of eggs sourced from local farms. Your job, near the end of the processing pipeline, is to pluck the rotten eggs off of the conveyor belt. Most of the eggs are fine but a certain few are rotten to the yolk.</p>
@@ -224,31 +213,25 @@ MCC <span class="op">=</span> <span class="op">-</span><span class="fl">1.0</spa
              (<span class="dv">327</span> <span class="op">*</span> <span class="dv">24</span> <span class="op">*</span> <span class="dv">327</span> <span class="op">*</span> <span class="dv">24</span>)<span class="op">^</span>(<span class="dv">1</span>/<span class="dv">2</span>)</code></pre></div>
 <p>One of the managers yells out, “I knew it. Fired!” It seems that your previous score of 1 was indeed a fluke. Your new score is the absolute worst at -1.</p>
 <p>As they walk you out the door, you try explaining that they could just flip whatever you say and they’d get a perfect worker but they had already finished the paperwork.</p>
-<h2 id="wrap-up">Wrap-up</h2>
+<h2 id="recap">Recap</h2>
 <p>Using a fictitious story about egg classification, we explored the edge cases of the Matthews Correlation Coefficient. For the cases where we labeled every egg rotten or every egg not rotten (regardless of their actual class), we compared the MCC score to other well known evaluation metrics (accuracy and recall). In these particular cases, the other metrics indicated a much more positive result than the MCC score showed.</p>
 </div>
 <div class="post-footer">
   <div class="display-left">
     <h2 class="post-footer-cta">
-      Want more?
+      Hi there!
       <a href="../" title="Home">Browse</a>
       and subscribe to the
       <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
       for more content.
-      <!--Return to the <a href="#top" title="top">top</a>.-->
     </h2>
   </div>
   <div class="display-right text-align-right post-footer-copyright">
     <h4>
-      <i class="fa fa-copyright"></i> <span id="copyrightYear">2015</span> David Lettier
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2017</span> David Lettier
     </h4>
   </div>
 </div>
-<script>
-  (function () {
-    document.getElementById('copyrightYear').innerHTML = new Date().getFullYear();
-  })();
-</script>
 
     </div>
     <div class="share-toolbox addthis_sharing_toolbox"></div>

@@ -18,12 +18,14 @@
     <link rel="stylesheet" type="text/css" href="../css/default.css">
     <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
     
-      <title>Boost your skills, how to easily write K-Means by David Lettier</title>
+      
+        <title>Boost your skills, how to easily write K-Means by David Lettier</title>
+      
     
   </head>
   <body>
     <div id="top"></div>
-    <div class="nav-bar-container nav-bar-transparent">
+    <div class="nav-bar-container nav-bar-background">
       <div class="nav-bar-buttons-container">
         <a href="../" title="Home">
           <div class="nav-bar-button-container">
@@ -76,35 +78,22 @@
         </a>
       </div>
     </div>
-    
-        <div class="jumbotron full-page-width-drop-shadow jumbotron-background-image" style="background-image: url('/images/2016-04-24-k-means-from-scratch/jumbotron_image.jpg');">
-          <div>
-            <div class="jumbotron">
-              <div class="container vertical-center">
-                <div class="jumbotron-text-container">
-                  <h1 class="jumbotron-text jumbotron-text-background">
-                    
-                      Boost your skills, how to easily write K-Means
-                    
-                  </h1>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-    
-    <div class="container page-container">
-      <div class="post-header">
-  <div class="display-left">
-  </div>
-  <div class="display-right date-author">
-    <p>2016-04-24 &nbsp; <i class="fa fa-calendar"></i></p>
-    
-      <p>David Lettier &nbsp; <i class="fa fa-user"></i></p>
-    
-  </div>
-</div>
-<div class="post-body">
+    <div class="jumbotron">
+      <div class="absolute-top jumbotron jumbotron-background-image" style="background-image: url('/images/2016-04-24-k-means-from-scratch/jumbotron_image.jpg');">
+      </div>
+    </div>
+    <div class="container jumbotron-text-position-container">
+      <div class="jumbotron-text-width-container">
+        <h1 class="jumbotron-text jumbotron-text-background">
+          
+            Boost your skills, how to easily write K-Means
+          
+          <span class="title-cursor">|</span>
+        </h1>
+      </div>
+    </div>
+    <div class="container content-container">
+      <div class="post-body">
   <h2 id="the-final-product">The final product</h2>
 <div class="figure">
 <img src="../images/2016-04-24-k-means-from-scratch/demo.gif" class="post-img post-img-limit post-img-small" />
@@ -649,32 +638,26 @@ meant <span class="dv">1</span><span class="op">:</span>
 <p class="caption">Two perfect clusters but the score is not a perfect one.</p>
 </div>
 <p>Clearly we have two perfect clusters and we appropriately set <code>k = 2</code>. However, we only received a score of roughly <code>0.95</code> versus the <code>1</code> you would have expected. The score was high but not perfect even though our clusters were.</p>
-<h2 id="wrap-up">Wrap-up</h2>
+<h2 id="recap">Recap</h2>
 <p>Using plain vanilla JavaScript, we built the k-means algorithm from scratch as well as the silhouette coefficient metric. We discussed different mean initialization techniques and went into depth about Fouad Kahn’s approach. The assignment and update steps were discussed where the data points are assigned to their closest means and the means are updated by averaging the features of their currently assigned data points. To not lock up our interface we used <code>requestAnimationFrame</code> and cycled our iterations for both k-means and the silhouette coefficient metric. Lastly, we discussed one way of determining how well our data is clustered using the silhouette coefficient metric and went over some unintuitive cases.</p>
 <p>Clustering is a viable technique when you have unlabeled data but if you have labeled data take a look at <a href="2016-06-10-k-nearest-neighbors-from-scratch.html">K-Nearest Neighbors from Scratch</a>–a supervised clustering method.</p>
 </div>
 <div class="post-footer">
   <div class="display-left">
     <h2 class="post-footer-cta">
-      Want more?
+      Hi there!
       <a href="../" title="Home">Browse</a>
       and subscribe to the
       <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
       for more content.
-      <!--Return to the <a href="#top" title="top">top</a>.-->
     </h2>
   </div>
   <div class="display-right text-align-right post-footer-copyright">
     <h4>
-      <i class="fa fa-copyright"></i> <span id="copyrightYear">2015</span> David Lettier
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2017</span> David Lettier
     </h4>
   </div>
 </div>
-<script>
-  (function () {
-    document.getElementById('copyrightYear').innerHTML = new Date().getFullYear();
-  })();
-</script>
 
     </div>
     <div class="share-toolbox addthis_sharing_toolbox"></div>

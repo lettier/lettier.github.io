@@ -402,7 +402,7 @@ Here is the top of the chart. The full version can be found [here](
 Based on the sample taken, `dnetesn` ties with `adamnemecek` but `dnetesn` has had more backs than fronts.
 `adamnemecek`'s relative frequency of fronts surpasses that of their own relative frequency of backs.
 
-# Wrap-up
+# Recap
 
 Using Haskell, R, Python, SQLite, and Elasticsearch, we evaluated posted and reposted pieces of content where only
 one of the reposts made it to the front page of Hacker News. We looked at the day of the week, time of day, title, and

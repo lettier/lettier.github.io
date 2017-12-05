@@ -18,12 +18,14 @@
     <link rel="stylesheet" type="text/css" href="../css/default.css">
     <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
     
-      <title>Text Mining in R: Death Row Prior Occupations by David Lettier</title>
+      
+        <title>Text Mining in R: Death Row Prior Occupations by David Lettier</title>
+      
     
   </head>
   <body>
     <div id="top"></div>
-    <div class="nav-bar-container nav-bar-transparent">
+    <div class="nav-bar-container nav-bar-background">
       <div class="nav-bar-buttons-container">
         <a href="../" title="Home">
           <div class="nav-bar-button-container">
@@ -76,35 +78,22 @@
         </a>
       </div>
     </div>
-    
-        <div class="jumbotron full-page-width-drop-shadow jumbotron-background-image" style="background-image: url('/images/2016-02-17-text-mining-in-r-death-row-prior-occupations/jumbotron_image.png');">
-          <div>
-            <div class="jumbotron">
-              <div class="container vertical-center">
-                <div class="jumbotron-text-container">
-                  <h1 class="jumbotron-text jumbotron-text-background">
-                    
-                      Text Mining in R: Death Row Prior Occupations
-                    
-                  </h1>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-    
-    <div class="container page-container">
-      <div class="post-header">
-  <div class="display-left">
-  </div>
-  <div class="display-right date-author">
-    <p>2016-02-17 &nbsp; <i class="fa fa-calendar"></i></p>
-    
-      <p>David Lettier &nbsp; <i class="fa fa-user"></i></p>
-    
-  </div>
-</div>
-<div class="post-body">
+    <div class="jumbotron">
+      <div class="absolute-top jumbotron jumbotron-background-image" style="background-image: url('/images/2016-02-17-text-mining-in-r-death-row-prior-occupations/jumbotron_image.png');">
+      </div>
+    </div>
+    <div class="container jumbotron-text-position-container">
+      <div class="jumbotron-text-width-container">
+        <h1 class="jumbotron-text jumbotron-text-background">
+          
+            Text Mining in R: Death Row Prior Occupations
+          
+          <span class="title-cursor">|</span>
+        </h1>
+      </div>
+    </div>
+    <div class="container content-container">
+      <div class="post-body">
   <p>Found in a list of <a href="http://rs.io/100-interesting-data-sets-for-statistics/">100+ interesting data sets</a>, the <a href="http://www.tdcj.state.tx.us/death_row/index.html">Texas Department of Criminal Justice</a> provides different collections of information on death row inmates both present and past. Prior occupations for each current offender are listed <a href="http://www.tdcj.state.tx.us/death_row/dr_offenders_on_dr.html">here</a>.</p>
 <h1 id="dependencies">Dependencies</h1>
 <p>We’ll need some packages to scrape, cluster, and chart our findings.</p>
@@ -865,7 +854,7 @@ if (k ==<span class="st"> </span><span class="dv">2</span>) {
 <li>Cluster 39: <code>jewelry designer</code></li>
 <li>Cluster 40: <code>ac</code></li>
 </ul>
-<h1 id="wrap-up">Wrap-up</h1>
+<h1 id="recap">Recap</h1>
 <p>We collected, parsed, and mined the prior occupations of current death row inmates. Interesting patterns discovered were the large portion of blue-collar occupations (most notably <code>laborer</code>) and more rare prior occupations such as <code>computer operator</code> and <code>jewelry designer</code>. An interesting hypothesis test would be the correlation between being on death row and having been a <code>laborer</code>. The SVD computation could be used for information retrieval allowing one to search for similar current inmates by some prior occupation query. Further analysis could include plotting the amount of each prior occupation seen per year.</p>
 <h1 id="appendix">Appendix</h1>
 <h2 id="full-svd-ap-clustering">Full SVD AP Clustering</h2>
@@ -1792,25 +1781,19 @@ if (k ==<span class="st"> </span><span class="dv">2</span>) {
 <div class="post-footer">
   <div class="display-left">
     <h2 class="post-footer-cta">
-      Want more?
+      Hi there!
       <a href="../" title="Home">Browse</a>
       and subscribe to the
       <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
       for more content.
-      <!--Return to the <a href="#top" title="top">top</a>.-->
     </h2>
   </div>
   <div class="display-right text-align-right post-footer-copyright">
     <h4>
-      <i class="fa fa-copyright"></i> <span id="copyrightYear">2015</span> David Lettier
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2017</span> David Lettier
     </h4>
   </div>
 </div>
-<script>
-  (function () {
-    document.getElementById('copyrightYear').innerHTML = new Date().getFullYear();
-  })();
-</script>
 
     </div>
     <div class="share-toolbox addthis_sharing_toolbox"></div>

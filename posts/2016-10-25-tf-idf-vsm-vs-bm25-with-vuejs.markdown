@@ -755,7 +755,7 @@ of the equation was negative since the input into the `log` function was less th
 For our version of BM25, we have a problem when one of the query terms are found in more than half of the documents in our corpus.
 Note that adding more `and`s in the query does not change the BM25 ranking.
 
-# Wrap-up
+# Recap
 
 Using [Vue.js](https://vuejs.org/), we built a JavaScript based search engine that uses both tf-idf VSM and Okapi BM25.
 For every given query, our search engine ran both approaches in tandem, allowing us to explore the similarities and differences between

@@ -258,7 +258,7 @@ If the ball
 [touches](https://github.com/lettier/dubulrubul/blob/master/src/js/referee.js#L96)
 the bounding box, the opposite side earns a point.
 
-# Wrap-up
+# Recap
 
 Using
 [functional programming](https://github.com/lettier/dubulrubul/blob/master/src/js/canvas.js#L544),

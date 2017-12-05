@@ -287,7 +287,7 @@ main = do
   mapM_ (\x -> putStrLn (max_cont_ncont_sum x)) arrays'
 ```
 
-## Wrap-up
+## Recap
 
 We defined the max or maximum subarray problem as finding the maximum sum of some subarray of contiguous values found in the array.
 On top this, we added an extra stipulation of finding the maximum sum of non-contiguous elements.

@@ -2019,7 +2019,7 @@ cd dist
 xdg-open index.html # Or point your browser to file://.../matrix-inverse-calculator/dist/index.html
 ```
 
-## Wrap-up
+## Recap
 
 From the ground up, we implemented a matrix inverse calculator
 using [PureScript](http://www.purescript.org/) and [PureScript-Halogen](https://github.com/slamdata/purescript-halogen).

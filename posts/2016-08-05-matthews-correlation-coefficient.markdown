@@ -187,7 +187,7 @@ Your new score is the absolute worst at -1.
 As they walk you out the door, you try explaining that they could just flip whatever
 you say and they'd get a perfect worker but they had already finished the paperwork.
 
-## Wrap-up
+## Recap
 
 Using a fictitious story about egg classification, we explored the edge cases of the Matthews Correlation Coefficient.
 For the cases where we labeled every egg rotten or every egg not rotten (regardless of their actual class),

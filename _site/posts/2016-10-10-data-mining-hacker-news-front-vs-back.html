@@ -18,12 +18,14 @@
     <link rel="stylesheet" type="text/css" href="../css/default.css">
     <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
     
-      <title>Data Mining Hacker News: Front vs Back by David Lettier</title>
+      
+        <title>Data Mining Hacker News: Front vs Back by David Lettier</title>
+      
     
   </head>
   <body>
     <div id="top"></div>
-    <div class="nav-bar-container nav-bar-transparent">
+    <div class="nav-bar-container nav-bar-background">
       <div class="nav-bar-buttons-container">
         <a href="../" title="Home">
           <div class="nav-bar-button-container">
@@ -76,35 +78,22 @@
         </a>
       </div>
     </div>
-    
-        <div class="jumbotron full-page-width-drop-shadow jumbotron-background-image" style="background-image: url('/images/2016-10-10-data-mining-hacker-news-front-vs-back/jumbotron_image.jpg');">
-          <div>
-            <div class="jumbotron">
-              <div class="container vertical-center">
-                <div class="jumbotron-text-container">
-                  <h1 class="jumbotron-text jumbotron-text-background">
-                    
-                      Data Mining Hacker News: Front vs Back
-                    
-                  </h1>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-    
-    <div class="container page-container">
-      <div class="post-header">
-  <div class="display-left">
-  </div>
-  <div class="display-right date-author">
-    <p>2016-10-10 &nbsp; <i class="fa fa-calendar"></i></p>
-    
-      <p>David Lettier &nbsp; <i class="fa fa-user"></i></p>
-    
-  </div>
-</div>
-<div class="post-body">
+    <div class="jumbotron">
+      <div class="absolute-top jumbotron jumbotron-background-image" style="background-image: url('/images/2016-10-10-data-mining-hacker-news-front-vs-back/jumbotron_image.jpg');">
+      </div>
+    </div>
+    <div class="container jumbotron-text-position-container">
+      <div class="jumbotron-text-width-container">
+        <h1 class="jumbotron-text jumbotron-text-background">
+          
+            Data Mining Hacker News: Front vs Back
+          
+          <span class="title-cursor">|</span>
+        </h1>
+      </div>
+    </div>
+    <div class="container content-container">
+      <div class="post-body">
   <!-- https://pixabay.com/en/paddle-wheel-bucket-wheel-excavators-1051962/ -->
 <h1 id="overview">Overview</h1>
 <p>After a post from this site made the front page of Hacker News (HN), a curious quirk was spotted. The first time the post was published on HN was at 2016-06-12 09:27:01.000Z. The second time the same post was published on HN was at 2016-06-15 02:03:36.000Z. Notice that they are only three days apart. The one published on the 12th received only one or two points by the 15th. The repost, published on the 15th, received over 170 points (within hours of being published) and maintained position one for awhile.</p>
@@ -351,7 +340,7 @@ sample estimates:
 </div>
 <p>Here is the top of the chart. The full version can be found <a href="../images/2016-10-10-data-mining-hacker-news-front-vs-back/chartUserAgg.svg">here</a> (521 KB).</p>
 <p>Based on the sample taken, <code>dnetesn</code> ties with <code>adamnemecek</code> but <code>dnetesn</code> has had more backs than fronts. <code>adamnemecek</code>’s relative frequency of fronts surpasses that of their own relative frequency of backs.</p>
-<h1 id="wrap-up">Wrap-up</h1>
+<h1 id="recap">Recap</h1>
 <p>Using Haskell, R, Python, SQLite, and Elasticsearch, we evaluated posted and reposted pieces of content where only one of the reposts made it to the front page of Hacker News. We looked at the day of the week, time of day, title, and the users which made the submissions. We found statistical significance regarding the dependence between page status and the day of the week. The attributes looked at turned up very little if any patterns distinguishing backs from their related fronts.</p>
 <h1 id="appendix">Appendix</h1>
 <p>Below you will find some supplementary material.</p>
@@ -2438,25 +2427,19 @@ chartUserAgg <span class="fu">=</span> <span class="kw">do</span>
 <div class="post-footer">
   <div class="display-left">
     <h2 class="post-footer-cta">
-      Want more?
+      Hi there!
       <a href="../" title="Home">Browse</a>
       and subscribe to the
       <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
       for more content.
-      <!--Return to the <a href="#top" title="top">top</a>.-->
     </h2>
   </div>
   <div class="display-right text-align-right post-footer-copyright">
     <h4>
-      <i class="fa fa-copyright"></i> <span id="copyrightYear">2015</span> David Lettier
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2017</span> David Lettier
     </h4>
   </div>
 </div>
-<script>
-  (function () {
-    document.getElementById('copyrightYear').innerHTML = new Date().getFullYear();
-  })();
-</script>
 
     </div>
     <div class="share-toolbox addthis_sharing_toolbox"></div>

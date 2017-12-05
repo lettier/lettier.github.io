@@ -18,12 +18,14 @@
     <link rel="stylesheet" type="text/css" href="../css/default.css">
     <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
     
-      <title>Leverage C++ to Build Awesome Apps with PureScript by David Lettier</title>
+      
+        <title>Leverage C++ to Build Awesome Apps with PureScript by David Lettier</title>
+      
     
   </head>
   <body>
     <div id="top"></div>
-    <div class="nav-bar-container nav-bar-transparent">
+    <div class="nav-bar-container nav-bar-background">
       <div class="nav-bar-buttons-container">
         <a href="../" title="Home">
           <div class="nav-bar-button-container">
@@ -76,35 +78,22 @@
         </a>
       </div>
     </div>
-    
-        <div class="jumbotron full-page-width-drop-shadow jumbotron-background-image" style="background-image: url('/images/2017-10-23-animation-purescript-cpp-sfml/jumbotron-image.jpg');">
-          <div>
-            <div class="jumbotron">
-              <div class="container vertical-center">
-                <div class="jumbotron-text-container">
-                  <h1 class="jumbotron-text jumbotron-text-background">
-                    
-                      Leverage C++ to Build Awesome Apps with PureScript
-                    
-                  </h1>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-    
-    <div class="container page-container">
-      <div class="post-header">
-  <div class="display-left">
-  </div>
-  <div class="display-right date-author">
-    <p>2017-10-23 &nbsp; <i class="fa fa-calendar"></i></p>
-    
-      <p>David Lettier &nbsp; <i class="fa fa-user"></i></p>
-    
-  </div>
-</div>
-<div class="post-body">
+    <div class="jumbotron">
+      <div class="absolute-top jumbotron jumbotron-background-image" style="background-image: url('/images/2017-10-23-animation-purescript-cpp-sfml/jumbotron-image.jpg');">
+      </div>
+    </div>
+    <div class="container jumbotron-text-position-container">
+      <div class="jumbotron-text-width-container">
+        <h1 class="jumbotron-text jumbotron-text-background">
+          
+            Leverage C++ to Build Awesome Apps with PureScript
+          
+          <span class="title-cursor">|</span>
+        </h1>
+      </div>
+    </div>
+    <div class="container content-container">
+      <div class="post-body">
   <!--https://pixabay.com/en/staircase-staircase-spiral-france-2607787/-->
 <h2 id="the-final-product">The final product</h2>
 <p>Below is a GIF of what we’ll end up with at the end. The animation will continuously play until the user closes the window.</p>
@@ -920,32 +909,26 @@ render
 <p>Make sure you are in the root of the project before you run the <code>make</code> command. The <code>LDFLAGS</code> are passed to the linker and are needed to use SFML. Make sure to include the <code>GC=yes</code> flag. If we leave it off, our program will crash by running out of memory or by trying to access memory it does not have access to.</p>
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">./output/bin/main</span></code></pre></div>
 <p>If everything went well, you should see the animation shown earlier.</p>
-<h2 id="wrap-up">Wrap-up</h2>
+<h2 id="recap">Recap</h2>
 <p>Using <a href="http://www.purescript.org/">PureScript</a>, the <a href="https://github.com/pure11">Pure11</a> back end, and the <a href="https://www.sfml-dev.org/">Simple and Fast Multimedia Library</a>, we created a desktop GUI program that continuously renders an animation to the screen. PureScript normally targets JavaScript but by using Pure11, we can target C++ which opens up a wide range of opportunities. If we were to keep going with this example, we could easily create a 2D video game for the desktop.</p>
 <p>If you enjoyed this article be sure to checkout <a href="../posts/2017-02-25-matrix-inverse-purescript.html">Let’s make a Matrix Inverse Calculator with PureScript</a> and <a href="../posts/2017-01-15-linear-regression-and-the-amazing-beard.html">Let’s make a Linear Regression Calculator with PureScript</a>.</p>
 </div>
 <div class="post-footer">
   <div class="display-left">
     <h2 class="post-footer-cta">
-      Want more?
+      Hi there!
       <a href="../" title="Home">Browse</a>
       and subscribe to the
       <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
       for more content.
-      <!--Return to the <a href="#top" title="top">top</a>.-->
     </h2>
   </div>
   <div class="display-right text-align-right post-footer-copyright">
     <h4>
-      <i class="fa fa-copyright"></i> <span id="copyrightYear">2015</span> David Lettier
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2017</span> David Lettier
     </h4>
   </div>
 </div>
-<script>
-  (function () {
-    document.getElementById('copyrightYear').innerHTML = new Date().getFullYear();
-  })();
-</script>
 
     </div>
     <div class="share-toolbox addthis_sharing_toolbox"></div>

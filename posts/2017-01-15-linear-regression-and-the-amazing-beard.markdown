@@ -2437,7 +2437,7 @@ Note that while year 15 is an extrapolation, the PRESS statistic is fairly low.
 
 With the missing data filled in, you collect the owed tax and return to your boss successful.
 
-## Wrap-up
+## Recap
 
 From the ground up, we implemented linear regression, gradient descent, and the PRESS statistic.
 Along the way, we took a look at how each step was achieved in the [interactive calculator](http://lettier.com/linear-regression/)

@@ -727,7 +727,7 @@ Clearly we have two perfect clusters and we appropriately set `k = 2`.
 However, we only received a score of roughly `0.95` versus the `1` you would have expected.
 The score was high but not perfect even though our clusters were.
 
-## Wrap-up
+## Recap
 
 Using plain vanilla JavaScript, we built the k-means algorithm from scratch as well as the silhouette coefficient metric.
 We discussed different mean initialization techniques and went into depth about Fouad Kahn's approach.

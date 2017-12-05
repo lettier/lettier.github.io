@@ -647,7 +647,7 @@ After opening `dist/index.html` in your browser, the following output will be pr
 </html>
 ```
 
-# Wrap-up
+# Recap
 
 Using an array of tools and the Haskell programming language, we built a push button interface for a web browser.
 All of our Haskell source code was transpiled to HTML and JavaScript.

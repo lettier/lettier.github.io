@@ -1363,7 +1363,7 @@ make buildHaskell
 
 Each target or build step is listed in the `makefile` you created earlier.
 
-# Wrap-up
+# Recap
 
 Using the Haskell libraries Blaze, Fay, and Clay, we generated the HTML, CSS, and JavaScript files necessary to build Movie Monad.
 These files, along with Electron and Electron Packager, allowed us to make a video playing desktop application and

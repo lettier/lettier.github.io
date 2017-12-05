@@ -737,7 +737,7 @@ or if you like, the [Postman](https://www.getpostman.com/) application.
 
 ![](/images/2016-07-15-building-a-haskell-web-api/get_index_empty.png){.post-img .post-img-small .post-img-limit}
 
-# Wrap-up
+# Recap
 
 Using Persistent and the
 [Snap Haskell web framework](http://snapframework.com/)

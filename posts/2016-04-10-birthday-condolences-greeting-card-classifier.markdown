@@ -455,7 +455,7 @@ pyplot.savefig('roc_curve.png')
 
 ![ROC Curve](/images/2016-04-10-birthday-condolences-greeting-card-classifier/roc_curve.png){.post-img .post-img-fill}
 
-## Wrap-up
+## Recap
 
 We explored our sample data set and held out some examples for testing. After building our pre-processing and model pipeline, we attempted to find the most optimal hyperparameters by using randomized search. Using the best model found, we cross validated it scoring its performance using log loss. Once trained and validated, we tested it on our test data set and charted the ROC curve.
 

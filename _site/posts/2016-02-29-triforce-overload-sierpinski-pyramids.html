@@ -18,12 +18,14 @@
     <link rel="stylesheet" type="text/css" href="../css/default.css">
     <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
     
-      <title>Unlock your WebGL magic, how to render Sierpinski Pyramids by David Lettier</title>
+      
+        <title>Unlock your WebGL magic, how to render Sierpinski Pyramids by David Lettier</title>
+      
     
   </head>
   <body>
     <div id="top"></div>
-    <div class="nav-bar-container nav-bar-transparent">
+    <div class="nav-bar-container nav-bar-background">
       <div class="nav-bar-buttons-container">
         <a href="../" title="Home">
           <div class="nav-bar-button-container">
@@ -76,35 +78,22 @@
         </a>
       </div>
     </div>
-    
-        <div class="jumbotron full-page-width-drop-shadow jumbotron-background-image" style="background-image: url('/images/2016-02-29-triforce-overload-sierpinski-pyramids/jumbotron_image.jpg');">
-          <div>
-            <div class="jumbotron">
-              <div class="container vertical-center">
-                <div class="jumbotron-text-container">
-                  <h1 class="jumbotron-text jumbotron-text-background">
-                    
-                      Unlock your WebGL magic, how to render Sierpinski Pyramids
-                    
-                  </h1>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-    
-    <div class="container page-container">
-      <div class="post-header">
-  <div class="display-left">
-  </div>
-  <div class="display-right date-author">
-    <p>2016-02-29 &nbsp; <i class="fa fa-calendar"></i></p>
-    
-      <p>David Lettier &nbsp; <i class="fa fa-user"></i></p>
-    
-  </div>
-</div>
-<div class="post-body">
+    <div class="jumbotron">
+      <div class="absolute-top jumbotron jumbotron-background-image" style="background-image: url('/images/2016-02-29-triforce-overload-sierpinski-pyramids/jumbotron_image.jpg');">
+      </div>
+    </div>
+    <div class="container jumbotron-text-position-container">
+      <div class="jumbotron-text-width-container">
+        <h1 class="jumbotron-text jumbotron-text-background">
+          
+            Unlock your WebGL magic, how to render Sierpinski Pyramids
+          
+          <span class="title-cursor">|</span>
+        </h1>
+      </div>
+    </div>
+    <div class="container content-container">
+      <div class="post-body">
   <h2 id="the-final-product">The final product</h2>
 <div class="figure">
 <img src="../images/2016-02-29-triforce-overload-sierpinski-pyramids/demo.jpg" class="post-img post-img-small post-img-limit" />
@@ -678,32 +667,26 @@ camera_direction_vector <span class="op">=</span> <span class="va">vec3</span>.<
 <p>We complete the lighting system with the calculation of the fragment color. Depending on the <code>fog_factor</code>, the fragment color could be the final color, a mixture of the final color and the fog color, or the fog color completely.</p>
 <div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">fragment_shader</span>.<span class="at">innerHTML</span>  <span class="op">+=</span> <span class="st">&quot;   gl_FragColor = mix( fog_color, final_color, vec4( fog_factor, fog_factor, fog_factor, fog_factor ) );&quot;</span><span class="op">;</span>
 <span class="va">fragment_shader</span>.<span class="at">innerHTML</span>  <span class="op">+=</span> <span class="st">&quot;}&quot;</span><span class="op">;</span></code></pre></div>
-<h2 id="wrap-up">Wrap-up</h2>
+<h2 id="recap">Recap</h2>
 <p>We defined the HTML canvas and WebGL context. The shaders were loaded and indexes to their variables were gathered. Camera controls were defined and event handling was set in place. The user can pitch and yaw the camera allowing them to look around the scene. Per frame, we rendered the Sierpinski Pyramids subdivided based on the user’s selection. For added realism, we used the Phong Reflection Model for lighting and employed attenuated fog.</p>
 <p>If this project interested you, be sure to take a look at <a href="https://github.com/lettier/isosurface">Isosurface extraction using Marching Cubes and pure WebGL</a>.</p>
 </div>
 <div class="post-footer">
   <div class="display-left">
     <h2 class="post-footer-cta">
-      Want more?
+      Hi there!
       <a href="../" title="Home">Browse</a>
       and subscribe to the
       <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
       for more content.
-      <!--Return to the <a href="#top" title="top">top</a>.-->
     </h2>
   </div>
   <div class="display-right text-align-right post-footer-copyright">
     <h4>
-      <i class="fa fa-copyright"></i> <span id="copyrightYear">2015</span> David Lettier
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2017</span> David Lettier
     </h4>
   </div>
 </div>
-<script>
-  (function () {
-    document.getElementById('copyrightYear').innerHTML = new Date().getFullYear();
-  })();
-</script>
 
     </div>
     <div class="share-toolbox addthis_sharing_toolbox"></div>

@@ -18,12 +18,14 @@
     <link rel="stylesheet" type="text/css" href="../css/default.css">
     <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
     
-      <title>Birthday Condolences, Greeting Card Classifier by David Lettier</title>
+      
+        <title>Birthday Condolences, Greeting Card Classifier by David Lettier</title>
+      
     
   </head>
   <body>
     <div id="top"></div>
-    <div class="nav-bar-container nav-bar-transparent">
+    <div class="nav-bar-container nav-bar-background">
       <div class="nav-bar-buttons-container">
         <a href="../" title="Home">
           <div class="nav-bar-button-container">
@@ -76,35 +78,22 @@
         </a>
       </div>
     </div>
-    
-        <div class="jumbotron full-page-width-drop-shadow jumbotron-background-image" style="background-image: url('/images/2016-04-10-birthday-condolences-greeting-card-classifier/jumbotron_image.jpg');">
-          <div>
-            <div class="jumbotron">
-              <div class="container vertical-center">
-                <div class="jumbotron-text-container">
-                  <h1 class="jumbotron-text jumbotron-text-background">
-                    
-                      Birthday Condolences, Greeting Card Classifier
-                    
-                  </h1>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-    
-    <div class="container page-container">
-      <div class="post-header">
-  <div class="display-left">
-  </div>
-  <div class="display-right date-author">
-    <p>2016-04-10 &nbsp; <i class="fa fa-calendar"></i></p>
-    
-      <p>David Lettier &nbsp; <i class="fa fa-user"></i></p>
-    
-  </div>
-</div>
-<div class="post-body">
+    <div class="jumbotron">
+      <div class="absolute-top jumbotron jumbotron-background-image" style="background-image: url('/images/2016-04-10-birthday-condolences-greeting-card-classifier/jumbotron_image.jpg');">
+      </div>
+    </div>
+    <div class="container jumbotron-text-position-container">
+      <div class="jumbotron-text-width-container">
+        <h1 class="jumbotron-text jumbotron-text-background">
+          
+            Birthday Condolences, Greeting Card Classifier
+          
+          <span class="title-cursor">|</span>
+        </h1>
+      </div>
+    </div>
+    <div class="container content-container">
+      <div class="post-body">
   <!--https://commons.wikimedia.org/wiki/File:GreetingCards3.jpg-->
 <p>It is late and your cart of greeting cards just fell over mixing birthday and sympathy cards all over the floor. Unfortunately, you cannot go home until you restock the card shelves. Luckily you have OCR on your phone and a knack for machine learning. Let’s build a classifier using <a href="http://scikit-learn.org/stable/">scikit-learn’s</a> implementation of <a href="https://en.wikipedia.org/wiki/Logistic_regression">logistic regression</a>.</p>
 <h2 id="sample-data">Sample Data</h2>
@@ -452,7 +441,7 @@ Out[<span class="dv">95</span>]: <span class="fl">34.538776394910677</span></cod
 <img src="../images/2016-04-10-birthday-condolences-greeting-card-classifier/roc_curve.png" alt="ROC Curve" class="post-img post-img-fill" />
 <p class="caption">ROC Curve</p>
 </div>
-<h2 id="wrap-up">Wrap-up</h2>
+<h2 id="recap">Recap</h2>
 <p>We explored our sample data set and held out some examples for testing. After building our pre-processing and model pipeline, we attempted to find the most optimal hyperparameters by using randomized search. Using the best model found, we cross validated it scoring its performance using log loss. Once trained and validated, we tested it on our test data set and charted the ROC curve.</p>
 <p>With our new classifier and the OCR on your phone, you should be able to sort out that mess on the floor in no time.</p>
 <h2 id="appendix">Appendix</h2>
@@ -640,25 +629,19 @@ fpr<span class="op">,</span> tpr<span class="op">,</span> thresholds <span class
 <div class="post-footer">
   <div class="display-left">
     <h2 class="post-footer-cta">
-      Want more?
+      Hi there!
       <a href="../" title="Home">Browse</a>
       and subscribe to the
       <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
       for more content.
-      <!--Return to the <a href="#top" title="top">top</a>.-->
     </h2>
   </div>
   <div class="display-right text-align-right post-footer-copyright">
     <h4>
-      <i class="fa fa-copyright"></i> <span id="copyrightYear">2015</span> David Lettier
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2017</span> David Lettier
     </h4>
   </div>
 </div>
-<script>
-  (function () {
-    document.getElementById('copyrightYear').innerHTML = new Date().getFullYear();
-  })();
-</script>
 
     </div>
     <div class="share-toolbox addthis_sharing_toolbox"></div>

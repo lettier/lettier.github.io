@@ -18,12 +18,14 @@
     <link rel="stylesheet" type="text/css" href="../css/default.css">
     <link rel="alternate" type="application/rss+xml" href="../rss.xml" title="RSS">
     
-      <title>Let's make a Search Engine with Vue.js by David Lettier</title>
+      
+        <title>Let's make a Search Engine with Vue.js by David Lettier</title>
+      
     
   </head>
   <body>
     <div id="top"></div>
-    <div class="nav-bar-container nav-bar-transparent">
+    <div class="nav-bar-container nav-bar-background">
       <div class="nav-bar-buttons-container">
         <a href="../" title="Home">
           <div class="nav-bar-button-container">
@@ -76,35 +78,22 @@
         </a>
       </div>
     </div>
-    
-        <div class="jumbotron full-page-width-drop-shadow jumbotron-background-image" style="background-image: url('/images/2016-10-25-tf-idf-vsm-vs-bm25-with-vuejs/jumbotron_image.jpg');">
-          <div>
-            <div class="jumbotron">
-              <div class="container vertical-center">
-                <div class="jumbotron-text-container">
-                  <h1 class="jumbotron-text jumbotron-text-background">
-                    
-                      Let's make a Search Engine with Vue.js
-                    
-                  </h1>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-    
-    <div class="container page-container">
-      <div class="post-header">
-  <div class="display-left">
-  </div>
-  <div class="display-right date-author">
-    <p>2016-10-25 &nbsp; <i class="fa fa-calendar"></i></p>
-    
-      <p>David Lettier &nbsp; <i class="fa fa-user"></i></p>
-    
-  </div>
-</div>
-<div class="post-body">
+    <div class="jumbotron">
+      <div class="absolute-top jumbotron jumbotron-background-image" style="background-image: url('/images/2016-10-25-tf-idf-vsm-vs-bm25-with-vuejs/jumbotron_image.jpg');">
+      </div>
+    </div>
+    <div class="container jumbotron-text-position-container">
+      <div class="jumbotron-text-width-container">
+        <h1 class="jumbotron-text jumbotron-text-background">
+          
+            Let's make a Search Engine with Vue.js
+          
+          <span class="title-cursor">|</span>
+        </h1>
+      </div>
+    </div>
+    <div class="container content-container">
+      <div class="post-body">
   <!--https://pixabay.com/en/shredder-mechanically-device-71775/-->
 <h1 id="overview">Overview</h1>
 <p>Scikit-learn may soon have an implementation of Okapi Best Matching 25 (BM25) given this active <a href="https://github.com/scikit-learn/scikit-learn/pull/6973">pull request</a>. In light of this, we will take a look at how it differs from the more well known term-frequency inverse document-frequency (tf-idf) vector space model (VSM) approach to retrieving relevant information.</p>
@@ -634,7 +623,7 @@ Doc <span class="dv">4</span><span class="op">:</span> <span class="op">-</span>
 <p>For the remaining documents, the idf portion</p>
 <div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">x <span class="op">=</span> <span class="at">log</span>(((r<span class="fl">+0.5</span>)/(R<span class="op">-</span>r<span class="fl">+0.5</span>))/((n<span class="op">-</span>r<span class="fl">+0.5</span>)/(N<span class="op">-</span>n<span class="op">-</span>R<span class="op">+</span>r<span class="fl">+0.5</span>)))</code></pre></div>
 <p>of the equation was negative since the input into the <code>log</code> function was less than one. For our version of BM25, we have a problem when one of the query terms are found in more than half of the documents in our corpus. Note that adding more <code>and</code>s in the query does not change the BM25 ranking.</p>
-<h1 id="wrap-up">Wrap-up</h1>
+<h1 id="recap">Recap</h1>
 <p>Using <a href="https://vuejs.org/">Vue.js</a>, we built a JavaScript based search engine that uses both tf-idf VSM and Okapi BM25. For every given query, our search engine ran both approaches in tandem, allowing us to explore the similarities and differences between each document ranking method.</p>
 <h1 id="appendix">Appendix</h1>
 <p>Below you will find some supplementary material.</p>
@@ -1254,25 +1243,19 @@ button <span class="kw">{</span>
 <div class="post-footer">
   <div class="display-left">
     <h2 class="post-footer-cta">
-      Want more?
+      Hi there!
       <a href="../" title="Home">Browse</a>
       and subscribe to the
       <a href="../rss.xml" type="application/rss+xml" target="_blank" title="RSS">RSS feed</a>
       for more content.
-      <!--Return to the <a href="#top" title="top">top</a>.-->
     </h2>
   </div>
   <div class="display-right text-align-right post-footer-copyright">
     <h4>
-      <i class="fa fa-copyright"></i> <span id="copyrightYear">2015</span> David Lettier
+      <i class="fa fa-copyright"></i> <span id="copyrightYear">2017</span> David Lettier
     </h4>
   </div>
 </div>
-<script>
-  (function () {
-    document.getElementById('copyrightYear').innerHTML = new Date().getFullYear();
-  })();
-</script>
 
     </div>
     <div class="share-toolbox addthis_sharing_toolbox"></div>

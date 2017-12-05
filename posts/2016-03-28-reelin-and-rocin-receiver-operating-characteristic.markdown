@@ -123,6 +123,6 @@ Going with `1.0` would suffocate a lot of fish but would get most if not all of 
 
 Based on the curve, the best threshold turns out to be `0.6` such that if you are `>=` 60% sure you call out fish. Notice that the `0.6` threshold point on the ROC curve is the closest to `(0.0 FPR, 1.0 TPR)`---a perfect classifier capturing all of the true positives and making no false positives.
 
-# Wrap-up
+# Recap
 
 Coming up with a fake scenario, we built up a binary classification problem. We discussed the ROC curve charting the FPR vs TPR trade offs at various threshold levels of class probability. Looking at the curve, we picked the best threshold for the best classifier.
