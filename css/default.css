@@ -68,13 +68,16 @@ blockquote {
   text-align: right;
   border-left: 0px solid transparent;
   border-right: 2px solid #424B54;
-  font-size: 160%;
+  font-size: 180%;
   font-style: italic;
   word-spacing: 3px;
 }
 
 blockquote > footer {
   font-style: normal;
+  word-spacing: normal;
+  font-size: 80%;
+  margin-top: 30px;
 }
 
 pre {
