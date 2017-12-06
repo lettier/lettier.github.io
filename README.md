@@ -1,8 +1,10 @@
 ![](screenshot.png)
 
-# Lettier Blog
+# Content by David Lettier
 
-Static website generated using the Haskell library Hakyll.
+Software project how-tos, machine learning concept explanations, and data-driven quests.
 
-_(C) 2016 David Lettier._  
-http://www.lettier.com/
+Uses the Haskell static site generator [Hakyll](https://github.com/jaspervdj/hakyll).
+
+_(C) 2017 David Lettier_  
+[lettier.com](https://www.lettier.com/)
