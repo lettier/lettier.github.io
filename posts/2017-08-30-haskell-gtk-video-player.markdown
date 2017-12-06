@@ -336,7 +336,7 @@ We give this element the name `MultimediaPlayer`.
 
 #### Embedding the GStreamer output
 
-Two bring together GTK+ and GStreamer, we need a way to tell GStreamer where to render the video to.
+To bring together GTK+ and GStreamer, we need a way to tell GStreamer where to render the video to.
 If we do not tell GStreamer where to render to, it will create its own window since we are using `playbin`.
 
 ```haskell
