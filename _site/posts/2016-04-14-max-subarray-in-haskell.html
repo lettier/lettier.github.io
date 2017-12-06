@@ -105,7 +105,7 @@
 </ul>
 <p>and the max subarray would be <code>[2,3,4]</code> for a total of <code>9</code>. So subarray is defined as some section or the entire collection of the contiguous elements found in the array. For example <code>[-1,4,3]</code> would not be a subarray.</p>
 <blockquote>
-<p>The problem was first posed by Ulf Grenander of Brown University in 1977, as a simplified model for maximum likelihood estimation of patterns in digitized images. A linear time algorithm was found soon afterwards by Jay Kadane of Carnegie-Mellon University (Bentley 1984).</p>
+The problem was first posed by Ulf Grenander of Brown University in 1977, as a simplified model for maximum likelihood estimation of patterns in digitized images. A linear time algorithm was found soon afterwards by Jay Kadane of Carnegie-Mellon University (Bentley 1984).
 <footer>
 <a href="https://en.wikipedia.org/wiki/Maximum_subarray_problem">Maximum subarray problem, Wikipedia</a>
 </footer>
@@ -189,7 +189,7 @@ Nth array items</code></pre></div>
 max_ncont_sum <span class="fu">=</span> foldl (\acc x <span class="ot">-&gt;</span> <span class="kw">if</span> x <span class="fu">&gt;=</span> <span class="dv">0</span> <span class="kw">then</span> acc <span class="fu">+</span> x <span class="kw">else</span> acc <span class="fu">+</span> <span class="dv">0</span>) <span class="dv">0</span></code></pre></div>
 <p><code>foldl</code> stands for reduce this array starting from the left. The last zero at the end of the line is the first element we will fold and will be the first to show up in <code>acc</code> (the accumulator). You’ll notice that it looks like <code>max_ncont_sum</code> does not take any arguments or parameters but it does. <code>foldl</code> take three parameters: a function, a starting value, and an array. <code>max_ncont_sum</code> has one parameter and it too expects an array. <code>max_ncont_sum</code> in this form is partially applying <code>foldl</code> returning a new function that is waiting on being passed an array.</p>
 <blockquote>
-<p>Partial application means taking a function and partially applying it to one or more of its arguments, but not all, creating a new function in the process.</p>
+Partial application means taking a function and partially applying it to one or more of its arguments, but not all, creating a new function in the process.
 <footer>
 <a href="http://www.datchley.name/currying-vs-partial-application/">Dave Atchley</a>
 </footer>

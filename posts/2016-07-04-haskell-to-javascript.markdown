@@ -247,7 +247,8 @@ main = defaultMain
 Here we import the distribution simple package and define the main entry point as `defaultMain`.
 
 <blockquote>
-This is the command line front end to the Simple build system. When given the parsed command-line args and package information, is able to perform basic commands like configure, build, install, register, etc.
+This is the command line front end to the Simple build system. When given the parsed command-line args and package information,
+is able to perform basic commands like configure, build, install, register, etc.
 <footer>[Distribution.Simple, Hackage](https://hackage.haskell.org/package/Cabal-1.24.0.0/docs/Distribution-Simple.html)</footer>
 </blockquote>
 

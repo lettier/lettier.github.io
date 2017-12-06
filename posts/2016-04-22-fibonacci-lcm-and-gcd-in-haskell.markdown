@@ -251,7 +251,6 @@ but then we would have to go through the list twice.
 <blockquote>
 The Euclidean Algorithm makes use of these properties by rapidly reducing the problem into easier and easier problems,
 using the third property,  until it is easily solved by using one of the first two properties.
-
 <footer>[Khan Academy](https://www.khanacademy.org/computing/computer-science/cryptography/modarithmetic/a/the-euclidean-algorithm)</footer>
 </blockquote>
 

@@ -68,6 +68,9 @@ blockquote {
   text-align: right;
   border-left: 0px solid transparent;
   border-right: 2px solid #424B54;
+  font-size: 160%;
+  font-style: italic;
+  word-spacing: 3px;
 }
 
 pre {

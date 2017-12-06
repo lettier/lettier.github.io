@@ -305,9 +305,9 @@ for (row in 1:nrow(inmate_matrix_count)) {
 To visualize the inmate vectors in two dimensions we'll employ [multidimensional scaling](https://en.wikipedia.org/wiki/Multidimensional_scaling).
 
 <blockquote>
-  An MDS algorithm aims to place each object in N-dimensional space such that the
-  between-object distances are preserved as well as possible.
-  <footer>Multidimensional Scaling, Wikipedia, the free encyclopedia</footer>
+An MDS algorithm aims to place each object in N-dimensional space such that the
+between-object distances are preserved as well as possible.
+<footer>Multidimensional Scaling, Wikipedia, the free encyclopedia</footer>
 </blockquote>
 
 ```r

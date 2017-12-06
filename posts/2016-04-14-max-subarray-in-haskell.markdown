@@ -26,7 +26,6 @@ For example `[-1,4,3]` would not be a subarray.
 The problem was first posed by Ulf Grenander of Brown University in 1977, as a
 simplified model for maximum likelihood estimation of patterns in digitized images.
 A linear time algorithm was found soon afterwards by Jay Kadane of Carnegie-Mellon University (Bentley 1984).
-
 <footer>[Maximum subarray problem, Wikipedia](https://en.wikipedia.org/wiki/Maximum_subarray_problem)</footer>
 </blockquote>
 
@@ -177,7 +176,6 @@ You'll notice that it looks like `max_ncont_sum` does not take any arguments or 
 <blockquote>
 Partial application means taking a function and partially applying it to one or more of
 its arguments, but not all, creating a new function in the process.
-
 <footer>[Dave Atchley](http://www.datchley.name/currying-vs-partial-application/)</footer>
 </blockquote>
 
